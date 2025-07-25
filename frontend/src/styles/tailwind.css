@@ -1,5 +1,19 @@
 @import 'tailwindcss';
 
 @theme {
-    --color-primary: #EB793C;
+  --color-primary: #eb793c;
+  --color-primary-hover: #d0652c;
+
+  --color-secondary: #783d33; /* 갈색: 서브 */
+  --color-point: #8e51f5; /* 보라색: 포인트, AI */
+
+  --color-green: #22c55e;
+  --color-red: #dc2626;
+
+  --color-gray-input: #f5f5f5; /* 인풋 박스용 */
+  --color-gray: #fafafa; /* 클릭 가능한 컴포넌트 */
+  --color-gray-dark: #e4e4e7; /* 회색 명암, 선색 */
+
+  --color-text-dark: #71717a; /* 글씨용 진한 회색 */
+  --color-text-light: #d4d4d8; /* 글씨용 연한 회색 */
 }
