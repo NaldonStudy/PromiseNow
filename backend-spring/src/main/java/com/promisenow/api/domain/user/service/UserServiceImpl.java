@@ -18,8 +18,7 @@ public class UserServiceImpl implements UserService {
     /**
      * 사용자 존재 여부 파악 후 저장
      */
-    @Override
-    public User findOrCreateUSer(Long userId) {
+    @Override public User findOrCreateUser(Long userId) {
         return userRepository.findById(userId)
                 .orElseGet(() -> {
                     User user = User.builder()
