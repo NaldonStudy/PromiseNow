@@ -1,0 +1,56 @@
+package com.promisenow.api.domain.user.controller;
+
+import com.promisenow.api.domain.user.service.AuthService;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+import java.util.Map;
+
+@CrossOrigin(origins = "*")
+@RestController
+@RequestMapping("/api/auth")
+@RequiredArgsConstructor
+public class AuthController {
+
+    private final AuthService authService;
+
+    @Value("${kakao.client-id}")
+    private String kakaoClientId;
+
+    @Value("${kakao.redirect-uri}")
+    private String kakaoRedirectUri;
+
+    /**
+     * 로그인 URL 반환
+     */
+    @GetMapping("/login")
+    public void getKakaoRedirectUri(HttpServletResponse response) throws IOException {
+        String redirectUrl = "https://kauth.kakao.com/oauth/authorize"
+                + "?response_type=code"
+                + "&client_id=" + kakaoClientId
+                + "&redirect_uri=" + kakaoRedirectUri;
+
+        response.sendRedirect(redirectUrl);
+    }
+
+
+    /**
+     * 카카오 액세스 토큰 발급
+     */
+    @PostMapping("/callback")
+    public ResponseEntity<?> kakaoCallback(@RequestBody Map<String, String> payload) {
+        String code = payload.get("code");
+
+        if (code == null) {
+            return ResponseEntity.badRequest().body("Missing code parameter");
+        }
+        String jwt = authService.handleKakaoLogin(code);
+        Map<String, String> result = Map.of("token", jwt);
+        return ResponseEntity.ok(result);
+    }
+
+}
