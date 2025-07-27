@@ -6,8 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "users")
@@ -16,12 +15,11 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
-    
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private Long userId;
-    
-    @Column(name = "username", nullable = false)
-    private String username;
+
+    @Column(name = "join_date", nullable = false)
+    private LocalDate joinDate;
 } 
