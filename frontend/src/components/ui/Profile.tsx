@@ -1,16 +1,16 @@
 import Icon from './Icon';
 
 interface Props {
-  size: number;
+  width: string;
   iconSize?: number;
   imgUrl?: string;
   className?: string;
 }
 
-const Profile = ({ size, imgUrl, className = '', iconSize = 20 }: Props): React.ReactElement => {
+const Profile = ({ width, imgUrl, className = '', iconSize = 20 }: Props): React.ReactElement => {
   return (
     <div
-      className={`rounded-full w-${size} h-${size} bg-white flex items-center justify-center drop-shadow-md overflow-hidden ${className}`}
+      className={`rounded-full ${width} bg-white aspect-square flex items-center justify-center drop-shadow-md overflow-hidden ${className}`}
     >
       {imgUrl ? (
         <img src={imgUrl} alt="프로필" className="w-full h-full object-cover" />

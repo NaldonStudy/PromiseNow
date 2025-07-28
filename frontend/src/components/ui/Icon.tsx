@@ -10,7 +10,7 @@ interface Props {
 const Icon = ({ type, size = 24, color = 'text-primary' }: Props): React.ReactElement => {
   const IconComponent = iconMap[type];
 
-  return <IconComponent size={size} className={color} />;
+  return <IconComponent className={color} style={{ width: size, height: size }} />;
 };
 
 export default Icon;
