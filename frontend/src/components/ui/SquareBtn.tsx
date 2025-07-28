@@ -19,8 +19,8 @@ const styleMap = {
 
 const SquareBtn = ({
   text,
-  width = 'w-auto',
-  height = 'h-auto',
+  width = 'w-10',
+  height = 'h-10',
   textSize = 'text-sm',
   template = 'filled',
   className = '',
