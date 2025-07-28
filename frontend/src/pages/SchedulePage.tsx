@@ -1,9 +1,12 @@
 import RoomLayout from '../components/layout/RoomLayout';
+import Calendar from '../features/calendar/components/Calendar';
 
 const SchedulePage = () => {
   return (
     <RoomLayout>
-      <h1>일정 페이지</h1>
+      <div className="p-5">
+        <Calendar />
+      </div>
     </RoomLayout>
   );
 };

@@ -1,12 +1,13 @@
 import type { IconType as ReactIconType } from 'react-icons';
 import { BsFillChatFill } from 'react-icons/bs';
 import { FiCalendar, FiMapPin, FiPhoneCall, FiSettings, FiTarget } from 'react-icons/fi';
-import { IoMdTime } from 'react-icons/io';
+import { IoMdTime, IoMdRepeat } from 'react-icons/io';
 import { IoLocationOutline, IoPersonOutline } from 'react-icons/io5';
-import { SlArrowLeft } from 'react-icons/sl';
+import { SlArrowLeft, SlArrowRight } from 'react-icons/sl';
 
 export type IconType =
   | 'left'
+  | 'right'
   | 'person'
   | 'roulette'
   | 'calendar'
@@ -15,10 +16,12 @@ export type IconType =
   | 'call'
   | 'chat'
   | 'time'
-  | 'location';
+  | 'location'
+  | 'repeat';
 
 export const iconMap: Record<IconType, ReactIconType> = {
   left: SlArrowLeft,
+  right: SlArrowRight,
   person: IoPersonOutline,
   roulette: FiTarget,
   calendar: FiCalendar,
@@ -28,4 +31,5 @@ export const iconMap: Record<IconType, ReactIconType> = {
   chat: BsFillChatFill,
   time: IoMdTime,
   location: IoLocationOutline,
+  repeat: IoMdRepeat,
 };
