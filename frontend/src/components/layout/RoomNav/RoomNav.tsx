@@ -1,7 +1,6 @@
 import { useParams } from 'react-router-dom';
-import { FiTarget, FiCalendar, FiMapPin, FiSettings } from 'react-icons/fi';
 
-import RoomNavItem from './RoomNavItem';
+import NavItem from './NavItem';
 import RoomNavCall from './RoomNavCall';
 
 const RoomNav = () => {
@@ -21,12 +20,11 @@ const RoomNav = () => {
             <RoomNavCall link={`/${id}/call`} />
           </div>
         </div>
-
-        <RoomNavItem label="룰렛" icon={FiTarget} link={`/${id}/roulette`} />
-        <RoomNavItem label="일정" icon={FiCalendar} link={`/${id}/schedule`} />
+        <NavItem type="roulette" text="룰렛" link={`/${id}/roulette`} />
+        <NavItem type="calendar" text="일정" link={`/${id}/schedule`} />
         <div className="w-10" />
-        <RoomNavItem label="위치" icon={FiMapPin} link={`/${id}/location`} />
-        <RoomNavItem label="설정" icon={FiSettings} link={`/${id}/settings`} />
+        <NavItem type="location" text="위치" link={`/${id}/location`} />
+        <NavItem type="settings" text="설정" link={`/${id}/settings`} />
       </div>
     </div>
   );
