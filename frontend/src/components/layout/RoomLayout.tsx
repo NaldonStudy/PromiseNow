@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 
 import RoomHeader from './RoomHeader';
-import RoomNav from './RoomNav/RoomNav';
+import RoomNav from './roomNav/RoomNav';
 
 interface Props {
   children: ReactNode;
