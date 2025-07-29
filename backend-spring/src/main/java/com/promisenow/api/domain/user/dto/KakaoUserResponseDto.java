@@ -11,7 +11,7 @@ import java.util.Map;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class KakaoUserResponse {
+public class KakaoUserResponseDto {
 
     private Long id; // 카카오 사용자 고유 ID
     private Map<String, String> properties; // 가입 날짜
