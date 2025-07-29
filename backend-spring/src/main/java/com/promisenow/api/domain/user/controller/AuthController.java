@@ -37,6 +37,22 @@ public class AuthController {
         response.sendRedirect(redirectUrl);
     }
 
+    /**
+     * 로그아웃
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        ResponseCookie cookie = ResponseCookie.from("access_token", "")
+                .httpOnly(true)
+                .secure(false) // 개발 환경 설정
+                .path("/")
+                .maxAge(0) // 즉시 만료
+                .sameSite("Lax") // 크로스 도메인 대응
+                .build();
+
+        response.addHeader("Set-Cookie", cookie.toString());
+        return ResponseEntity.ok("로그아웃 완료");
+    }
 
     /**
      * 카카오 액세스 토큰 발급
