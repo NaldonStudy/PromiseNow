@@ -1,10 +1,12 @@
 package com.promisenow.api.domain.user.dto;
 
+import com.promisenow.api.domain.user.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.Map;
 
 @Getter
@@ -14,5 +16,10 @@ import java.util.Map;
 public class KakaoUserResponseDto {
 
     private Long id; // 카카오 사용자 고유 ID
-    private Map<String, String> properties; // 가입 날짜
+    private LocalDate joinDate; // 가입 날짜
+
+    public KakaoUserResponseDto(User user) {
+        this.id = user.getUserId();
+        this.joinDate = user.getJoinDate();
+    }
 }
