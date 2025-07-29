@@ -55,18 +55,31 @@ public class AuthController {
     }
 
     /**
-     * 카카오 액세스 토큰 발급
+     * 받은 인가코드로 액세스토큰 발급 부터 JWT생성까지 수행 후 JWT반환
      */
     @PostMapping("/callback")
-    public ResponseEntity<?> kakaoCallback(@RequestBody Map<String, String> payload) {
-        String code = payload.get("code");
+    public ResponseEntity<?> kakaoCallback(@RequestBody Map<String, String> payload, HttpServletResponse response) {
+        String code = payload.get("code"); // 로그인 후 받은 인가코드 가져오기
 
         if (code == null) {
             return ResponseEntity.badRequest().body("Missing code parameter");
         }
-        String jwt = authService.handleKakaoLogin(code);
-        Map<String, String> result = Map.of("token", jwt);
-        return ResponseEntity.ok(result);
+
+        String jwt = authService.handleKakaoLogin(code); // 인가코드로 액세스토큰 발급, 사용자 정보 조회, DB조회, JWT생성
+
+        // JWT를 HttpOnly 쿠키로 설정
+        ResponseCookie cookie = ResponseCookie.from("access_token", jwt)
+                .httpOnly(true)
+                .secure(false) // 개발 환경 설정
+                .path("/")
+                .maxAge(60 * 60)
+                .sameSite("Lax") // 크로스 도메인 대응
+                .build();
+
+        // 헤더에 Set-Cookie 추가
+        response.addHeader("Set-Cookie", cookie.toString());
+
+        return ResponseEntity.ok("로그인 성공");
     }
 
 }
