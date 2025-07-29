@@ -20,7 +20,7 @@ const AppointmentInfo = ({
   locationText = '확정된 장소가 없습니다.',
 }: Props): React.ReactElement => {
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col">
       <IconTextItem
         type="calendar"
         text={calenderText}

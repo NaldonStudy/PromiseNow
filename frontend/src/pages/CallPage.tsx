@@ -1,4 +1,4 @@
-import RoomLayout from '../components/layout/RoomLayout';
+import RoomLayout from '../components/layout/roomNav/RoomLayout';
 
 const CallPage = () => {
   return (
