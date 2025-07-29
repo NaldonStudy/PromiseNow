@@ -83,6 +83,16 @@ public class JwtTokenProvider {
         if (bearer != null && bearer.startsWith("Bearer ")) {
             return bearer.substring(7);
         }
+
+        // 쿠키에서 access token 확인
+        if (request.getCookies() != null) {
+            for (var cookie : request.getCookies()) {
+                if ("access_token".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+
         return null;
     }
 
