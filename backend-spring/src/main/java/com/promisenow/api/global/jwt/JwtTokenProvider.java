@@ -49,6 +49,10 @@ public class JwtTokenProvider {
      * 토큰에서 userId(카카오 고유 ID) 추출
      */
     public Long getUserId(String token) {
+        if (token == null || token.isBlank()) {
+            throw new IllegalArgumentException("JWT token is null or empty");
+        }
+
         return Long.parseLong(Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
