@@ -20,21 +20,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
-                                    FilterChain filterChain)
-            throws ServletException, IOException {
+                                    FilterChain filterChain) throws ServletException, IOException {
+        String token = null;
 
-        String token = jwtTokenProvider.resolveToken(request);
-        if (token == null || token.isBlank()) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        String authHeader = request.getHeader("Authorization");
-
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);
-        }
-        if (token == null && request.getCookies() != null) {
+        // 쿠키에서 access_token 추출
+        if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
                 if ("access_token".equals(cookie.getName())) {
                     token = cookie.getValue();
@@ -43,6 +33,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
+        // Authorization 헤더에서 Bearer 토큰 추출 (쿠키에 없을 경우)
+        if (token == null || token.isBlank()) {
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                token = authHeader.substring(7);
+            }
+        }
+
+        // 토큰이 있으면 인증 처리
         if (token != null && !token.isBlank() && jwtTokenProvider.validateToken(token)) {
             Long userId = jwtTokenProvider.getUserId(token);
 
@@ -54,4 +53,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
     }
+
 }
