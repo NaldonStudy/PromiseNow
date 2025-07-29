@@ -1,5 +1,8 @@
 package com.promisenow.api.domain.user.controller;
 
+import com.promisenow.api.domain.user.dto.KakaoUserResponseDto;
+import com.promisenow.api.domain.user.entity.User;
+import com.promisenow.api.domain.user.service.UserService;
 import com.promisenow.api.global.jwt.JwtTokenProvider;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -12,12 +15,15 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final UserService userService;
 
     @GetMapping("/me")
-    public ResponseEntity<Long> getMyInfo(HttpServletRequest request) {
+    public ResponseEntity<KakaoUserResponseDto> getMyInfo(HttpServletRequest request) {
         String token = jwtTokenProvider.resolveToken(request);
         Long userId = jwtTokenProvider.getUserId(token);
-        return ResponseEntity.ok(userId);
+        User user = userService.findByUserId(userId);
+
+        return ResponseEntity.ok(new KakaoUserResponseDto(user));
     }
 
 } 
