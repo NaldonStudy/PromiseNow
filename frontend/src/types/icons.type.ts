@@ -1,10 +1,11 @@
 import type { IconType as ReactIconType } from 'react-icons';
 import { BsFillChatFill, BsStars } from 'react-icons/bs';
-import { FiCalendar, FiMapPin, FiPhoneCall, FiPlus, FiSettings, FiTarget } from 'react-icons/fi';
-import { IoMdTime, IoMdRepeat } from 'react-icons/io';
-import { IoLocationOutline, IoPersonOutline } from 'react-icons/io5';
-import { SlArrowLeft, SlArrowRight, SlArrowUp, SlArrowDown } from 'react-icons/sl';
 import { FaRegBell } from 'react-icons/fa';
+import { FiCalendar, FiMapPin, FiPhoneCall, FiPlus, FiSettings, FiTarget } from 'react-icons/fi';
+import { IoMdRepeat, IoMdTime } from 'react-icons/io';
+import { IoLocationOutline, IoPersonOutline } from 'react-icons/io5';
+import { MdEdit } from 'react-icons/md';
+import { SlArrowDown, SlArrowLeft, SlArrowRight, SlArrowUp } from 'react-icons/sl';
 
 export type IconType =
   | 'left'
@@ -23,7 +24,8 @@ export type IconType =
   | 'repeat'
   | 'ai'
   | 'plus'
-  | 'bell';
+  | 'bell'
+  | 'edit';
 
 export const iconMap: Record<IconType, ReactIconType> = {
   left: SlArrowLeft,
@@ -43,4 +45,5 @@ export const iconMap: Record<IconType, ReactIconType> = {
   ai: BsStars,
   plus: FiPlus,
   bell: FaRegBell,
+  edit: MdEdit,
 };
