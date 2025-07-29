@@ -1,7 +1,7 @@
 package com.promisenow.api.global.oauth;
 
-import com.promisenow.api.domain.user.dto.KakaoTokenResponse;
-import com.promisenow.api.domain.user.dto.KakaoUserResponse;
+import com.promisenow.api.domain.user.dto.KakaoTokenResponseDto;
+import com.promisenow.api.domain.user.dto.KakaoUserResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -37,8 +37,8 @@ public class KakaoOAuthClient {
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
-        ResponseEntity<KakaoTokenResponse> response = restTemplate.postForEntity(
-                "https://kauth.kakao.com/oauth/token", request, KakaoTokenResponse.class
+        ResponseEntity<KakaoTokenResponseDto> response = restTemplate.postForEntity(
+                "https://kauth.kakao.com/oauth/token", request, KakaoTokenResponseDto.class
         );
 
         return response.getBody().getAccessToken();
@@ -47,17 +47,17 @@ public class KakaoOAuthClient {
     /**
      * 액세스 토큰으로 유저 정보 요청
      */
-    public KakaoUserResponse requestUserInfo(String accessToken) {
+    public KakaoUserResponseDto requestUserInfo(String accessToken) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
 
         HttpEntity<Void> request = new HttpEntity<>(headers);
 
-        ResponseEntity<KakaoUserResponse> response = restTemplate.exchange(
+        ResponseEntity<KakaoUserResponseDto> response = restTemplate.exchange(
                 "https://kapi.kakao.com/v2/user/me",
                 HttpMethod.GET,
                 request,
-                KakaoUserResponse.class
+                KakaoUserResponseDto.class
         );
 
         return response.getBody();
