@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import Icon from '../../ui/Icon';
+import ParticipantList from '../../ui/ParticipantList';
 import CopyCode from './CopyCode';
-import ParticipantList from './ParticipantList';
 import PopIcon from './PopIcon';
 
 // roomname + 참여코드 받아올 예정

@@ -31,7 +31,7 @@ const CircleBtn = ({
   return (
     <button
       type="button"
-      className={`rounded-full p-3 focus:outline-none ${bg} ${
+      className={`rounded-full p-2 focus:outline-none ${bg} ${
         color === 'white' ? 'drop-shadow-md' : ''
       } transition-colors duration-200 ${hover} ${className}`}
       {...rest}
