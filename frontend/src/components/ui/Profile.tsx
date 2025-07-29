@@ -3,7 +3,7 @@ import Icon from './Icon';
 interface Props {
   width: string;
   iconSize?: number;
-  imgUrl?: string;
+  imgUrl?: string| null ;
   className?: string;
 }
 
