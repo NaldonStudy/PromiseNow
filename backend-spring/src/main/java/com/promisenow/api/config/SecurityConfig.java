@@ -2,6 +2,8 @@ package com.promisenow.api.config;
 
 import java.util.Arrays;
 
+import com.promisenow.api.global.jwt.JwtAuthenticationFilter;
+import com.promisenow.api.global.jwt.JwtTokenProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -13,6 +15,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -23,7 +26,7 @@ public class SecurityConfig {
     
     @Bean
     @Profile("!test")
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtTokenProvider jwtTokenProvider) throws Exception {
         // CORS 설정
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
         
@@ -50,8 +53,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/location/**").permitAll()
                 .requestMatchers("/swagger-ui/**").permitAll()
                 .requestMatchers("/v3/api-docs/**").permitAll()
-                .anyRequest().authenticated()
-            );
+                .anyRequest().authenticated())
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
         
         return http.build();
     }
