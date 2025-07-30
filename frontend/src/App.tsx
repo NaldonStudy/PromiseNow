@@ -10,17 +10,21 @@ import SettingsPage from './pages/SettingsPage';
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<RendingPage />} />
-        <Route path="/home" element={<HomePage />} />
-        <Route path="/:id/roulette" element={<RoulettePage />} />
-        <Route path="/:id/schedule" element={<SchedulePage />} />
-        <Route path="/:id/call" element={<CallPage />} />
-        <Route path="/:id/location" element={<LocationPage />} />
-        <Route path="/:id/settings" element={<SettingsPage />} />
-      </Routes>
-    </BrowserRouter>
+    <div className="flex justify-center bg-gray-100">
+      <div className="w-full max-w-mobile min-h-screen bg-white shadow-lg">
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<RendingPage />} />
+            <Route path="/home" element={<HomePage />} />
+            <Route path="/:id/roulette" element={<RoulettePage />} />
+            <Route path="/:id/schedule" element={<SchedulePage />} />
+            <Route path="/:id/call" element={<CallPage />} />
+            <Route path="/:id/location" element={<LocationPage />} />
+            <Route path="/:id/settings" element={<SettingsPage />} />
+          </Routes>
+        </BrowserRouter>
+      </div>
+    </div>
   );
 }
 
