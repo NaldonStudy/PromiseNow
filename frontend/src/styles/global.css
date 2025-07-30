@@ -10,3 +10,12 @@ body {
   font-family: 'SUIT-Regular', sans-serif;
   font-weight: normal;
 }
+
+/* 스크롤바 숨김 */
+.hide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
