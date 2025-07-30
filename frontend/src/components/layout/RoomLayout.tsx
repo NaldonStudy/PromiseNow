@@ -15,7 +15,7 @@ const RoomLayout = ({ children }: Props) => {
           <RoomHeader />
         </header>
 
-        <main className="relative flex-1 overflow-y-auto mt-[60px] mb-[70px] pb-5 hide-scrollbar">
+        <main className="relative flex-1 overflow-y-auto mt-[60px] mb-[70px] hide-scrollbar">
           {children}
         </main>
 
