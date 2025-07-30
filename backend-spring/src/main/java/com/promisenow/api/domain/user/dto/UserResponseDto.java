@@ -12,12 +12,12 @@ import java.time.LocalDate;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class KakaoUserResponseDto {
+public class UserResponseDto {
 
     private Long id; // 카카오 사용자 고유 ID
     private LocalDate joinDate; // 가입 날짜
 
-    public KakaoUserResponseDto(User user) {
+    public UserResponseDto(User user) {
         this.id = user.getUserId();
         this.joinDate = user.getJoinDate();
     }

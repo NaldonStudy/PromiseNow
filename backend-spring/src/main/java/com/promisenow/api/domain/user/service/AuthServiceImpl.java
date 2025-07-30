@@ -1,6 +1,6 @@
 package com.promisenow.api.domain.user.service;
 
-import com.promisenow.api.domain.user.dto.KakaoUserResponseDto;
+import com.promisenow.api.domain.user.dto.UserResponseDto;
 import com.promisenow.api.domain.user.entity.User;
 import com.promisenow.api.global.jwt.JwtTokenProvider;
 import com.promisenow.api.global.oauth.KakaoOAuthClient;
@@ -22,7 +22,7 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = kakaoOAuthClient.requestAccessToken(code);
 
         // 카카오 유저 정보 요청
-        KakaoUserResponseDto kakaoUser = kakaoOAuthClient.requestUserInfo(accessToken);
+        UserResponseDto kakaoUser = kakaoOAuthClient.requestUserInfo(accessToken);
 
         // DB에 해당 사용자 존재 여부 확인 및 생성
         User user = userService.findOrCreateUser(kakaoUser.getId());

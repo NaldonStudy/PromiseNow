@@ -1,6 +1,6 @@
 package com.promisenow.api.domain.user.controller;
 
-import com.promisenow.api.domain.user.dto.KakaoUserResponseDto;
+import com.promisenow.api.domain.user.dto.UserResponseDto;
 import com.promisenow.api.domain.user.entity.User;
 import com.promisenow.api.domain.user.service.UserService;
 import com.promisenow.api.global.jwt.JwtTokenProvider;
@@ -18,12 +18,12 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/me")
-    public ResponseEntity<KakaoUserResponseDto> getMyInfo(HttpServletRequest request) {
+    public ResponseEntity<UserResponseDto> getMyInfo(HttpServletRequest request) {
         String token = jwtTokenProvider.resolveToken(request);
         Long userId = jwtTokenProvider.getUserId(token);
         User user = userService.findByUserId(userId);
 
-        return ResponseEntity.ok(new KakaoUserResponseDto(user));
+        return ResponseEntity.ok(new UserResponseDto(user));
     }
 
 } 
