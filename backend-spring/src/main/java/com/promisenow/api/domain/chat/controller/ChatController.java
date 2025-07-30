@@ -7,7 +7,5 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/chats")
 @RequiredArgsConstructor
 public class ChatController {
-    
-    
 
 } 
