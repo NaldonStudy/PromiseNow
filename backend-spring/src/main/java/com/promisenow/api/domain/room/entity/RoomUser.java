@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "RoomUser")
+@Table(name = "room_user")
 @Getter
 @Builder
 @NoArgsConstructor
@@ -40,4 +40,6 @@ public class RoomUser {
     @Column(name = "is_agreed", nullable = false)
     private Boolean isAgreed;
     
+    @Column(name = "sort_order", nullable = true)
+    private int sortOrder;
 } 
