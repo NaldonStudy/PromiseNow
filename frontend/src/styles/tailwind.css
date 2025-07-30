@@ -1,6 +1,8 @@
 @import 'tailwindcss';
 
 @theme {
+  --spacing-mobile: 450px;
+
   --color-primary: #eb793c;
   --color-primary-hover: #d0652c;
 
