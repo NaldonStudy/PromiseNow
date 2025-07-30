@@ -11,6 +11,7 @@ import {
   MdChatBubbleOutline,
 } from 'react-icons/md';
 import { SlArrowDown, SlArrowLeft, SlArrowRight, SlArrowUp } from 'react-icons/sl';
+import { RiKakaoTalkFill } from 'react-icons/ri';
 
 export type IconType =
   | 'left'
@@ -34,7 +35,8 @@ export type IconType =
   | 'mic'
   | 'micOff'
   | 'video'
-  | 'videoOff';
+  | 'videoOff'
+  | 'kakaotalk';
 
 const arrowIcons = {
   left: SlArrowLeft,
@@ -65,6 +67,7 @@ const generalIcons = {
   plus: FiPlus,
   bell: FaRegBell,
   edit: MdEdit,
+  kakaotalk: RiKakaoTalkFill,
 };
 
 export const iconMap: Record<IconType, ReactIconType> = {
