@@ -1,5 +1,5 @@
-import ProfileName from '../../ui/ProfileName';
-import { dummyParticipants } from './dummy';
+import { dummyParticipants } from '../layout/roomHeader/dummy';
+import ProfileName from './ProfileName';
 
 const ParticipantList = () => {
   return (

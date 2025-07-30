@@ -1,9 +1,14 @@
 import RoomLayout from '../components/layout/RoomLayout';
+import LeaveRoom from './../features/settings/LeaveRoom';
+import Notification from './../features/settings/Notification';
+import ProfileEdit from './../features/settings/ProfileEdit';
 
 const SettingsPage = () => {
   return (
     <RoomLayout>
-      <h1>설정 페이지</h1>
+      <ProfileEdit />
+      <Notification />
+      <LeaveRoom />
     </RoomLayout>
   );
 };
