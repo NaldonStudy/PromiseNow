@@ -6,13 +6,12 @@ import RoomMake from './../features/rooms/components/RoomMake';
 const HomePage = () => {
   return (
     <>
-      <BrandHeader />
-
-      <RoomFind />
-
-      <RoomList rooms={dummy} />
-
-      <RoomMake />
+      <div className="relative w-[390px] h-[844px] mx-auto bg-white overflow-y-auto">
+        <BrandHeader />
+        <RoomFind />
+        <RoomList rooms={dummy} />
+        <RoomMake />
+      </div>
     </>
   );
 };
