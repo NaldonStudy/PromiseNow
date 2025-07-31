@@ -55,9 +55,6 @@ public class Room {
     @Column(name = "end_date")
     private LocalDate endDate;
 
-    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<RoomUser> roomUsers = new ArrayList<>();
-
     public enum RoomState {
         WAITING,    // 대기중
         ACTIVE,     // 활성화
