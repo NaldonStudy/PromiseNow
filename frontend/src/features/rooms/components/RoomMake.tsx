@@ -35,7 +35,7 @@ const RoomMakeWithModals = () => {
   };
 
   return (
-    <div className='relative'>
+    <div className="">
       <ModalForm
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}

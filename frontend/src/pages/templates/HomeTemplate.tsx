@@ -10,12 +10,12 @@ interface Props {
 
 const HomeTemplate = ({ rooms }: Props) => {
   return (
-    <>
+    <div className="relative w-full h-full mx-auto bg-white overflow-y-auto">
       <BrandHeader />
       <RoomFind />
       <RoomList rooms={rooms} />
       <RoomMake />
-    </>
+    </div>
   );
 };
 
