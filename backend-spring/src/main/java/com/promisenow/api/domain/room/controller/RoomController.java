@@ -94,7 +94,7 @@ public class RoomController {
     @DeleteMapping("/{roomId}")
     @Operation(
             summary = "방 삭제하기",
-            description = "방 ID를 입력하여 해당 방을 삭제합니다. 연관된 인원 정보도 함께 삭제됩니다.",
+            description = "방 ID를 입력하여 해당 방을 삭제합니다. 해당 방에는 아무 사람도 없어야 합니다. 존재한다면 이전에 quit를 시키고 나서 진행해야 합니다.",
             parameters = {
                     @Parameter(
                             name = "roomId",
