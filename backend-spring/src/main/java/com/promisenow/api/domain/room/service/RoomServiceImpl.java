@@ -1,5 +1,6 @@
 package com.promisenow.api.domain.room.service;
 
+import com.promisenow.api.domain.room.dto.RoomRequestDto;
 import com.promisenow.api.domain.room.dto.RoomResponseDto.*;
 import com.promisenow.api.domain.room.entity.Room;
 import com.promisenow.api.domain.room.entity.RoomUser;
@@ -150,7 +151,7 @@ public class RoomServiceImpl implements RoomService {
     // 일정 기간 조절
     @Override
     @Transactional
-    public void updateRoomDateRange(Long roomId, DateRangeUpdateRequest dto) {
+    public void updateRoomDateRange(Long roomId, RoomRequestDto.DateRangeUpdateRequest dto) {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 방입니다"));
 
@@ -159,7 +160,7 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     @Transactional
-    public void updateRoomAppointment(Long roomId, AppointmentUpdateRequest dto) {
+    public void updateRoomAppointment(Long roomId, RoomRequestDto.AppointmentUpdateRequest dto) {
         Room room = roomRepository.findById((roomId))
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 방입니다"));
 

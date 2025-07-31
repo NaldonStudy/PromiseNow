@@ -1,5 +1,6 @@
 package com.promisenow.api.domain.room.service;
 
+import com.promisenow.api.domain.room.dto.RoomRequestDto;
 import com.promisenow.api.domain.room.entity.Room;
 import com.promisenow.api.domain.room.dto.RoomResponseDto.*;
 
@@ -34,8 +35,8 @@ public interface RoomService {
     void updateRoomTitle(Long roomId, String newTitle);
 
     // 약속기간 범위 업데이트
-    void updateRoomDateRange(Long roomId, DateRangeUpdateRequest dto);
+    void updateRoomDateRange(Long roomId, RoomRequestDto.DateRangeUpdateRequest dto);
 
     // 약속상세 업데이트
-    void updateRoomAppointment(Long roomId, AppointmentUpdateRequest dto);
+    void updateRoomAppointment(Long roomId, RoomRequestDto.AppointmentUpdateRequest dto);
 }
