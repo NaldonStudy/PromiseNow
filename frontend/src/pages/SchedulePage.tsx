@@ -1,18 +1,14 @@
-import RoomLayout from '../components/layout/RoomLayout';
-import Calendar from '../features/calendar/components/Calendar';
-import ScheduleRecommendation from '../features/scheduleRecommendation/components/ScheduleRecommendation';
-import ConfirmedAppointment from './../features/appointment/ConfirmedAppointment';
+import { useParams } from 'react-router-dom';
+import { useTotalAvailability } from '../hooks/queries/availability';
+import ScheduleTemplate from './templates/ScheduleTemplate';
 
 const SchedulePage = () => {
-  return (
-    <RoomLayout>
-      <div className="p-5">
-        <ConfirmedAppointment />
-        <Calendar />
-        <ScheduleRecommendation />
-      </div>
-    </RoomLayout>
-  );
+  const { id } = useParams<{ id: string }>();
+  const roomId = Number(id);
+
+  const { data: totalAvailabilityData } = useTotalAvailability(roomId);
+
+  return <ScheduleTemplate totalAvailabilityData={totalAvailabilityData} />;
 };
 
 export default SchedulePage;

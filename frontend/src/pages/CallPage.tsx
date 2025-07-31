@@ -1,12 +1,7 @@
-import RoomLayout from '../components/layout/RoomLayout';
-import CallScreen from '../features/callScreen/components/CallScreen';
+import CallTemplate from './templates/CallTemplate';
 
 const CallPage = () => {
-  return (
-    <RoomLayout>
-      <CallScreen />
-    </RoomLayout>
-  );
+  return <CallTemplate />;
 };
 
 export default CallPage;
