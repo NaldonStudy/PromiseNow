@@ -57,13 +57,8 @@ public class AuthController {
     /**
      * 받은 인가코드로 액세스토큰 발급 부터 JWT생성까지 수행 후 JWT반환
      */
-    @PostMapping("/callback")
-    public ResponseEntity<?> kakaoCallback(@RequestBody Map<String, String> payload, HttpServletResponse response) {
-        String code = payload.get("code"); // 로그인 후 받은 인가코드 가져오기
-
-        if (code == null) {
-            return ResponseEntity.badRequest().body("Missing code parameter");
-        }
+    @GetMapping("/callback")
+    public void kakaoCallback(@RequestParam String code, HttpServletResponse response) throws IOException {
 
         String jwt = authService.handleKakaoLogin(code); // 인가코드로 액세스토큰 발급, 사용자 정보 조회, DB조회, JWT생성
 
@@ -79,7 +74,7 @@ public class AuthController {
         // 헤더에 Set-Cookie 추가
         response.addHeader("Set-Cookie", cookie.toString());
 
-        return ResponseEntity.ok("로그인 성공");
+        response.sendRedirect("http://localhost:3000");
     }
 
 }
