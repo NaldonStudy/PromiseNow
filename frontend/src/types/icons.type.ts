@@ -3,15 +3,21 @@ import { BsStars } from 'react-icons/bs';
 import { FaRegBell } from 'react-icons/fa';
 import { FiCalendar, FiMapPin, FiPhoneCall, FiPlus, FiSettings, FiTarget } from 'react-icons/fi';
 import { IoMdRepeat, IoMdTime } from 'react-icons/io';
-import { IoLocationOutline, IoPersonOutline, IoMic, IoMicOff } from 'react-icons/io5';
 import {
+  IoCloseOutline,
+  IoLocationOutline,
+  IoMic,
+  IoMicOff,
+  IoPersonOutline,
+} from 'react-icons/io5';
+import {
+  MdChatBubbleOutline,
   MdEdit,
   MdOutlineVideocam,
   MdOutlineVideocamOff,
-  MdChatBubbleOutline,
 } from 'react-icons/md';
-import { SlArrowDown, SlArrowLeft, SlArrowRight, SlArrowUp } from 'react-icons/sl';
 import { RiKakaoTalkFill } from 'react-icons/ri';
+import { SlArrowDown, SlArrowLeft, SlArrowRight, SlArrowUp } from 'react-icons/sl';
 
 export type IconType =
   | 'left'
@@ -36,7 +42,8 @@ export type IconType =
   | 'micOff'
   | 'video'
   | 'videoOff'
-  | 'kakaotalk';
+  | 'kakaotalk'
+  | 'close';
 
 const arrowIcons = {
   left: SlArrowLeft,
@@ -68,6 +75,7 @@ const generalIcons = {
   bell: FaRegBell,
   edit: MdEdit,
   kakaotalk: RiKakaoTalkFill,
+  close: IoCloseOutline,
 };
 
 export const iconMap: Record<IconType, ReactIconType> = {
