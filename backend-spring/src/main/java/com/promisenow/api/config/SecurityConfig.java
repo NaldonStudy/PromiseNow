@@ -45,6 +45,10 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
+                .requestMatchers("/api/chatting/**").permitAll()          // 메시지 조회, 이미지 업로드 허용
+                .requestMatchers("/uploaded-images/**").permitAll()  // ← 여기가 중요!
+                .requestMatchers("/ws-chat/**").permitAll() // 웹소켓 경로
+                .requestMatchers("/api/upload/**").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // OPTIONS 요청 허용
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/api/**").permitAll()
