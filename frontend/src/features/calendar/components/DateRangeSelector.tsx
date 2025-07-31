@@ -2,7 +2,7 @@ import Card from '../../../components/ui/Card';
 import { useCalendarStore } from '../calendar.store';
 
 const DateRangeSelector = () => {
-  const { setStartDate, setEndDate } = useCalendarStore();
+  const { startDate, endDate, setStartDate, setEndDate, setCurrentDate } = useCalendarStore();
 
   return (
     <Card className="p-5">
@@ -12,7 +12,11 @@ const DateRangeSelector = () => {
           <input
             className="border border-gray-dark rounded-md px-3 py-2 text-xs w-[130px] "
             type="date"
-            onChange={(e) => setStartDate(new Date(e.target.value))}
+            onChange={(e) => {
+              setStartDate(new Date(e.target.value));
+              setCurrentDate(new Date(e.target.value));
+            }}
+            value={startDate ? startDate.toISOString().split('T')[0] : ''}
           />
         </div>
         <span className="mx-1">~</span>
@@ -21,6 +25,7 @@ const DateRangeSelector = () => {
             className="border border-gray-dark rounded-md px-3 py-2 text-xs w-[130px] "
             type="date"
             onChange={(e) => setEndDate(new Date(e.target.value))}
+            value={endDate ? endDate.toISOString().split('T')[0] : ''}
           />
         </div>
       </div>

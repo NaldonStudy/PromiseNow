@@ -1,12 +1,13 @@
 import { Fragment, useMemo, useState } from 'react';
 import { getOpacityForWeek } from '../calendar.util';
-import { format, addDays } from 'date-fns';
+import { format, addDays, startOfWeek } from 'date-fns';
 import { useCalendarStore } from '../calendar.store';
+import type { TotalAvailabilityResponse } from '../../../apis/availability/availability.types';
 
 interface Props {
   mode: 'view' | 'edit';
   currentDate: Date;
-  totalDatas: Record<string, { timeData: string }>;
+  totalDatas?: TotalAvailabilityResponse;
   totalMembers: number;
 }
 
@@ -14,14 +15,19 @@ const WeeklyCalendar = ({ mode, currentDate, totalDatas, totalMembers }: Props) 
   const { startDate, endDate, userSelections, setUserSelections } = useCalendarStore();
 
   const days = useMemo(() => {
+    const startOfWeekDate = startOfWeek(currentDate, { weekStartsOn: 0 }); // 0: Sunday
     return Array.from({ length: 7 }, (_, i) => {
-      return format(addDays(currentDate, i), 'yyyy-MM-dd');
+      return format(addDays(startOfWeekDate, i), 'yyyy-MM-dd');
     });
   }, [currentDate]);
 
   const [dragStart, setDragStart] = useState<{ day: string; index: number } | null>(null);
   const [dragEnd, setDragEnd] = useState<{ day: string; index: number } | null>(null);
   const [dragAction, setDragAction] = useState<'select' | 'deselect'>('select');
+
+  const getDateData = (date: string) => {
+    return totalDatas?.totalDatas?.find(item => item.date === date);
+  };
 
   const applyDragSelection = (
     start: { day: string; index: number },
@@ -90,8 +96,9 @@ const WeeklyCalendar = ({ mode, currentDate, totalDatas, totalMembers }: Props) 
                   : true;
 
               const isValid = inRange;
-              const hasData = !!totalDatas[date];
-              const count = hasData ? Number(totalDatas[date].timeData?.[idx] ?? 0) : 0;
+              const dateData = getDateData(date);
+              const hasData = !!dateData;
+              const count = hasData ? Number(dateData.timeData?.[idx] ?? 0) : 0;
               const selected = userSelections[date]?.[idx] ?? false;
               const isDrag = isInDragRange(date, idx);
 
