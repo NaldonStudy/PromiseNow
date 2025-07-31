@@ -1,6 +1,10 @@
 package com.promisenow.api.domain.user.controller;
 
 import com.promisenow.api.domain.user.service.AuthService;
+import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
-// @CrossOrigin(origins = "*")
+@Tag(name = "로그인/로그아웃", description = "카카오 OAuth 2.0 인증 API")
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -23,9 +27,13 @@ public class AuthController {
     @Value("${kakao.redirect-uri}")
     private String kakaoRedirectUri;
 
-    /**
-     * 로그인 URL 반환
-     */
+    @Operation(
+            summary = "카카오 로그인 리다이렉트",
+            description = "브라우저를 통해 호출되어야 하는 API입니다.",
+            responses = {
+                    @ApiResponse(responseCode = "302", description = "카카오 로그인 페이지로 리디렉트")
+            }
+    )
     @GetMapping("/login")
     public void getKakaoRedirectUri(HttpServletResponse response) throws IOException {
         String redirectUrl = "https://kauth.kakao.com/oauth/authorize"
@@ -36,44 +44,44 @@ public class AuthController {
         response.sendRedirect(redirectUrl);
     }
 
-    /**
-     * 로그아웃
-     */
+    @Operation(
+            summary = "로그아웃 (access_token 쿠키 삭제)",
+            description = "프론트엔드에서 호출 시 JWT 쿠키를 삭제합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "로그아웃 완료")
+            }
+    )
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletResponse response) {
         ResponseCookie cookie = ResponseCookie.from("access_token", "")
                 .httpOnly(true)
-                .secure(false) // 개발 환경 설정
+                .secure(false)
                 .path("/")
-                .maxAge(0) // 즉시 만료
-                .sameSite("Lax") // 크로스 도메인 대응
+                .maxAge(0)
+                .sameSite("Lax")
                 .build();
 
         response.addHeader("Set-Cookie", cookie.toString());
         return ResponseEntity.ok("로그아웃 완료");
     }
 
-    /**
-     * 받은 인가코드로 액세스토큰 발급 부터 JWT생성까지 수행 후 JWT반환
-     */
+    @Hidden
     @GetMapping("/callback")
-    public void kakaoCallback(@RequestParam String code, HttpServletResponse response) throws IOException {
+    public void kakaoCallback(
+            @RequestParam String code,
+            HttpServletResponse response
+    ) throws IOException {
+        String jwt = authService.handleKakaoLogin(code);
 
-        String jwt = authService.handleKakaoLogin(code); // 인가코드로 액세스토큰 발급, 사용자 정보 조회, DB조회, JWT생성
-
-        // JWT를 HttpOnly 쿠키로 설정
         ResponseCookie cookie = ResponseCookie.from("access_token", jwt)
                 .httpOnly(true)
-                .secure(false) // 개발 환경 설정
+                .secure(false)
                 .path("/")
                 .maxAge(60 * 60 * 3)
-                .sameSite("Lax") // 크로스 도메인 대응
+                .sameSite("Lax")
                 .build();
 
-        // 헤더에 Set-Cookie 추가
         response.addHeader("Set-Cookie", cookie.toString());
-
         response.sendRedirect("http://localhost:3000");
     }
-
 }
