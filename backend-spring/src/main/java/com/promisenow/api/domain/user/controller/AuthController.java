@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +20,9 @@ import java.io.IOException;
 public class AuthController {
 
     private final AuthService authService;
+
+    @Value("${auth.front-redirect-uri}")
+    private String frontendRedirectUri;
 
     @Operation(
             summary = "카카오 로그인 리다이렉트",
@@ -56,6 +60,6 @@ public class AuthController {
         String jwt = authService.handleKakaoLogin(code);
         ResponseCookie cookie = authService.createAccessTokenCookie(jwt);
         response.addHeader("Set-Cookie", cookie.toString());
-        response.sendRedirect("http://localhost:3000");
+        response.sendRedirect(frontendRedirectUri);
     }
 }
