@@ -1,5 +1,6 @@
 package com.promisenow.api.domain.user.service;
 
+import com.promisenow.api.domain.user.dto.UserResponseDto;
 import com.promisenow.api.domain.user.entity.User;
 import com.promisenow.api.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,20 +19,20 @@ public class UserServiceImpl implements UserService {
     /**
      * 사용자 존재 여부 파악 후 저장
      */
-    @Override public User findOrCreateUser(Long userId) {
-        return userRepository.findById(userId)
-                .orElseGet(() -> {
-                    User user = User.builder()
-                            .userId(userId)
-                            .joinDate(LocalDate.now())
-                            .build();
-                    return userRepository.save(user);
-                });
+    @Override
+    public User findOrCreateUser(UserResponseDto userResponseDto) {
+        return userRepository.findById(userResponseDto.getId())
+                .orElseGet(() -> userRepository.save(userResponseDto.toEntity()));
     }
 
     @Override
     public User findByUserId(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("user not found"));
+    }
+
+    @Override
+    public UserResponseDto getUserProfile(Long userId) {
+        return UserResponseDto.from(findByUserId(userId));
     }
 }
