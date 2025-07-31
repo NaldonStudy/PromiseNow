@@ -1,5 +1,5 @@
 import { useCalendarStore } from '../calendar.store';
-import { dummyData } from '../dummy';
+import type { TotalAvailabilityResponse } from '../../../apis/availability/availability.types';
 
 import DateRangeSelector from './DateRangeSelector';
 import CalendarHeader from './CalendarHeader';
@@ -8,7 +8,11 @@ import WeeklyCalendar from './WeeklyCalendar';
 import ScheduleEditBtn from './ScheduleEditBtn';
 import Card from '../../../components/ui/Card';
 
-const Calendar = () => {
+interface CalendarProps {
+  totalAvailabilityData?: TotalAvailabilityResponse;
+}
+
+const Calendar = ({ totalAvailabilityData }: CalendarProps) => {
   const { view, mode, currentDate } = useCalendarStore();
   const totalMembers = 5; //임시
 
@@ -23,7 +27,7 @@ const Calendar = () => {
 
         {view === 'month' ? (
           <MonthlyCalendar
-            totalDatas={dummyData.totalDatas}
+            totalDatas={totalAvailabilityData}
             currentDate={currentDate}
             totalMembers={totalMembers}
             mode={mode}
@@ -31,7 +35,7 @@ const Calendar = () => {
         ) : (
           <WeeklyCalendar
             currentDate={currentDate}
-            totalDatas={dummyData.totalDatas}
+            totalDatas={totalAvailabilityData}
             totalMembers={totalMembers}
             mode={mode}
           />

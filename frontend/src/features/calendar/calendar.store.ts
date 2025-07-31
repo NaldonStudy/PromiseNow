@@ -5,8 +5,8 @@ interface CalendarStore {
   view: 'week' | 'month';
   mode: 'view' | 'edit';
   currentDate: Date;
-  startDate: Date;
-  endDate: Date;
+  startDate: Date | null;
+  endDate: Date | null;
 
   setView: (v: 'week' | 'month') => void;
   setMode: (m: 'view' | 'edit') => void;
@@ -28,8 +28,8 @@ export const useCalendarStore = create<CalendarStore>((set) => ({
   view: 'month',
   mode: 'view',
   currentDate: new Date(),
-  startDate: new Date(),
-  endDate: new Date(),
+  startDate: null,
+  endDate: null,
 
   setView: (v) => set({ view: v }),
   setMode: (m) => set({ mode: m }),
