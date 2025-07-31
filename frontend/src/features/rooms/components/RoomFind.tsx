@@ -1,11 +1,25 @@
+import { useState } from 'react';
 import Input from '../../../components/ui/Input';
 import SquareBtn from '../../../components/ui/SquareBtn';
+import RoomFindModals from './RoomFindModals';
 
 const RoomFind = () => {
+  const [value, setValue] = useState('');
+  const [triggerKey, setTriggerKey] = useState(0);
+  const handleClick = () => {
+    setTriggerKey(Date.now());
+  };
   return (
-    <div className="flex items-center px-10 py-4 gap-4 pt-10 pb-7">
-      <Input placeholder="참여 코드를 입력하세요" />
-      <SquareBtn text="참여" template="filled" width="w-20" />
+    <div className="flex flex-col items-center gap-4 pt-10 pb-7">
+      <div className="flex items-center gap-4 px-10">
+        <Input
+          value={value}
+          placeholder="참여 코드를 입력하세요"
+          onChange={(e) => setValue(e.target.value)}
+        />
+        <SquareBtn text="참여" template="filled" width="w-20" onClick={handleClick} />
+      </div>
+      <RoomFindModals code={value} triggerKey={triggerKey} />
     </div>
   );
 };
