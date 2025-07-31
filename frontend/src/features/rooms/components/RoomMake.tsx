@@ -35,7 +35,7 @@ const RoomMakeWithModals = () => {
   };
 
   return (
-    <>
+    <div className='relative'>
       <ModalForm
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
@@ -45,7 +45,7 @@ const RoomMakeWithModals = () => {
         onSubmit={handleSubmit}
       />
 
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className="absolute bottom-6 right-6 z-50">
         <CircleBtn
           iconType="plus"
           color="primary"
@@ -56,7 +56,7 @@ const RoomMakeWithModals = () => {
           }}
         />
       </div>
-    </>
+    </div>
   );
 };
 
