@@ -66,7 +66,7 @@ public class AuthController {
                 .httpOnly(true)
                 .secure(false) // 개발 환경 설정
                 .path("/")
-                .maxAge(60 * 60)
+                .maxAge(60 * 60 * 3)
                 .sameSite("Lax") // 크로스 도메인 대응
                 .build();
 
