@@ -52,6 +52,6 @@ public class UserController {
         Long userId = jwtTokenProvider.getUserId(token);
         User user = userService.findByUserId(userId);
 
-        return ResponseEntity.ok(new UserResponseDto(user));
+        return ResponseEntity.ok(UserResponseDto.from(user));
     }
 }

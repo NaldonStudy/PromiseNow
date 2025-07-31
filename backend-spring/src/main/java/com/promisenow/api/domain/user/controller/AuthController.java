@@ -7,7 +7,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,12 +20,6 @@ public class AuthController {
 
     private final AuthService authService;
 
-    @Value("${kakao.client-id}")
-    private String kakaoClientId;
-
-    @Value("${kakao.redirect-uri}")
-    private String kakaoRedirectUri;
-
     @Operation(
             summary = "카카오 로그인 리다이렉트",
             description = "브라우저를 통해 호출되어야 하는 API입니다.",
@@ -36,11 +29,7 @@ public class AuthController {
     )
     @GetMapping("/login")
     public void getKakaoRedirectUri(HttpServletResponse response) throws IOException {
-        String redirectUrl = "https://kauth.kakao.com/oauth/authorize"
-                + "?response_type=code"
-                + "&client_id=" + kakaoClientId
-                + "&redirect_uri=" + kakaoRedirectUri;
-
+        String redirectUrl = authService.getKakaoLoginUrl();
         response.sendRedirect(redirectUrl);
     }
 
@@ -53,14 +42,7 @@ public class AuthController {
     )
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletResponse response) {
-        ResponseCookie cookie = ResponseCookie.from("access_token", "")
-                .httpOnly(true)
-                .secure(false)
-                .path("/")
-                .maxAge(0)
-                .sameSite("Lax")
-                .build();
-
+        ResponseCookie cookie = authService.expireAccessTokenCookie();
         response.addHeader("Set-Cookie", cookie.toString());
         return ResponseEntity.ok("로그아웃 완료");
     }
@@ -72,15 +54,7 @@ public class AuthController {
             HttpServletResponse response
     ) throws IOException {
         String jwt = authService.handleKakaoLogin(code);
-
-        ResponseCookie cookie = ResponseCookie.from("access_token", jwt)
-                .httpOnly(true)
-                .secure(false)
-                .path("/")
-                .maxAge(60 * 60 * 3)
-                .sameSite("Lax")
-                .build();
-
+        ResponseCookie cookie = authService.createAccessTokenCookie(jwt);
         response.addHeader("Set-Cookie", cookie.toString());
         response.sendRedirect("http://localhost:3000");
     }

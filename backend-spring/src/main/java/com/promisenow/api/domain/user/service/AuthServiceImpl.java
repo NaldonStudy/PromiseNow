@@ -5,6 +5,8 @@ import com.promisenow.api.domain.user.entity.User;
 import com.promisenow.api.global.jwt.JwtTokenProvider;
 import com.promisenow.api.global.oauth.KakaoOAuthClient;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -14,6 +16,12 @@ public class AuthServiceImpl implements AuthService {
     private final KakaoOAuthClient kakaoOAuthClient;
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
+
+    @Value("${kakao.client-id}")
+    private String kakaoClientId;
+
+    @Value("${kakao.redirect-uri}")
+    private String kakaoRedirectUri;
 
     @Override
     public String handleKakaoLogin(String code) {
@@ -25,9 +33,39 @@ public class AuthServiceImpl implements AuthService {
         UserResponseDto kakaoUser = kakaoOAuthClient.requestUserInfo(accessToken);
 
         // DB에 해당 사용자 존재 여부 확인 및 생성
-        User user = userService.findOrCreateUser(kakaoUser.getId());
+        User user = userService.findOrCreateUser(kakaoUser);
 
         // 카카오 고유 ID로 JWT 토큰 생성 후 반환
         return jwtTokenProvider.generateToken(user.getUserId());
+    }
+
+    @Override
+    public String getKakaoLoginUrl() {
+        return "https://kauth.kakao.com/oauth/authorize"
+                + "?response_type=code"
+                + "&client_id=" + kakaoClientId
+                + "&redirect_uri=" + kakaoRedirectUri;
+    }
+
+    @Override
+    public ResponseCookie createAccessTokenCookie(String token) {
+        return ResponseCookie.from("access_token", token)
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(60 * 60 * 3)
+                .sameSite("Lax")
+                .build();
+    }
+
+    @Override
+    public ResponseCookie expireAccessTokenCookie() {
+        return ResponseCookie.from("access_token", "")
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Lax")
+                .build();
     }
 }
