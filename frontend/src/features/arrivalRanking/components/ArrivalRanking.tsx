@@ -1,22 +1,23 @@
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import ArrivalRankingItem from './ArrivalRankingItem';
 import { MdDragHandle } from 'react-icons/md';
+import useMapStore from '../../map/map.store';
 
 const MIN_HEIGHT = 150;
 const MAX_HEIGHT = window.innerHeight * 0.7;
 
 const ArrivalRanking = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [height, setHeight] = useState<number>(window.innerHeight * 0.4);
+  const { rankingHeight, setRankingHeight } = useMapStore();
 
   const handleMouseDown = (e: React.MouseEvent) => {
     const startY = e.clientY;
-    const startHeight = height;
+    const startHeight = rankingHeight;
 
     const onMouseMove = (moveEvent: MouseEvent) => {
       const delta = startY - moveEvent.clientY;
       const newHeight = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, startHeight + delta));
-      setHeight(newHeight);
+      setRankingHeight(newHeight);
     };
 
     const onMouseUp = () => {
@@ -32,7 +33,7 @@ const ArrivalRanking = () => {
     <div
       ref={containerRef}
       className="rounded-t-3xl bg-white w-full overflow-hidden flex flex-col transition-none relative z-10"
-      style={{ height }}
+      style={{ height: rankingHeight }}
     >
       <div
         className="flex justify-center items-center cursor-row-resize h-6"
