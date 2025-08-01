@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import ArrivalRankingItem from './ArrivalRankingItem';
 import { MdDragHandle } from 'react-icons/md';
 
-const MIN_HEIGHT = 60;
+const MIN_HEIGHT = 150;
 const MAX_HEIGHT = window.innerHeight * 0.7;
 
 const ArrivalRanking = () => {
@@ -31,7 +31,7 @@ const ArrivalRanking = () => {
   return (
     <div
       ref={containerRef}
-      className="rounded-t-3xl bg-white w-full overflow-hidden flex flex-col transition-none"
+      className="rounded-t-3xl bg-white w-full overflow-hidden flex flex-col transition-none relative z-10"
       style={{ height }}
     >
       <div
