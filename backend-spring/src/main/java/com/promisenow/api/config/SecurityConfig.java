@@ -47,6 +47,7 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers("/api/chatting/**").permitAll()          // 메시지 조회, 이미지 업로드 허용
                 .requestMatchers("/uploaded-images/**").permitAll()  // ← 여기가 중요!
@@ -57,7 +58,6 @@ public class SecurityConfig {
                 .requestMatchers("/api/**").permitAll()
                 .requestMatchers("/swagger-ui/**").permitAll()
                 .requestMatchers("/v3/api-docs/**").permitAll()
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
                 .anyRequest().permitAll()
             );
 
