@@ -6,9 +6,7 @@ import com.promisenow.api.domain.room.entity.Room;
 import com.promisenow.api.domain.room.entity.RoomUser;
 import com.promisenow.api.domain.room.repository.RoomRepository;
 import com.promisenow.api.domain.room.repository.RoomUserRepository;
-import com.promisenow.api.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,14 +18,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class RoomServiceImpl implements RoomService {
 
-    @Autowired
     private final RoomRepository roomRepository;
-
-    @Autowired
     private final RoomUserRepository roomUserRepository;
-
-    @Autowired
-    private final UserRepository userRepository;
 
     // 방 만드는 서비스
     @Override
@@ -91,25 +83,20 @@ public class RoomServiceImpl implements RoomService {
         );
     }
 
-
     // 내가 참가되어있는 방 정보들 확인
     @Override
     public List<RoomListItem> getRoomsByUserId(Long userId) {
         List<RoomUser> joinedRoomUsers = roomUserRepository.findByUserId(userId);
 
         return joinedRoomUsers.stream()
-                .map(RoomUser::getRoom)
-                .distinct()
-                .map(room -> {
+                .map(myRoomUser -> {
+                    Room room = myRoomUser.getRoom();
+
                     List<RoomUser> participants = roomUserRepository.findByRoom_RoomId(room.getRoomId());
 
                     int total = participants.size();
 
-                    String myNickname = participants.stream()
-                            .filter(p -> p.getUser().getUserId().equals(userId))
-                            .map(RoomUser::getNickname)
-                            .findFirst()
-                            .orElse("나");
+                    String myNickname = myRoomUser.getNickname();
 
                     String firstNickname = participants.stream()
                             .filter(p -> !p.getUser().getUserId().equals(userId))
@@ -139,12 +126,12 @@ public class RoomServiceImpl implements RoomService {
         room.changeRoomState(roomState);
     }
 
-
     // 방 제목 변경
     @Transactional
     public void updateRoomTitle(Long roomId, String newTitle) {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 방이 존재하지 않습니다."));
+
         room.updateTitle(newTitle);
     }
 
@@ -187,6 +174,4 @@ public class RoomServiceImpl implements RoomService {
         } while (roomRepository.existsByInviteCode(code));
         return code;
     }
-
-
 }
