@@ -73,17 +73,6 @@ public class RoomRequestDto {
         private LocalDate endDate;
     }
 
-    // 방 상태 수정하기
-    @Schema(description = "방 상태 수정 요청")
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class StateUpdateRequest {
-
-        @Schema(description = "방 상태 (예: WAITING, ACTIVE, COMPLETED, CANCELLED)", example = "ACTIVE")
-        private Room.RoomState roomState;
-    }
-
     // 방 제목 수정하기
     @Schema(description = "방 제목 수정 요청")
     @Getter
