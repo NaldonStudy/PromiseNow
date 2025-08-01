@@ -18,6 +18,7 @@ import {
 } from 'react-icons/md';
 import { RiKakaoTalkFill } from 'react-icons/ri';
 import { SlArrowDown, SlArrowLeft, SlArrowRight, SlArrowUp } from 'react-icons/sl';
+import { HiLocationMarker } from 'react-icons/hi';
 
 export type IconType =
   | 'left'
@@ -43,7 +44,8 @@ export type IconType =
   | 'video'
   | 'videoOff'
   | 'kakaotalk'
-  | 'close';
+  | 'close'
+  | 'marker';
 
 const arrowIcons = {
   left: SlArrowLeft,
@@ -76,6 +78,7 @@ const generalIcons = {
   edit: MdEdit,
   kakaotalk: RiKakaoTalkFill,
   close: IoCloseOutline,
+  marker: HiLocationMarker,
 };
 
 export const iconMap: Record<IconType, ReactIconType> = {
