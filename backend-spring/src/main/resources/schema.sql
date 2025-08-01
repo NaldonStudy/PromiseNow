@@ -84,4 +84,30 @@ INSERT IGNORE INTO `availability` (`availability_id`, `room_user_id`, `timedata`
 -- 사용자 8의 일정 (룸 2)
 INSERT IGNORE INTO `availability` (`availability_id`, `room_user_id`, `timedata`, `date`) VALUES
 (30, 8, '111111111111111111111111111111', '2025-01-25'),
-(31, 8, '101010101010101010101010101010', '2025-01-26'); 
+(31, 8, '101010101010101010101010101010', '2025-01-26');
+
+
+-- 7. User 데이터
+INSERT INTO `users` (`user_id`, `join_date`)
+VALUES (4329503012, '2024-01-01');
+
+INSERT INTO `users` (`user_id`, `join_date`)
+VALUES (4363130473, '2024-02-20');
+
+INSERT INTO `users` (`user_id`, `join_date`)
+VALUES (5940393020, '2024-03-02');
+
+INSERT INTO `users` (`user_id`, `join_date`)
+VALUES (3849283948, '2024-04-21');
+
+INSERT INTO `users` (`user_id`, `join_date`)
+VALUES (2039485933, '2024-05-01');
+
+INSERT INTO `users` (`user_id`, `join_date`)
+VALUES (2039483920, '2024-06-30');
+
+INSERT INTO `users` (`user_id`, `join_date`)
+VALUES (8493829394, '2024-07-02');
+
+INSERT INTO `users` (`user_id`, `join_date`)
+VALUES (9347391934, '2024-08-21');

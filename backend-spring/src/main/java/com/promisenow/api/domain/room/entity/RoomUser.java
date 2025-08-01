@@ -42,7 +42,7 @@ public class RoomUser {
     
     @Column(name = "sort_order", nullable = true)
     private int sortOrder;
-    
+
     public void updateAlarm(boolean isAgreed) {
         this.isAgreed = isAgreed;
     }
