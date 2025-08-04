@@ -1,10 +1,11 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 import CallPage from './pages/CallPage';
-import RendingPage from './pages/RendingPage';
+import ChatPage from './pages/ChatPage';
 import HomePage from './pages/HomePage';
 import LocationPage from './pages/LocationPage';
+import RendingPage from './pages/RendingPage';
 import RoulettePage from './pages/RoulettePage';
 import SchedulePage from './pages/SchedulePage';
 import SettingsPage from './pages/SettingsPage';
@@ -21,6 +22,7 @@ function App() {
               <Route path="/:id/roulette" element={<RoulettePage />} />
               <Route path="/:id/schedule" element={<SchedulePage />} />
               <Route path="/:id/call" element={<CallPage />} />
+              <Route path="/:id/chat" element={<ChatPage />} />
               <Route path="/:id/location" element={<LocationPage />} />
               <Route path="/:id/settings" element={<SettingsPage />} />
             </Routes>
