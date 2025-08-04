@@ -6,6 +6,7 @@ import { HiLocationMarker } from 'react-icons/hi';
 import { IoMdRepeat, IoMdTime } from 'react-icons/io';
 import {
   IoCloseOutline,
+  IoFlagSharp,
   IoLocationOutline,
   IoMic,
   IoMicOff,
@@ -14,6 +15,7 @@ import {
 import {
   MdChatBubbleOutline,
   MdEdit,
+  MdMyLocation,
   MdOutlineVideocam,
   MdOutlineVideocamOff,
 } from 'react-icons/md';
@@ -21,6 +23,7 @@ import { RiKakaoTalkFill } from 'react-icons/ri';
 import { SlArrowDown, SlArrowLeft, SlArrowRight, SlArrowUp } from 'react-icons/sl';
 
 import { CiCamera } from 'react-icons/ci';
+import { FiCamera } from 'react-icons/fi';
 import { VscSend } from 'react-icons/vsc';
 
 export type IconType =
@@ -50,6 +53,8 @@ export type IconType =
   | 'close'
   | 'marker'
   | 'send'
+  | 'myLocation'
+  | 'flag'
   | 'camera';
 
 const arrowIcons = {
@@ -71,6 +76,11 @@ const chatIcons = {
   send: VscSend,
   camera: CiCamera,
 };
+const mapIcons = {
+  myLocation: MdMyLocation,
+  flag: IoFlagSharp,
+  marker: HiLocationMarker,
+};
 
 const generalIcons = {
   person: IoPersonOutline,
@@ -88,12 +98,13 @@ const generalIcons = {
   edit: MdEdit,
   kakaotalk: RiKakaoTalkFill,
   close: IoCloseOutline,
-  marker: HiLocationMarker,
+  camera: FiCamera,
 };
 
 export const iconMap: Record<IconType, ReactIconType> = {
   ...arrowIcons,
   ...callIcons,
+  ...mapIcons,
   ...generalIcons,
   ...chatIcons,
 };

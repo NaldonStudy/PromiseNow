@@ -1,7 +1,7 @@
-import RendingTemplate from './templates/RendingTemplate';
+import RandingTemplate from './templates/RandingTemplate';
 
-const RendingPage = () => {
-  return <RendingTemplate />;
+const RandingPage = () => {
+  return <RandingTemplate />;
 };
 
-export default RendingPage;
+export default RandingPage;
