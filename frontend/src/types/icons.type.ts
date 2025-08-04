@@ -9,16 +9,19 @@ import {
   IoMic,
   IoMicOff,
   IoPersonOutline,
+  IoFlagSharp,
 } from 'react-icons/io5';
 import {
   MdChatBubbleOutline,
   MdEdit,
   MdOutlineVideocam,
   MdOutlineVideocamOff,
+  MdMyLocation,
 } from 'react-icons/md';
 import { RiKakaoTalkFill } from 'react-icons/ri';
 import { SlArrowDown, SlArrowLeft, SlArrowRight, SlArrowUp } from 'react-icons/sl';
 import { HiLocationMarker } from 'react-icons/hi';
+import { FiCamera } from 'react-icons/fi';
 
 export type IconType =
   | 'left'
@@ -45,7 +48,10 @@ export type IconType =
   | 'videoOff'
   | 'kakaotalk'
   | 'close'
-  | 'marker';
+  | 'marker'
+  | 'myLocation'
+  | 'flag'
+  | 'camera';
 
 const arrowIcons = {
   left: SlArrowLeft,
@@ -60,6 +66,12 @@ const callIcons = {
   micOff: IoMicOff,
   video: MdOutlineVideocam,
   videoOff: MdOutlineVideocamOff,
+};
+
+const mapIcons = {
+  myLocation: MdMyLocation,
+  flag: IoFlagSharp,
+  marker: HiLocationMarker,
 };
 
 const generalIcons = {
@@ -78,11 +90,12 @@ const generalIcons = {
   edit: MdEdit,
   kakaotalk: RiKakaoTalkFill,
   close: IoCloseOutline,
-  marker: HiLocationMarker,
+  camera: FiCamera,
 };
 
 export const iconMap: Record<IconType, ReactIconType> = {
   ...arrowIcons,
   ...callIcons,
+  ...mapIcons,
   ...generalIcons,
 };
