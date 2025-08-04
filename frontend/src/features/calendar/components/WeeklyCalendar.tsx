@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from 'react';
+import { Fragment, useMemo, useState, useEffect, useRef } from 'react';
 import { getOpacityForWeek } from '../calendar.util';
 import { format, addDays, startOfWeek } from 'date-fns';
 import { useCalendarStore } from '../calendar.store';
@@ -13,6 +13,7 @@ interface Props {
 
 const WeeklyCalendar = ({ mode, currentDate, totalDatas, totalMembers }: Props) => {
   const { startDate, endDate, userSelections, setUserSelections } = useCalendarStore();
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const days = useMemo(() => {
     const startOfWeekDate = startOfWeek(currentDate, { weekStartsOn: 0 }); // 0: Sunday
@@ -26,7 +27,7 @@ const WeeklyCalendar = ({ mode, currentDate, totalDatas, totalMembers }: Props) 
   const [dragAction, setDragAction] = useState<'select' | 'deselect'>('select');
 
   const getDateData = (date: string) => {
-    return totalDatas?.totalDatas?.find(item => item.date === date);
+    return totalDatas?.totalDatas?.find((item) => item.date === date);
   };
 
   const applyDragSelection = (
@@ -45,7 +46,12 @@ const WeeklyCalendar = ({ mode, currentDate, totalDatas, totalMembers }: Props) 
       const updated = { ...prev };
       for (let d = minDayIdx; d <= maxDayIdx; d++) {
         const day = days[d];
-        updated[day] = [...updated[day]];
+        // 배열이 없거나 배열이 아닌 경우 초기화
+        if (!Array.isArray(updated[day])) {
+          updated[day] = new Array(30).fill(false);
+        } else {
+          updated[day] = [...updated[day]];
+        }
         for (let i = minIdx; i <= maxIdx; i++) {
           updated[day][i] = action === 'select';
         }
@@ -68,14 +74,72 @@ const WeeklyCalendar = ({ mode, currentDate, totalDatas, totalMembers }: Props) 
     );
   };
 
+  const handleDragEnd = () => {
+    if (dragStart && dragEnd) {
+      applyDragSelection(dragStart, dragEnd, dragAction);
+    }
+    setDragStart(null);
+    setDragEnd(null);
+  };
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleTouchMoveNative = (event: TouchEvent) => {
+      if (mode === 'edit' && dragStart) {
+        event.preventDefault(); // 화면 스크롤 방지
+
+        const touch = event.touches[0];
+        const target = document.elementFromPoint(touch.clientX, touch.clientY) as HTMLElement;
+
+        if (target && target.dataset.date && target.dataset.index) {
+          const date = target.dataset.date;
+          const idx = parseInt(target.dataset.index);
+          const inRange =
+            startDate && endDate ? new Date(date) >= startDate && new Date(date) <= endDate : true;
+
+          if (inRange) {
+            setDragEnd({ day: date, index: idx });
+          }
+        }
+      }
+    };
+
+    const handleTouchStartNative = (event: TouchEvent) => {
+      const target = event.target as HTMLElement;
+      if (mode === 'edit' && target.dataset.date && target.dataset.index) {
+        event.preventDefault(); // 터치 스크롤 방지
+
+        const date = target.dataset.date;
+        const idx = parseInt(target.dataset.index);
+        const inRange =
+          startDate && endDate ? new Date(date) >= startDate && new Date(date) <= endDate : true;
+
+        if (inRange) {
+          const selected = userSelections[date]?.[idx] ?? false;
+          setDragStart({ day: date, index: idx });
+          setDragEnd({ day: date, index: idx });
+          setDragAction(selected ? 'deselect' : 'select');
+        }
+      }
+    };
+
+    container.addEventListener('touchmove', handleTouchMoveNative, { passive: false });
+    container.addEventListener('touchstart', handleTouchStartNative, { passive: false });
+
+    return () => {
+      container.removeEventListener('touchmove', handleTouchMoveNative);
+      container.removeEventListener('touchstart', handleTouchStartNative);
+    };
+  }, [mode, dragStart, startDate, endDate, setDragEnd, userSelections]);
+
   return (
     <div
+      ref={containerRef}
       className="grid grid-cols-[auto_repeat(7,minmax(0,1fr))] select-none"
-      onMouseUp={() => {
-        if (dragStart && dragEnd) applyDragSelection(dragStart, dragEnd, dragAction);
-        setDragStart(null);
-        setDragEnd(null);
-      }}
+      onMouseUp={handleDragEnd}
+      onTouchEnd={handleDragEnd}
     >
       <div />
       {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
@@ -117,6 +181,8 @@ const WeeklyCalendar = ({ mode, currentDate, totalDatas, totalMembers }: Props) 
                     isValid ? 'cursor-pointer' : 'pointer-events-none'
                   }`}
                   style={{ borderColor: 'rgba(209, 213, 219, 0.5)' }}
+                  data-date={date}
+                  data-index={idx}
                   onMouseDown={() => {
                     if (mode === 'edit' && isValid) {
                       setDragStart({ day: date, index: idx });
