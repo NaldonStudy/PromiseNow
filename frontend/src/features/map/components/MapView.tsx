@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
 import UserMarker from './UserMaker';
 import useMapStore from '../map.store';
@@ -19,7 +19,7 @@ const MapView = () => {
   const markerRef = useRef<any>(null);
   const isInitializedRef = useRef<boolean>(false);
   const [isLoading, setIsLoading] = useState(true);
-  const rankingHeight = useMapStore((state) => state.rankingHeight);
+  const { rankingHeight, setMoveToCurrentLocation } = useMapStore();
 
   // Kakao Maps API 스크립트 로딩
   const loadKakaoMapScript = () => {
@@ -71,7 +71,37 @@ const MapView = () => {
     return customOverlay;
   };
 
-  const initMap = (lat: number, lng: number) => {
+  // 현재 위치로 이동하는 함수
+  const moveToCurrentLocation = useCallback(() => {
+    if (!mapRef.current || !isInitializedRef.current) return;
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          const kakao = window.kakao;
+          const newCenter = new kakao.maps.LatLng(lat, lng);
+
+          // 지도 중심을 현재 위치로 이동
+          mapRef.current.setCenter(newCenter);
+
+          // 마커도 현재 위치로 이동
+          if (markerRef.current) {
+            markerRef.current.setPosition(newCenter);
+          }
+        },
+        (error) => {
+          console.error('위치 정보를 가져올 수 없습니다:', error);
+          alert('위치 정보를 가져올 수 없습니다. 위치 서비스를 활성화해주세요.');
+        },
+      );
+    } else {
+      alert('이 브라우저에서는 위치 서비스가 지원되지 않습니다.');
+    }
+  }, []);
+
+  const initMap = useCallback((lat: number, lng: number) => {
     // 이미 초기화되었다면 중복 실행 방지
     if (isInitializedRef.current) return;
     if (!mapContainerRef.current) return;
@@ -91,12 +121,11 @@ const MapView = () => {
     // 초기화 완료 플래그
     isInitializedRef.current = true;
     setIsLoading(false);
-  };
+  }, []);
 
-  // rankingHeight 변경 시 지도 relayout 실행
+  // rankingHeight 변경 시 지도 크기 재조정
   useEffect(() => {
     if (mapRef.current && isInitializedRef.current) {
-      // 지도 크기 재조정
       setTimeout(() => {
         mapRef.current.relayout();
       }, 0);
@@ -135,8 +164,19 @@ const MapView = () => {
         markerRef.current.setMap(null);
         markerRef.current = null;
       }
+      // cleanup 시 store에서 함수 제거
+      setMoveToCurrentLocation(null);
     };
-  }, []);
+  }, [initMap, setMoveToCurrentLocation]);
+
+  // moveToCurrentLocation 함수를 store에 등록
+  useEffect(() => {
+    setMoveToCurrentLocation(moveToCurrentLocation);
+
+    return () => {
+      setMoveToCurrentLocation(null);
+    };
+  }, [moveToCurrentLocation, setMoveToCurrentLocation]);
 
   return (
     <div className="h-full relative bg-gray">
