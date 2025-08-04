@@ -5,7 +5,7 @@ import RouletteWheel from '../../features/roulette/components/RouletteWheel';
 const RouletteTemplate = () => {
   return (
     <RoomLayout>
-      <div className="p-10 flex flex-col gap-5">
+      <div className="p-10 flex flex-col gap-10">
         <RouletteForm />
         <RouletteWheel />
       </div>
