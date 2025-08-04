@@ -29,6 +29,26 @@ const ArrivalRanking = () => {
     window.addEventListener('mouseup', onMouseUp);
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const startY = e.touches[0].clientY;
+    const startHeight = rankingHeight;
+
+    const onTouchMove = (moveEvent: TouchEvent) => {
+      moveEvent.preventDefault();
+      const delta = startY - moveEvent.touches[0].clientY;
+      const newHeight = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, startHeight + delta));
+      setRankingHeight(newHeight);
+    };
+
+    const onTouchEnd = () => {
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onTouchEnd);
+    };
+
+    window.addEventListener('touchmove', onTouchMove, { passive: false });
+    window.addEventListener('touchend', onTouchEnd);
+  };
+
   return (
     <div
       ref={containerRef}
@@ -38,6 +58,7 @@ const ArrivalRanking = () => {
       <div
         className="flex justify-center items-center cursor-row-resize h-6"
         onMouseDown={handleMouseDown}
+        onTouchStart={handleTouchStart}
       >
         <MdDragHandle size={24} className="text-text-dark" />
       </div>
