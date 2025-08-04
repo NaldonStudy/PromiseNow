@@ -1,6 +1,6 @@
 import Icon from '../../components/ui/Icon';
 
-const RendingTemplate = () => {
+const RandingTemplate = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen gap-5">
       <span className="text-2xl font-bold text-primary py-5">PromissNow</span>
@@ -16,4 +16,4 @@ const RendingTemplate = () => {
   );
 };
 
-export default RendingTemplate;
+export default RandingTemplate;
