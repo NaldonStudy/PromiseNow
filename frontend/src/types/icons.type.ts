@@ -2,6 +2,7 @@ import type { IconType as ReactIconType } from 'react-icons';
 import { BsStars } from 'react-icons/bs';
 import { FaRegBell } from 'react-icons/fa';
 import { FiCalendar, FiMapPin, FiPhoneCall, FiPlus, FiSettings, FiTarget } from 'react-icons/fi';
+import { HiLocationMarker } from 'react-icons/hi';
 import { IoMdRepeat, IoMdTime } from 'react-icons/io';
 import {
   IoCloseOutline,
@@ -18,7 +19,9 @@ import {
 } from 'react-icons/md';
 import { RiKakaoTalkFill } from 'react-icons/ri';
 import { SlArrowDown, SlArrowLeft, SlArrowRight, SlArrowUp } from 'react-icons/sl';
-import { HiLocationMarker } from 'react-icons/hi';
+
+import { CiCamera } from 'react-icons/ci';
+import { VscSend } from 'react-icons/vsc';
 
 export type IconType =
   | 'left'
@@ -45,7 +48,9 @@ export type IconType =
   | 'videoOff'
   | 'kakaotalk'
   | 'close'
-  | 'marker';
+  | 'marker'
+  | 'send'
+  | 'camera';
 
 const arrowIcons = {
   left: SlArrowLeft,
@@ -60,6 +65,11 @@ const callIcons = {
   micOff: IoMicOff,
   video: MdOutlineVideocam,
   videoOff: MdOutlineVideocamOff,
+};
+
+const chatIcons = {
+  send: VscSend,
+  camera: CiCamera,
 };
 
 const generalIcons = {
@@ -85,4 +95,5 @@ export const iconMap: Record<IconType, ReactIconType> = {
   ...arrowIcons,
   ...callIcons,
   ...generalIcons,
+  ...chatIcons,
 };
