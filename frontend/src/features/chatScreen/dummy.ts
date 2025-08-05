@@ -1,4 +1,4 @@
-import type { ChatMessage } from '../../types/chat.type';
+import type { ChatMessage } from '../../apis/chat/chat.type';
 
 export const dummyMessages: ChatMessage[] = [
   // 🟢 같은 사람, 같은 시간, 여러 메시지

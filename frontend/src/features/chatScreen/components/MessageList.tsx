@@ -1,5 +1,5 @@
 import { Fragment } from 'react';
-import type { ChatMessage } from '../../../types/chat.type';
+import type { ChatMessage } from '../../../apis/chat/chat.type';
 import { isSameMinute } from '../utils/time';
 import MessageItem from './MessageItem';
 

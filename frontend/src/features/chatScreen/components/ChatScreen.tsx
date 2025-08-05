@@ -5,7 +5,7 @@ import type { IMessage } from '@stomp/stompjs';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
-import type { ChatMessage } from '../../../types/chat.type';
+import type { ChatMessage } from '../../../apis/chat/chat.type';
 import { getChatMessages } from './../../../apis/chat/chat.api';
 
 // import { dummyMessages } from '../dummy';

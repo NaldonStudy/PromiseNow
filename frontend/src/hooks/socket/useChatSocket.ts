@@ -4,7 +4,7 @@ import type { IMessage } from '@stomp/stompjs';
 import { Client } from '@stomp/stompjs';
 import { useEffect, useRef } from 'react';
 import SockJS from 'sockjs-client';
-import type { ChatMessage } from './../../types/chat.type';
+import type { ChatMessage } from '../../apis/chat/chat.type';
 
 export const useChatSocket = (
   roomId: number,

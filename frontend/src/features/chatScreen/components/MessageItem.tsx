@@ -1,7 +1,7 @@
 import type { FC } from 'react';
+import type { ChatMessage } from '../../../apis/chat/chat.type';
 import Profile from '../../../components/ui/Profile';
 import { formatTime } from '../utils/time';
-import type { ChatMessage } from './../../../types/chat.type';
 interface Props {
   message: ChatMessage;
   showMeta: boolean;
