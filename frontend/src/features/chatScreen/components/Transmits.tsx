@@ -1,5 +1,5 @@
 import { Client } from '@stomp/stompjs';
-import { useId, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import CircleBtn from './../../../components/ui/CircleBtn';
 import Input from './../../../components/ui/Input';
 
@@ -29,7 +29,7 @@ const Transmits = ({ roomId, stompClient }: Props) => {
     };
 
     stompClient.publish({
-      destination: 'app/chat',
+      destination: `app/chat/${roomId}`,
       body: JSON.stringify(body),
     });
 
@@ -64,7 +64,7 @@ const Transmits = ({ roomId, stompClient }: Props) => {
         const body = {
           roomUserId,
           roomId,
-          useId,
+          userId,
           content: '이미지',
           type: 'IMAGE',
           imageUrl,
@@ -75,7 +75,7 @@ const Transmits = ({ roomId, stompClient }: Props) => {
         };
 
         stompClient?.publish({
-          destination: '/app/chat',
+          destination: `/app/chat/${roomId}`,
           body: JSON.stringify(body),
         });
       } catch {

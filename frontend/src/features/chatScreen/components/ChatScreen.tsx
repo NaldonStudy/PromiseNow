@@ -1,9 +1,13 @@
-import type { IMessage } from '@stomp/stompjs';
-import { Client } from '@stomp/stompjs';
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
+
+import type { IMessage } from '@stomp/stompjs';
+import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
+
 import type { MessageResponseDto } from '../../../types/chat.type';
+import { getChatMessages } from './../../../apis/chat/chat.api';
+
 // import { dummyMessages } from '../dummy';
 import MessageList from './MessageList';
 import Transmits from './Transmits';
@@ -23,11 +27,7 @@ const ChatScreen = () => {
 
     const fetchMessages = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/api/chatting/${parsedRoomId}/messages`);
-        if (!response.ok) {
-          throw new Error('메시지 불러오기 실패');
-        }
-        const data: MessageResponseDto[] = await response.json();
+        const data = await getChatMessages(parsedRoomId);
         setMessages(data);
       } catch (error) {
         console.error('❌ 메시지 로딩 에러:', error);
