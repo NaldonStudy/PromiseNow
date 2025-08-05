@@ -29,13 +29,13 @@ import type {
 import { useInvalidateRoomQueries } from './keys';
 
 // 방 생성
-export const useCreateRoom = () => {
-  const { invalidateAll } = useInvalidateRoomQueries();
+export const useCreateRoom = (userId: number) => {
+  const { invalidateRoom } = useInvalidateRoomQueries();
 
   return useMutation({
     mutationFn: (request: CreateRoomRequest) => createRoom(request),
     onSuccess: () => {
-      invalidateAll();
+      invalidateRoom({ userId });
     },
   });
 };
@@ -47,7 +47,7 @@ export const useUpdateRoomTitle = (roomId: number) => {
   return useMutation({
     mutationFn: (request: TitleUpdateRequest) => updateRoomTitle(roomId, request),
     onSuccess: () => {
-      invalidateRoom(roomId);
+      invalidateRoom({ roomId });
     },
   });
 };
@@ -59,7 +59,7 @@ export const useUpdateRoomDateRange = (roomId: number) => {
   return useMutation({
     mutationFn: (request: DateRangeUpdateRequest) => updateRoomDateRange(roomId, request),
     onSuccess: () => {
-      invalidateRoom(roomId);
+      invalidateRoom({ roomId });
     },
   });
 };
@@ -71,7 +71,7 @@ export const useUpdateAppointment = (roomId: number) => {
   return useMutation({
     mutationFn: (request: AppointmentUpdateRequest) => updateAppointment(roomId, request),
     onSuccess: () => {
-      invalidateRoom(roomId);
+      invalidateRoom({ roomId });
     },
   });
 };
@@ -83,31 +83,31 @@ export const useUpdateRoomState = (roomId: number) => {
   return useMutation({
     mutationFn: (newState: RoomState) => updateRoomState(roomId, newState),
     onSuccess: () => {
-      invalidateRoom(roomId);
+      invalidateRoom({ roomId });
     },
   });
 };
 
 // 방 삭제
-export const useDeleteRoom = (roomId: number) => {
-  const { invalidateAll } = useInvalidateRoomQueries();
+export const useDeleteRoom = (roomId: number, userId: number) => {
+  const { invalidateRoom } = useInvalidateRoomQueries();
 
   return useMutation({
     mutationFn: () => deleteRoom(roomId),
     onSuccess: () => {
-      invalidateAll();
+      invalidateRoom({ roomId, userId });
     },
   });
 };
 
 // 초대코드로 참가
-export const useJoinRoomByInviteCode = () => {
-  const { invalidateAll } = useInvalidateRoomQueries();
+export const useJoinRoomByInviteCode = (userId: number) => {
+  const { invalidateRoom } = useInvalidateRoomQueries();
 
   return useMutation({
     mutationFn: (request: JoinRequest) => joinRoomByInviteCode(request),
     onSuccess: () => {
-      invalidateAll();
+      invalidateRoom({ userId });
     },
   });
 };
@@ -143,7 +143,7 @@ export const useUpdateAlarmSetting = (roomId: number, userId: number) => {
   return useMutation({
     mutationFn: (request: AlarmUpdateRequest) => updateAlarmSetting(roomId, userId, request),
     onSuccess: () => {
-      invalidateRoom(roomId, userId);
+      invalidateRoom({ roomId, userId });
     },
   });
 };
