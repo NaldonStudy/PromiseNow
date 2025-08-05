@@ -1,14 +1,14 @@
 // src/hooks/useChatSocket.ts
 
+import type { IMessage } from '@stomp/stompjs';
+import { Client } from '@stomp/stompjs';
 import { useEffect, useRef } from 'react';
 import SockJS from 'sockjs-client';
-import { Client } from '@stomp/stompjs';
-import type { IMessage } from '@stomp/stompjs';
-import type { MessageResponseDto } from './../../types/chat.type';
+import type { ChatMessage } from './../../types/chat.type';
 
 export const useChatSocket = (
   roomId: number,
-  onMessage: (message: MessageResponseDto) => void
+  onMessage: (message: ChatMessage) => void,
 ): Client | null => {
   const clientRef = useRef<Client | null>(null);
 
@@ -23,7 +23,7 @@ export const useChatSocket = (
         console.log('🟢 WebSocket 연결 성공');
 
         client.subscribe(`/topic/chat/${roomId}`, (message: IMessage) => {
-          const payload: MessageResponseDto = JSON.parse(message.body);
+          const payload: ChatMessage = JSON.parse(message.body);
           onMessage(payload);
         });
       },

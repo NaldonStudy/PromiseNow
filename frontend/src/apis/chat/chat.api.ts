@@ -1,10 +1,11 @@
-// src/apis/chat/chat.api.ts
-import axios from 'axios';
-import type { MessageResponseDto } from './chat.types';
+import axiosInstance from '../../lib/axiosInstance';
+import handleApi from '../../lib/handleApi';
+import type { ChatMessage } from '../../types/chat.type';
 
-export const getChatMessages = async (roomId: number): Promise<MessageResponseDto[]> => {
-  const response = await axios.get<MessageResponseDto[]>(
-    `http://localhost:8080/api/chatting/${roomId}/messages`
+// 채팅 메시지 조회
+export const getChatMessages = async (roomId: number) => {
+  const data = await handleApi<ChatMessage[]>(
+    axiosInstance.get(`/chatting/${roomId}/messages`)
   );
-  return response.data;
+  return data;
 };

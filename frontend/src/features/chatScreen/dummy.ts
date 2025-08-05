@@ -1,6 +1,6 @@
-import type { MessageResponseDto } from '../../types/chat.type';
+import type { ChatMessage } from '../../types/chat.type';
 
-export const dummyMessages: MessageResponseDto[] = [
+export const dummyMessages: ChatMessage[] = [
   // 🟢 같은 사람, 같은 시간, 여러 메시지
   {
     content: '안녕하세요!',

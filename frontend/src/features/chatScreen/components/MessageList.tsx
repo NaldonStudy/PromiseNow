@@ -1,10 +1,10 @@
 import { Fragment } from 'react';
-import type { MessageResponseDto } from '../../../types/chat.type';
-import MessageItem from './MessageItem';
+import type { ChatMessage } from '../../../types/chat.type';
 import { isSameMinute } from '../utils/time';
+import MessageItem from './MessageItem';
 
 interface Props {
-  messages: MessageResponseDto[];
+  messages: ChatMessage[];
   myUserId: number; // 안 써도 되지만 유지해도 무방
 }
 
@@ -19,10 +19,7 @@ const MessageList = ({ messages }: Props) => {
 
         return (
           <Fragment key={idx}>
-            <MessageItem
-              message={msg}
-              showMeta={showMeta}
-            />
+            <MessageItem message={msg} showMeta={showMeta} />
           </Fragment>
         );
       })}

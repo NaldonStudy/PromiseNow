@@ -1,9 +1,9 @@
 import type { FC } from 'react';
 import Profile from '../../../components/ui/Profile';
 import { formatTime } from '../utils/time';
-import type { MessageResponseDto } from './../../../types/chat.type';
+import type { ChatMessage } from './../../../types/chat.type';
 interface Props {
-  message: MessageResponseDto;
+  message: ChatMessage;
   showMeta: boolean;
 }
 

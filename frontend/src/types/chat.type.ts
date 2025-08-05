@@ -1,13 +1,15 @@
-export interface MessageResponseDto {
+// src/types/chat.type.ts
+
+export interface ChatMessage {
   content: string;
   type: 'TEXT' | 'IMAGE' | 'PINO';
   imageUrl?: string;
-  userId?: number;
-  nickname?: string;
-  sentDate?: string;
+  userId: number;
+  nickname: string;
+  sentDate: string;
 }
 
-export interface MessageRequestDto {
+export interface ChatMessageRequest {
   roomUserId: number;
   roomId: number;
   userId: number;

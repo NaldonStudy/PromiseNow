@@ -5,7 +5,7 @@ import type { IMessage } from '@stomp/stompjs';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
-import type { MessageResponseDto } from '../../../types/chat.type';
+import type { ChatMessage } from '../../../types/chat.type';
 import { getChatMessages } from './../../../apis/chat/chat.api';
 
 // import { dummyMessages } from '../dummy';
@@ -18,7 +18,7 @@ const ChatScreen = () => {
   const { id } = useParams<{ id: string }>();
   const parsedRoomId = parseInt(id || '', 10);
 
-  const [messages, setMessages] = useState<MessageResponseDto[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const clientRef = useRef<Client | null>(null);
 
   // 1️⃣ 과거 메시지 조회 (REST API)
@@ -28,7 +28,7 @@ const ChatScreen = () => {
     const fetchMessages = async () => {
       try {
         const data = await getChatMessages(parsedRoomId);
-        setMessages(data);
+        setMessages(data ?? []);
       } catch (error) {
         console.error('❌ 메시지 로딩 에러:', error);
       }
@@ -51,7 +51,7 @@ const ChatScreen = () => {
 
         // ✅ 구독: /topic/chat/{roomId}
         client.subscribe(`/topic/chat/${parsedRoomId}`, (message: IMessage) => {
-          const payload: MessageResponseDto = JSON.parse(message.body);
+          const payload: ChatMessage = JSON.parse(message.body);
           setMessages((prev) => [...prev, payload]);
         });
       },
