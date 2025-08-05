@@ -21,16 +21,16 @@ export const useInvalidateRoomQueries = () => {
   };
 
   // 특정 room 무효화
-  const invalidateRoom = (roomId: number, userId?: number) => {
-    queryClient.invalidateQueries({ queryKey: roomKeys.list(roomId) });
-    queryClient.invalidateQueries({ queryKey: roomKeys.detail(roomId) });
-    queryClient.invalidateQueries({ queryKey: roomKeys.status(roomId) });
-    queryClient.invalidateQueries({ queryKey: roomKeys.appointment(roomId) });
-    queryClient.invalidateQueries({ queryKey: roomKeys.dateRange(roomId) });
-    queryClient.invalidateQueries({ queryKey: roomKeys.titleCode(roomId) });
-    queryClient.invalidateQueries({ queryKey: roomKeys.users(roomId) });
+  const invalidateRoom = ({ roomId, userId }: { roomId?: number; userId?: number }) => {
+    if (roomId !== undefined) {
+      queryClient.invalidateQueries({ queryKey: roomKeys.detail(roomId) });
+      queryClient.invalidateQueries({ queryKey: roomKeys.status(roomId) });
+      queryClient.invalidateQueries({ queryKey: roomKeys.appointment(roomId) });
+      queryClient.invalidateQueries({ queryKey: roomKeys.dateRange(roomId) });
+      queryClient.invalidateQueries({ queryKey: roomKeys.titleCode(roomId) });
+      queryClient.invalidateQueries({ queryKey: roomKeys.users(roomId) });
+    }
 
-    // 함께 무효화할 RoomUser list
     if (userId !== undefined) {
       queryClient.invalidateQueries({ queryKey: roomKeys.list(userId) });
     }
