@@ -21,7 +21,7 @@ import {
 import { RiKakaoTalkFill } from 'react-icons/ri';
 import { SlArrowDown, SlArrowLeft, SlArrowRight, SlArrowUp } from 'react-icons/sl';
 import { GoCopy } from 'react-icons/go';
-import { CiCamera } from 'react-icons/ci';
+import { CiCamera, CiGrid41 } from 'react-icons/ci';
 import { FiCamera } from 'react-icons/fi';
 import { VscSend } from 'react-icons/vsc';
 
@@ -55,7 +55,8 @@ export type IconType =
   | 'myLocation'
   | 'flag'
   | 'camera'
-  | 'copy';
+  | 'copy'
+  | 'grid';
 
 const arrowIcons = {
   left: SlArrowLeft,
@@ -70,6 +71,7 @@ const callIcons = {
   micOff: IoMicOff,
   video: MdOutlineVideocam,
   videoOff: MdOutlineVideocamOff,
+  grid: CiGrid41,
 };
 
 const chatIcons = {
