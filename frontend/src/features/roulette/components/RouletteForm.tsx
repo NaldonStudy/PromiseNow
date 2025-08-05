@@ -33,7 +33,7 @@ const RouletteForm = () => {
           text={'+'}
           textSize="text-[25px]"
           width="w-13"
-          template={'filled'}
+          template="outlined"
           onClick={handleAddOption}
           disabled={!inputValue.trim()}
         />
