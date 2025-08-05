@@ -10,8 +10,8 @@ const RoomFind = () => {
     setTriggerKey(Date.now());
   };
   return (
-    <div className="flex flex-col items-center gap-4 pt-10 pb-7">
-      <div className="flex items-center gap-4 px-10">
+    <div className="flex flex-col items-center gap-4">
+      <div className="flex items-center gap-2">
         <Input
           value={value}
           placeholder="참여 코드를 입력하세요"

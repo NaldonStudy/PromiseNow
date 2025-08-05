@@ -12,9 +12,11 @@ const HomeTemplate = ({ rooms }: Props) => {
   return (
     <div className="relative w-full h-full mx-auto bg-white overflow-y-auto">
       <BrandHeader />
-      <RoomFind />
-      <RoomList rooms={rooms} />
-      <RoomMake />
+      <div className="flex flex-col gap-3 px-8 pt-10">
+        <RoomFind />
+        <RoomList rooms={rooms} />
+        <RoomMake />
+      </div>
     </div>
   );
 };

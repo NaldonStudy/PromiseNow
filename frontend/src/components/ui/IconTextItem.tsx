@@ -17,11 +17,11 @@ const IconTextItem = ({
   iconColor,
   iconSize = 24,
   textSize = 'text-sm',
-}:Props): React.ReactElement => {
+}: Props): React.ReactElement => {
   return (
     <div className="flex items-center gap-2">
       <Icon type={type} size={iconSize} color={iconColor} />
-      <span className={`font-bold ${textSize} ${textColor} px-1.5 py-1`}>{text}</span>
+      <span className={`font-bold ${textSize} ${textColor} ml-0.3 my-0.5`}>{text}</span>
     </div>
   );
 };
