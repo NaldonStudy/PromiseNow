@@ -294,7 +294,7 @@ public class RoomController {
                     @ApiResponse(responseCode = "404", description = "해당 방을 찾을 수 없음")
             }
     )
-    public ResponseEntity<?> getRoomTitleAndState(@PathVariable Long roomId) {
+    public ResponseEntity<?> getRoomTitleAndCode(@PathVariable Long roomId) {
         try {
             TitleCodeResponse response = roomService.getRoomTitleAndCode(roomId);
             return ApiUtils.success(response);
