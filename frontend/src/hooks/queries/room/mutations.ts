@@ -113,25 +113,25 @@ export const useJoinRoomByInviteCode = (userId: number) => {
 };
 
 // 기존 참가 방 재입장
-export const useRejoinRoom = () => {
-  const { invalidateAll } = useInvalidateRoomQueries();
+export const useRejoinRoom = (roomId: number, userId: number) => {
+  const { invalidateRoom } = useInvalidateRoomQueries();
 
   return useMutation({
     mutationFn: (request: RejoinRoomRequest) => joinAlreadyParticipatedRoom(request),
     onSuccess: () => {
-      invalidateAll();
+      invalidateRoom({ roomId, userId });
     },
   });
 };
 
 // 방 나가기
-export const useQuitRoom = () => {
-  const { invalidateAll } = useInvalidateRoomQueries();
+export const useQuitRoom = (roomId: number, userId: number) => {
+  const { invalidateRoom } = useInvalidateRoomQueries();
 
   return useMutation({
     mutationFn: (request: QuitRoomRequest) => quitRoom(request),
     onSuccess: () => {
-      invalidateAll();
+      invalidateRoom({ roomId, userId });
     },
   });
 };
