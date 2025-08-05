@@ -9,16 +9,18 @@ const RoomHeader = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex justify-between px-6 py-4 shadow-md bg-white">
-      <div className="flex gap-3 items-center">
-        <div className="text-primary">
-          <Icon type="left" onClick={() => navigate('/home')} />
+    <div className="flex justify-between px-5 py-4 shadow-md bg-white">
+      <div className="flex items-center flex-1 min-w-0">
+        <div className="text-primary flex-shrink-0">
+          <Icon type="left" onClick={() => navigate('/home')} size={18} />
         </div>
-        <span className="font-bold text-lg">Room Name</span>
-        <CopyCode />
+        <span className="font-bold text-lg truncate ml-3 mr-2">Room Name</span>
+        <div className="flex-shrink-0">
+          <CopyCode />
+        </div>
       </div>
 
-      <div className="flex gap-6 items-center text-text-dark text-sm">
+      <div className="flex gap-5 items-center ml-5 text-text-dark text-sm">
         <PopIcon iconType="bell">
           <ParticipantList />
         </PopIcon>
