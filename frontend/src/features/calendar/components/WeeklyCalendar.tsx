@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState, useEffect, useRef } from 'react';
+import { Fragment, useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { getOpacityForWeek } from '../calendar.util';
 import { format, addDays, startOfWeek, startOfDay, isBefore, isAfter } from 'date-fns';
 import { useCalendarStore } from '../calendar.store';
@@ -48,7 +48,6 @@ const WeeklyCalendar = ({ mode, currentDate, totalDatas, totalMembers }: Props) 
       const updated = { ...prev };
       for (let d = minDayIdx; d <= maxDayIdx; d++) {
         const day = days[d];
-        // 배열이 없거나 배열이 아닌 경우 초기화
         if (!Array.isArray(updated[day])) {
           updated[day] = new Array(30).fill(false);
         } else {
@@ -85,15 +84,18 @@ const WeeklyCalendar = ({ mode, currentDate, totalDatas, totalMembers }: Props) 
   };
 
   // 날짜 범위 검증 함수 개선
-  const isDateInRange = (dateString: string) => {
-    if (!dateRange?.start || !dateRange?.end) return true;
+  const isDateInRange = useCallback(
+    (dateString: string) => {
+      if (!dateRange?.start || !dateRange?.end) return false;
 
-    const date = startOfDay(new Date(dateString));
-    const start = startOfDay(new Date(dateRange.start)); // 문자열이든 Date든 변환
-    const end = startOfDay(new Date(dateRange.end));
+      const date = startOfDay(new Date(dateString));
+      const start = startOfDay(new Date(dateRange.start));
+      const end = startOfDay(new Date(dateRange.end));
 
-    return !isBefore(date, start) && !isAfter(date, end);
-  };
+      return !isBefore(date, start) && !isAfter(date, end);
+    },
+    [dateRange],
+  );
 
   useEffect(() => {
     const container = containerRef.current;
@@ -141,7 +143,7 @@ const WeeklyCalendar = ({ mode, currentDate, totalDatas, totalMembers }: Props) 
       container.removeEventListener('touchmove', handleTouchMoveNative);
       container.removeEventListener('touchstart', handleTouchStartNative);
     };
-  }, [mode, dragStart, dateRange, setDragEnd, userSelections]);
+  }, [mode, dragStart, dateRange, setDragEnd, userSelections, isDateInRange]);
 
   return (
     <div
