@@ -4,6 +4,8 @@ interface LocationItem {
   id: string;
   name: string;
   address: string;
+  lat: number;
+  lng: number;
 }
 
 interface LocationListProps {
@@ -13,7 +15,7 @@ interface LocationListProps {
 
 const LocationList = ({ locations, onLocationSelect }: LocationListProps) => {
   return (
-    <div className="border border-gray-dark rounded-lg overflow-hidden">
+    <div className="border border-gray-dark rounded-lg overflow-scroll hide-scrollbar max-h-72">
       {locations.map((location, index) => (
         <button
           key={location.id}

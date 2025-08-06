@@ -4,19 +4,49 @@ import DateSelector from './components/DateSelector';
 import LocationInput from './components/LocationInput';
 import TimeSelector from './components/TimeSelector';
 import ConfirmHeader from './components/ConfirmHeader';
+import type { AppointmentUpdateRequest } from '../../apis/room/room.types';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: (appointmentData: AppointmentUpdateRequest) => void;
+  isLoading?: boolean;
 }
 
-const AppointmentEditModal = ({ isOpen, onClose, onConfirm }: Props) => {
+const AppointmentEditModal = ({ isOpen, onClose, onConfirm, isLoading }: Props) => {
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [locationSearch, setLocationSearch] = useState('');
+  const [selectedLocation, setSelectedLocation] = useState<{
+    name: string;
+    lat: number;
+    lng: number;
+  } | null>(null);
 
   if (!isOpen) return null;
+
+  const handleConfirm = () => {
+    if (!selectedDate || !selectedTime || !selectedLocation) {
+      alert('모든 필드를 입력해주세요.');
+      return;
+    }
+
+    const appointmentData: AppointmentUpdateRequest = {
+      locationDate: selectedDate,
+      locationTime: selectedTime,
+      locationName: selectedLocation.name,
+      locationLat: selectedLocation.lat,
+      locationLng: selectedLocation.lng,
+    };
+
+    console.log('약속 데이터:', appointmentData);
+    onConfirm(appointmentData);
+  };
+
+  const handleLocationSelect = (location: { name: string; lat: number; lng: number }) => {
+    setSelectedLocation(location);
+    setLocationSearch(location.name);
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex justify-center">
@@ -26,10 +56,20 @@ const AppointmentEditModal = ({ isOpen, onClose, onConfirm }: Props) => {
         <div className="flex flex-col gap-3 my-4">
           <DateSelector value={selectedDate} onChange={setSelectedDate} />
           <TimeSelector value={selectedTime} onChange={setSelectedTime} />
-          <LocationInput value={locationSearch} onChange={setLocationSearch} />
+          <LocationInput
+            value={locationSearch}
+            onChange={setLocationSearch}
+            onLocationSelect={handleLocationSelect}
+          />
         </div>
 
-        <SquareBtn text="저장하기" template="filled" width="w-full" onClick={onConfirm} />
+        <SquareBtn
+          text={isLoading ? '저장중...' : '저장하기'}
+          template="filled"
+          width="w-full"
+          onClick={handleConfirm}
+          disabled={isLoading}
+        />
       </div>
     </div>
   );

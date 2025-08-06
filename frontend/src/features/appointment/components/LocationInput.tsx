@@ -13,13 +13,25 @@ interface KakaoPlace {
 interface LocationInputProps {
   value: string;
   onChange: (value: string) => void;
+  onLocationSelect?: (location: { name: string; lat: number; lng: number }) => void;
   placeholder?: string;
 }
 
-const LocationInput = ({ value, onChange, placeholder = '검색어' }: LocationInputProps) => {
-  const [locations, setLocations] = useState<Array<{ id: string; name: string; address: string }>>(
-    [],
-  );
+const LocationInput = ({
+  value,
+  onChange,
+  onLocationSelect,
+  placeholder = '검색어',
+}: LocationInputProps) => {
+  const [locations, setLocations] = useState<
+    Array<{
+      id: string;
+      name: string;
+      address: string;
+      lat: number;
+      lng: number;
+    }>
+  >([]);
   const [isLoading, setIsLoading] = useState(false);
   const [kakaoReady, setKakaoReady] = useState(false);
 
@@ -36,45 +48,44 @@ const LocationInput = ({ value, onChange, placeholder = '검색어' }: LocationI
   }, []);
 
   // 카카오 장소 검색 함수
-  const searchPlaces = useCallback(
-    (keyword: string) => {
-      if (!keyword.trim()) {
-        setLocations([]);
-        return;
-      }
+  const searchPlaces = useCallback((keyword: string) => {
+    if (!keyword.trim()) {
+      setLocations([]);
+      return;
+    }
 
-      if (!window.kakao?.maps?.services) {
-        setLocations([]);
-        return;
-      }
+    if (!window.kakao?.maps?.services) {
+      setLocations([]);
+      return;
+    }
 
-      setIsLoading(true);
+    setIsLoading(true);
 
-      try {
-        const places = new window.kakao.maps.services.Places();
+    try {
+      const places = new window.kakao.maps.services.Places();
 
-        places.keywordSearch(keyword, (result: KakaoPlace[], status: string) => {
-          setIsLoading(false);
-
-          if (status === window.kakao.maps.services.Status.OK) {
-            const formattedLocations = result.slice(0, 10).map((place) => ({
-              id: place.id,
-              name: place.place_name,
-              address: place.road_address_name || place.address_name,
-            }));
-            setLocations(formattedLocations);
-          } else {
-            setLocations([]);
-          }
-        });
-      } catch (error) {
-        console.error('💥 검색 중 오류 발생:', error);
+      places.keywordSearch(keyword, (result: KakaoPlace[], status: string) => {
         setIsLoading(false);
-        setLocations([]);
-      }
-    },
-    [kakaoReady],
-  );
+
+        if (status === window.kakao.maps.services.Status.OK) {
+          const formattedLocations = result.slice(0, 10).map((place) => ({
+            id: place.id,
+            name: place.place_name,
+            address: place.road_address_name || place.address_name,
+            lat: parseFloat(place.y),
+            lng: parseFloat(place.x),
+          }));
+          setLocations(formattedLocations);
+        } else {
+          setLocations([]);
+        }
+      });
+    } catch (error) {
+      console.error('💥 검색 중 오류 발생:', error);
+      setIsLoading(false);
+      setLocations([]);
+    }
+  }, []);
 
   // 검색어 변경 시 디바운싱된 검색 실행
   useEffect(() => {
@@ -89,9 +100,23 @@ const LocationInput = ({ value, onChange, placeholder = '검색어' }: LocationI
     return () => clearTimeout(timeoutId);
   }, [value, searchPlaces, kakaoReady]);
 
-  const handleLocationSelect = (location: { id: string; name: string; address: string }) => {
+  const handleLocationSelect = (location: {
+    id: string;
+    name: string;
+    address: string;
+    lat: number;
+    lng: number;
+  }) => {
     onChange(location.name);
     setLocations([]);
+    // 외부 핸들러가 있으면 좌표 정보와 함께 호출
+    if (onLocationSelect) {
+      onLocationSelect({
+        name: location.name,
+        lat: location.lat,
+        lng: location.lng,
+      });
+    }
   };
 
   return (
