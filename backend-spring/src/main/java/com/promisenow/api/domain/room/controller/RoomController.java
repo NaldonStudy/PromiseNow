@@ -192,69 +192,6 @@ public class RoomController {
         }
     }
 
-
-    // 이미 들어가져 있는 방에 참가하기
-    @PostMapping("/{roomId}/join")
-    @Operation(
-            summary = "기존 참여한 방 입장",
-            description = "이미 참여했던 방의 ID와 사용자 ID를 기반으로 다시 방에 입장합니다.",
-            parameters = {
-                    @Parameter(
-                            name = "roomId",
-                            description = "입장할 방의 ID",
-                            example = "101",
-                            required = true
-                    )
-            },
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "사용자 ID",
-                    required = true,
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = Long.class),
-                            examples = @ExampleObject(
-                                    name = "요청 예시",
-                                    value = "1"
-                            )
-                    )
-            ),
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "재입장 성공",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(implementation = JoinInfoResponse.class),
-                                    examples = @ExampleObject(
-                                            name = "성공 응답 예시",
-                                            value = """
-                        {
-                            "success": true,
-                            "data": {
-                                "roomId": 101,
-                                "roomTitle": "스터디 회의방",
-                                "nickname": "홍길동"
-                            },
-                            "message": null
-                        }
-                        """
-                                    )
-                            )
-                    ),
-                    @ApiResponse(responseCode = "400", description = "이미 참여하지 않은 방"),
-                    @ApiResponse(responseCode = "404", description = "방 또는 사용자 정보를 찾을 수 없음")
-            }
-    )
-    public ResponseEntity<?> joinAlreadyParticipatedRoom(@PathVariable Long roomId, @RequestBody Long userId) {
-        try {
-            JoinInfoResponse response = roomUserService.enterJoinedRoom(roomId, userId);
-            return ApiUtils.success(response);
-        } catch (IllegalArgumentException e) {
-            return ApiUtils.error(e.getMessage());
-        }
-    }
-
-
     // 방제목 방참여코드 조회하는 Api
     @GetMapping("/{roomId}/title-code")
     @Operation(

@@ -53,21 +53,6 @@ public class RoomUserServiceImpl implements RoomUserService {
                 );
     }
 
-    // 이미 참가했던 방에 재 참가
-    @Override
-    public JoinInfoResponse enterJoinedRoom(Long roomId, Long userId) {
-        RoomUser roomUser = roomUserRepository.findByRoom_RoomIdAndUser_UserId(roomId, userId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 방에 참여한 이력이 없습니다"));
-
-        Room room = roomUser.getRoom();
-
-        return JoinInfoResponse.builder()
-                .roomId(room.getRoomId())
-                .roomTitle(room.getRoomTitle())
-                .nickname(roomUser.getNickname())
-                .build();
-    }
-
     @Override
     public void quitRoom(Long roomId, Long userId) {
         RoomUser roomUser = roomUserRepository.findByRoom_RoomIdAndUser_UserId(roomId, userId)
