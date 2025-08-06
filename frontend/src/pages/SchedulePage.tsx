@@ -1,48 +1,64 @@
 import { useParams } from 'react-router-dom';
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { useTotalAvailability } from '../hooks/queries/availability';
-import { useUpdateAppointment } from '../hooks/queries/room';
+import {
+  useAppointment,
+  useRoomDateRange,
+  useUpdateAppointment,
+  useUpdateRoomDateRange,
+} from '../hooks/queries/room';
+import { useRoomStore } from '../stores/room.store';
 import ScheduleTemplate from './templates/ScheduleTemplate';
-import type { AppointmentUpdateRequest } from '../apis/room/room.types';
+import type { AppointmentUpdateRequest, DateRangeUpdateRequest } from '../apis/room/room.types';
 
 const SchedulePage = () => {
   const { id } = useParams<{ id: string }>();
   const roomId = Number(id);
-
-  const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
+  const { setDateRange } = useRoomStore();
 
   const { data: totalAvailabilityData } = useTotalAvailability(roomId);
+  const { data: roomDateRangeData } = useRoomDateRange(roomId);
+  const { data: appointmentData } = useAppointment(roomId);
   const updateAppointmentMutation = useUpdateAppointment(roomId);
+  const updateRoomDateRangeMutation = useUpdateRoomDateRange(roomId);
 
-  const handleAppointmentEdit = () => {
-    setIsAppointmentModalOpen(true);
-  };
+  useEffect(() => {
+    if (roomDateRangeData) {
+      setDateRange({
+        start: new Date(roomDateRangeData.startDate),
+        end: new Date(roomDateRangeData.endDate),
+      });
+    }
+  }, [roomDateRangeData, setDateRange]);
 
   const handleAppointmentUpdate = (appointmentData: AppointmentUpdateRequest) => {
     updateAppointmentMutation.mutate(appointmentData, {
       onSuccess: () => {
-        setIsAppointmentModalOpen(false);
-        // 성공 처리 (예: 토스트 메시지)
+        console.log('약속 업데이트', appointmentData);
       },
       onError: (error) => {
         console.error('약속 업데이트 실패:', error);
-        // 에러 처리 (예: 에러 토스트)
       },
     });
   };
 
-  const handleAppointmentModalClose = () => {
-    setIsAppointmentModalOpen(false);
+  const handleDateRangeUpdate = (dateRangeData: DateRangeUpdateRequest) => {
+    updateRoomDateRangeMutation.mutate(dateRangeData, {
+      onSuccess: () => {
+        console.log('기간 업데이트', dateRangeData);
+      },
+      onError: (error) => {
+        console.error('기간 업데이트 실패:', error);
+      },
+    });
   };
 
   return (
     <ScheduleTemplate
+      appointmentData={appointmentData}
       totalAvailabilityData={totalAvailabilityData}
-      isAppointmentModalOpen={isAppointmentModalOpen}
-      onAppointmentEdit={handleAppointmentEdit}
       onAppointmentUpdate={handleAppointmentUpdate}
-      onAppointmentModalClose={handleAppointmentModalClose}
-      isUpdating={updateAppointmentMutation.isPending}
+      onDateRangeUpdate={handleDateRangeUpdate}
     />
   );
 };

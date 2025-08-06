@@ -10,10 +10,9 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (appointmentData: AppointmentUpdateRequest) => void;
-  isLoading?: boolean;
 }
 
-const AppointmentEditModal = ({ isOpen, onClose, onConfirm, isLoading }: Props) => {
+const AppointmentEditModal = ({ isOpen, onClose, onConfirm }: Props) => {
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [locationSearch, setLocationSearch] = useState('');
@@ -38,8 +37,6 @@ const AppointmentEditModal = ({ isOpen, onClose, onConfirm, isLoading }: Props) 
       locationLat: selectedLocation.lat,
       locationLng: selectedLocation.lng,
     };
-
-    console.log('약속 데이터:', appointmentData);
     onConfirm(appointmentData);
   };
 
@@ -63,13 +60,7 @@ const AppointmentEditModal = ({ isOpen, onClose, onConfirm, isLoading }: Props) 
           />
         </div>
 
-        <SquareBtn
-          text={isLoading ? '저장중...' : '저장하기'}
-          template="filled"
-          width="w-full"
-          onClick={handleConfirm}
-          disabled={isLoading}
-        />
+        <SquareBtn text={'저장하기'} template="filled" width="w-full" onClick={handleConfirm} />
       </div>
     </div>
   );
