@@ -39,4 +39,7 @@ public interface RoomService {
 
     // 약속상세 업데이트
     void updateRoomAppointment(Long roomId, RoomRequestDto.AppointmentUpdateRequest dto);
+
+    // 조건에 따른 방 상태 Activate으로 변경
+    void checkAndActivateRooms();
 }
