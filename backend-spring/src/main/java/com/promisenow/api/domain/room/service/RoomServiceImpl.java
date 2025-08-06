@@ -7,6 +7,8 @@ import com.promisenow.api.domain.room.entity.Room.*;
 import com.promisenow.api.domain.room.entity.RoomUser;
 import com.promisenow.api.domain.room.repository.RoomRepository;
 import com.promisenow.api.domain.room.repository.RoomUserRepository;
+import com.promisenow.api.domain.user.entity.User;
+import com.promisenow.api.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,10 +24,12 @@ public class RoomServiceImpl implements RoomService {
 
     private final RoomRepository roomRepository;
     private final RoomUserRepository roomUserRepository;
+    private final UserRepository userRepository;
 
     // 방 만드는 서비스
     @Override
-    public CreateResponse createRoom(String roomTitle) {
+    public CreateResponse createRoomWithUser(String roomTitle, Long userId, String nickname) {
+
         String roomCode = generateRandomCode(6);
 
         Room room = Room.builder()
@@ -36,8 +40,27 @@ public class RoomServiceImpl implements RoomService {
 
         roomRepository.save(room);
 
-        return new CreateResponse(roomTitle, roomCode);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다"));
+
+        RoomUser roomUser = RoomUser.builder()
+                .room(room)
+                .user(user)
+                .nickname(nickname)
+                .isAgreed(true)
+                .build();
+
+        roomUserRepository.save(roomUser);
+
+        return CreateResponse.builder()
+                .roomId(room.getRoomId())
+                .roomTitle(room.getRoomTitle())
+                .roomCode(room.getInviteCode())
+                .nickname(nickname)
+                .build();
     }
+
+
 
     @Override
     public void deleteRoom(Long roomId) {

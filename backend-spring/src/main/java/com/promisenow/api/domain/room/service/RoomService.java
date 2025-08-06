@@ -8,7 +8,8 @@ import java.util.List;
 
 public interface RoomService {
 
-    CreateResponse createRoom(String roomTitle);
+    CreateResponse createRoomWithUser(String roomTitle, Long userId, String nickname);
+
 
     void deleteRoom(Long roomId);
 
