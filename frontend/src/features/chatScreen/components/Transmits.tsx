@@ -89,7 +89,7 @@ const Transmits = ({ roomId, stompClient }: Props) => {
   };
 
   return (
-    <div className="flex items-center gap-5 px-3 py-5 bg-white rounded-xl shadow-md">
+    <div className="flex items-center gap-5 px-1 bg-white rounded-xl">
       {/* 이미지 전송 버튼 */}
       <CircleBtn
         iconType="camera"
