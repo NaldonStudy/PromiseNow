@@ -1,8 +1,9 @@
 import { Fragment, useMemo, useState, useEffect, useRef } from 'react';
 import { getOpacityForWeek } from '../calendar.util';
-import { format, addDays, startOfWeek } from 'date-fns';
+import { format, addDays, startOfWeek, startOfDay, isBefore, isAfter } from 'date-fns';
 import { useCalendarStore } from '../calendar.store';
 import type { TotalAvailabilityResponse } from '../../../apis/availability/availability.types';
+import { useRoomStore } from '../../../stores/room.store';
 
 interface Props {
   mode: 'view' | 'edit';
@@ -12,7 +13,8 @@ interface Props {
 }
 
 const WeeklyCalendar = ({ mode, currentDate, totalDatas, totalMembers }: Props) => {
-  const { startDate, endDate, userSelections, setUserSelections } = useCalendarStore();
+  const { userSelections, setUserSelections } = useCalendarStore();
+  const { dateRange } = useRoomStore();
   const containerRef = useRef<HTMLDivElement>(null);
 
   const days = useMemo(() => {
@@ -82,6 +84,17 @@ const WeeklyCalendar = ({ mode, currentDate, totalDatas, totalMembers }: Props) 
     setDragEnd(null);
   };
 
+  // 날짜 범위 검증 함수 개선
+  const isDateInRange = (dateString: string) => {
+    if (!dateRange?.start || !dateRange?.end) return true;
+
+    const date = startOfDay(new Date(dateString));
+    const start = startOfDay(new Date(dateRange.start)); // 문자열이든 Date든 변환
+    const end = startOfDay(new Date(dateRange.end));
+
+    return !isBefore(date, start) && !isAfter(date, end);
+  };
+
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -96,10 +109,8 @@ const WeeklyCalendar = ({ mode, currentDate, totalDatas, totalMembers }: Props) 
         if (target && target.dataset.date && target.dataset.index) {
           const date = target.dataset.date;
           const idx = parseInt(target.dataset.index);
-          const inRange =
-            startDate && endDate ? new Date(date) >= startDate && new Date(date) <= endDate : true;
 
-          if (inRange) {
+          if (isDateInRange(date)) {
             setDragEnd({ day: date, index: idx });
           }
         }
@@ -113,10 +124,8 @@ const WeeklyCalendar = ({ mode, currentDate, totalDatas, totalMembers }: Props) 
 
         const date = target.dataset.date;
         const idx = parseInt(target.dataset.index);
-        const inRange =
-          startDate && endDate ? new Date(date) >= startDate && new Date(date) <= endDate : true;
 
-        if (inRange) {
+        if (isDateInRange(date)) {
           const selected = userSelections[date]?.[idx] ?? false;
           setDragStart({ day: date, index: idx });
           setDragEnd({ day: date, index: idx });
@@ -132,7 +141,7 @@ const WeeklyCalendar = ({ mode, currentDate, totalDatas, totalMembers }: Props) 
       container.removeEventListener('touchmove', handleTouchMoveNative);
       container.removeEventListener('touchstart', handleTouchStartNative);
     };
-  }, [mode, dragStart, startDate, endDate, setDragEnd, userSelections]);
+  }, [mode, dragStart, dateRange, setDragEnd, userSelections]);
 
   return (
     <div
@@ -154,12 +163,8 @@ const WeeklyCalendar = ({ mode, currentDate, totalDatas, totalMembers }: Props) 
           <Fragment key={idx}>
             <div className="text-xs text-right pr-1 select-none pointer-events-none">{label}</div>
             {days.map((date) => {
-              const inRange =
-                startDate && endDate
-                  ? new Date(date) >= startDate && new Date(date) <= endDate
-                  : true;
+              const isValid = isDateInRange(date);
 
-              const isValid = inRange;
               const dateData = getDateData(date);
               const hasData = !!dateData;
               const count = hasData ? Number(dateData.timeData?.[idx] ?? 0) : 0;
