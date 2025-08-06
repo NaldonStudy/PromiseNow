@@ -1,6 +1,16 @@
 import type { IconType as ReactIconType } from 'react-icons';
-import { BsStars, BsBell } from 'react-icons/bs';
-import { FiCalendar, FiMapPin, FiPhoneCall, FiPlus, FiSettings, FiTarget } from 'react-icons/fi';
+import { BsBell, BsStars } from 'react-icons/bs';
+import { CiCamera, CiGrid41 } from 'react-icons/ci';
+import {
+  FiCalendar,
+  FiCamera,
+  FiMapPin,
+  FiPhoneCall,
+  FiPlus,
+  FiSettings,
+  FiTarget,
+} from 'react-icons/fi';
+import { GoCopy, GoDependabot } from 'react-icons/go';
 import { HiLocationMarker } from 'react-icons/hi';
 import { IoMdRepeat, IoMdTime } from 'react-icons/io';
 import {
@@ -20,9 +30,6 @@ import {
 } from 'react-icons/md';
 import { RiKakaoTalkFill } from 'react-icons/ri';
 import { SlArrowDown, SlArrowLeft, SlArrowRight, SlArrowUp } from 'react-icons/sl';
-import { GoCopy } from 'react-icons/go';
-import { CiCamera, CiGrid41 } from 'react-icons/ci';
-import { FiCamera } from 'react-icons/fi';
 import { VscSend } from 'react-icons/vsc';
 
 export type IconType =
@@ -56,7 +63,8 @@ export type IconType =
   | 'flag'
   | 'camera'
   | 'copy'
-  | 'grid';
+  | 'grid'
+  | 'bot';
 
 const arrowIcons = {
   left: SlArrowLeft,
@@ -77,6 +85,7 @@ const callIcons = {
 const chatIcons = {
   send: VscSend,
   camera: CiCamera,
+  bot: GoDependabot,
 };
 
 const mapIcons = {
