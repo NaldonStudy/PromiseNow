@@ -43,15 +43,22 @@ public class RoomResponseDto {
     @Schema(description = "방 생성 응답")
     @Getter
     @AllArgsConstructor
-    @NoArgsConstructor
+    @Builder
     public static class CreateResponse {
 
-        @Schema(description = "생성된 방 제목", example = "우리 모임방")
+        @Schema(description = "생성된 방 ID", example = "101")
+        private Long roomId;
+
+        @Schema(description = "방 제목", example = "우리 팀 약속방")
         private String roomTitle;
 
         @Schema(description = "초대 코드", example = "AB12CD")
         private String roomCode;
+
+        @Schema(description = "설정한 닉네임", example = "홍길동")
+        private String nickname;
     }
+
 
     // 방의 약속 가능 날짜 범위에 대한 설정
     @Schema(description = "방의 약속 가능 날짜 범위 응답")
