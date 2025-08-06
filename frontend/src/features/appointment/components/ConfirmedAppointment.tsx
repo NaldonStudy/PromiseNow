@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import AppointmentInfo from '../../components/ui/AppointmentInfo';
-import Icon from './../../components/ui/Icon';
-import AppointmentEditModal from './AppointmentEditModal';
+import AppointmentInfo from '../../../components/ui/AppointmentInfo';
+import Icon from '../../../components/ui/Icon';
+import AppointmentEditModal from '../AppointmentEditModal';
 
 const ConfirmedAppointment = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -13,12 +13,7 @@ const ConfirmedAppointment = () => {
       </div>
 
       <div className="absolute bottom-8 right-4">
-        <Icon
-          type="edit"
-          color="text-white"
-          size={20}
-          onClick={() => setIsModalOpen(true)}
-        />
+        <Icon type="edit" color="text-white" size={20} onClick={() => setIsModalOpen(true)} />
       </div>
 
       {isModalOpen && (

@@ -1,5 +1,5 @@
 import RoomLayout from '../../components/layout/RoomLayout';
-import ConfirmedAppointment from '../../features/appointment/ConfirmedAppointment';
+import ConfirmedAppointment from '../../features/appointment/components/ConfirmedAppointment';
 import Calendar from '../../features/calendar/components/Calendar';
 import ScheduleRecommendation from '../../features/scheduleRecommendation/components/ScheduleRecommendation';
 import type { TotalAvailabilityResponse } from '../../apis/availability/availability.types';
