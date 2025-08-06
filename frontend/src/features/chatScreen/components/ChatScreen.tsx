@@ -10,6 +10,7 @@ import { getChatMessages } from './../../../apis/chat/chat.api';
 
 // import { dummyMessages } from '../dummy';
 import MessageList from './MessageList';
+import PinoExample from './PinoExample';
 import Transmits from './Transmits';
 
 // 수신 메시지 형식 (서버에서 push됨)
@@ -73,13 +74,16 @@ const ChatScreen = () => {
   return (
     <div className="relative h-full">
       {/* 메시지 표시 영역 */}
-      <div className="overflow-y-auto h-full pb-[130px] px-4 pt-2">
+      <div className="overflow-y-auto h-full pb-[180px] px-4 pt-2">
         <MessageList messages={messages} myUserId={9007199254740991} />
       </div>
 
       {/* 메시지 전송 영역 */}
-      <div className="fixed bottom-[70px] left-1/2 -translate-x-1/2 w-full max-w-mobile px-4 z-20">
-        <Transmits roomId={parsedRoomId} stompClient={clientRef.current} />
+      <div className="fixed bottom-[80px] left-1/2 -translate-x-1/2 w-full max-w-mobile px-4">
+        <div className="flex flex-col gap-2">
+          <Transmits roomId={parsedRoomId} stompClient={clientRef.current} />
+          <PinoExample />
+        </div>
       </div>
     </div>
   );
