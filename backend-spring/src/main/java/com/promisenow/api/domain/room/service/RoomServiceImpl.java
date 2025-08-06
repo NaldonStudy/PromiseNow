@@ -3,6 +3,7 @@ package com.promisenow.api.domain.room.service;
 import com.promisenow.api.domain.room.dto.RoomRequestDto;
 import com.promisenow.api.domain.room.dto.RoomResponseDto.*;
 import com.promisenow.api.domain.room.entity.Room;
+import com.promisenow.api.domain.room.entity.Room.*;
 import com.promisenow.api.domain.room.entity.RoomUser;
 import com.promisenow.api.domain.room.repository.RoomRepository;
 import com.promisenow.api.domain.room.repository.RoomUserRepository;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -157,6 +159,56 @@ public class RoomServiceImpl implements RoomService {
                 dto.getLocationName(),
                 dto.getLocationLat(),
                 dto.getLocationLng());
+    }
+
+    // 시간 확인하고 방 상태 Activate로 변경
+    @Override
+    public void checkAndActivateRooms() {
+        LocalDateTime now = LocalDateTime.now().withSecond(0).withNano(0);
+
+        List<Room> rooms = roomRepository.findAll();
+
+        for (Room room: rooms) {
+            // locationDate 또는 locationTime이 null이면 건너뛰기
+            if (room.getLocationDate() == null || room.getLocationTime() == null) {
+                continue;
+            }
+
+            LocalDateTime appointmentTime = LocalDateTime.of(
+                    room.getLocationDate(),
+                    room.getLocationTime()
+            );
+
+            RoomState currentState = room.getRoomState();
+
+            // 실수로 시간 이전으로 하면 WAITING으로 다시 변경
+            if (currentState == RoomState.COMPLETED) {
+                if (appointmentTime.isAfter(now)) {
+                    room.changeRoomState(RoomState.WAITING);
+                    currentState = RoomState.WAITING;
+                }
+            }
+
+            // 2시간 이내에 약속이라면 ACTIVE로 변경
+            if(currentState == RoomState.WAITING) {
+                if(!appointmentTime.isAfter(now.plusHours(2))) {
+                    room.changeRoomState(RoomState.ACTIVE);
+                }
+            }
+
+            else if(currentState == RoomState.ACTIVE) {
+
+                // 세션 ACTIVE에서 약속시간 변경 시 24시간 이내면 세션 ACTIVE 유지. 아니면 다시 W
+                if(appointmentTime.isAfter(now.plusHours(24))) {
+                    room.changeRoomState(RoomState.WAITING);
+                }
+
+                // 약속시간 1시간 지나면 세션 종료
+                else if(appointmentTime.isBefore(now.minusHours(1))) {
+                    room.changeRoomState(RoomState.COMPLETED);
+                }
+            }
+        }
     }
 
 
