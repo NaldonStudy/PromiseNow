@@ -573,7 +573,7 @@ public class RoomController {
 
 
     // 유저가 방을 나간다 ~
-    @GetMapping("/{roomId}/quit")
+    @DeleteMapping("/{roomId}/users/{userId}")
     @Operation(
             summary = "유저 방 나가기",
             description = "지정한 사용자 ID가 해당 방에서 나가도록 처리합니다. 방과의 연결 정보가 삭제됩니다.",
@@ -600,12 +600,12 @@ public class RoomController {
                                     examples = @ExampleObject(
                                             name = "성공 응답 예시",
                                             value = """
-                        {
-                            "success": true,
-                            "data": null,
-                            "message": null
-                        }
-                        """
+                    {
+                        "success": true,
+                        "data": null,
+                        "message": null
+                    }
+                    """
                                     )
                             )
                     ),
@@ -613,7 +613,7 @@ public class RoomController {
                     @ApiResponse(responseCode = "404", description = "해당 방 또는 사용자 정보 없음")
             }
     )
-    public ResponseEntity<?> quitRoom(@PathVariable Long roomId, @RequestParam Long userId) {
+    public ResponseEntity<?> quitRoom(@PathVariable Long roomId, @PathVariable Long userId) {
         try {
             roomUserService.quitRoom(roomId, userId);
             return ApiUtils.success();
