@@ -4,15 +4,6 @@ import { createRoot } from 'react-dom/client';
 import UserMarker from './UserMaker';
 import useMapStore from '../map.store';
 
-declare global {
-  interface Window {
-    kakao: any;
-  }
-}
-
-const KAKAO_API_URL =
-  '//dapi.kakao.com/v2/maps/sdk.js?appkey=d237e8e1648c27e6631635f056ccc121&autoload=false';
-
 const MapView = () => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
@@ -21,36 +12,19 @@ const MapView = () => {
   const [isLoading, setIsLoading] = useState(true);
   const { rankingHeight, setMoveToCurrentLocation } = useMapStore();
 
-  // Kakao Maps API 스크립트 로딩
-  const loadKakaoMapScript = () => {
-    return new Promise<void>((resolve, reject) => {
-      if (window.kakao && window.kakao.maps) {
-        return resolve();
-      }
-
-      const existingScript = document.querySelector(
-        `script[src*="dapi.kakao.com"]`,
-      ) as HTMLScriptElement;
-
-      if (existingScript) {
-        existingScript.addEventListener('load', () => {
+  // Kakao Maps API가 로드될 때까지 대기하는 함수
+  const waitForKakaoMaps = useCallback(() => {
+    return new Promise<void>((resolve) => {
+      const checkKakao = () => {
+        if (window.kakao && window.kakao.maps) {
           resolve();
-        });
-        return;
-      }
-
-      const script = document.createElement('script');
-      script.src = KAKAO_API_URL;
-      script.async = true;
-      script.addEventListener('load', () => {
-        resolve();
-      });
-      script.addEventListener('error', () => {
-        reject();
-      });
-      document.head.appendChild(script);
+        } else {
+          setTimeout(checkKakao, 100);
+        }
+      };
+      checkKakao();
     });
-  };
+  }, []);
 
   // 커스텀 마커 생성 함수
   const createCustomMarker = (position: any, imgUrl?: string) => {
@@ -138,21 +112,20 @@ const MapView = () => {
 
     const setupMap = async () => {
       try {
-        await loadKakaoMapScript();
+        // useKakaoLoader로 이미 로드되었거나 로드 중이므로 대기만 하면 됨
+        await waitForKakaoMaps();
 
-        window.kakao.maps.load(() => {
-          if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition((position) => {
-              const lat = position.coords.latitude;
-              const lng = position.coords.longitude;
-              initMap(lat, lng);
-            });
-          } else {
-            initMap(37.5665, 126.978);
-          }
-        });
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition((position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            initMap(lat, lng);
+          });
+        } else {
+          initMap(37.5665, 126.978);
+        }
       } catch (err) {
-        console.error('Kakao Maps 로딩 실패:', err);
+        console.error('Kakao Maps 초기화 실패:', err);
         setIsLoading(false);
       }
     };
@@ -167,7 +140,7 @@ const MapView = () => {
       // cleanup 시 store에서 함수 제거
       setMoveToCurrentLocation(null);
     };
-  }, [initMap, setMoveToCurrentLocation]);
+  }, [initMap, setMoveToCurrentLocation, waitForKakaoMaps]);
 
   // moveToCurrentLocation 함수를 store에 등록
   useEffect(() => {
