@@ -38,9 +38,9 @@ public class RoomController {
     @PostMapping
     @Operation(
             summary = "방 생성하기",
-            description = "방 제목을 입력하여 새 약속 방을 생성합니다.",
+            description = "방 제목과 사용자 정보를 입력하여 새 약속 방을 생성하고 참가합니다.",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "생성할 방의 제목",
+                    description = "방 생성 + 방장 입장",
                     required = true,
                     content = @Content(
                             mediaType = "application/json",
@@ -48,32 +48,36 @@ public class RoomController {
                             examples = @ExampleObject(
                                     name = "요청 예시",
                                     value = """
-                    {
-                        "roomTitle": "우리 팀 약속방"
-                    }
-                    """
+                {
+                    "roomTitle": "우리 팀 약속방",
+                    "userId": 1,
+                    "nickname": "홍길동"
+                }
+                """
                             )
                     )
             ),
             responses = {
                     @ApiResponse(
                             responseCode = "200",
-                            description = "방 생성 성공",
+                            description = "방 생성 + 방장 입장 성공",
                             content = @Content(
                                     mediaType = "application/json",
                                     schema = @Schema(implementation = CreateResponse.class),
                                     examples = @ExampleObject(
                                             name = "성공 응답 예시",
                                             value = """
-                        {
-                            "success": true,
-                            "data": {
-                                "roomTitle": "우리 팀 약속방",
-                                "roomCode": "Ab12Cd"
-                            },
-                            "message": null
-                        }
-                        """
+                    {
+                        "success": true,
+                        "data": {
+                            "roomId": 101,
+                            "roomTitle": "우리 팀 약속방",
+                            "roomCode": "Ab12Cd",
+                            "nickname": "홍길동"
+                        },
+                        "message": null
+                    }
+                    """
                                     )
                             )
                     ),
@@ -82,12 +86,17 @@ public class RoomController {
     )
     public ResponseEntity<?> createRoom(@RequestBody CreateRequest requestDto) {
         try {
-            CreateResponse response = roomService.createRoom(requestDto.getRoomTitle());
+            CreateResponse response = roomService.createRoomWithUser(
+                    requestDto.getRoomTitle(),
+                    requestDto.getUserId(),
+                    requestDto.getNickname()
+            );
             return ApiUtils.success(response);
         } catch (Exception e) {
             return ApiUtils.error("방 생성 실패: " + e.getMessage());
         }
     }
+
 
 
     // 방 삭제하기
