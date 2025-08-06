@@ -4,9 +4,11 @@ import { persist } from 'zustand/middleware';
 interface RoomStore {
   currentRoomId: number | null;
   dateRange: { start: Date; end: Date } | null;
+  nickname: string | null;
 
   setCurrentRoomId: (roomId: number | null) => void;
   setDateRange: (range: { start: Date; end: Date } | null) => void;
+  setNickname: (nickname: string | null) => void;
 }
 
 export const useRoomStore = create<RoomStore>()(
@@ -14,13 +16,15 @@ export const useRoomStore = create<RoomStore>()(
     (set) => ({
       currentRoomId: null,
       dateRange: null,
+      nickname: null,
 
       setCurrentRoomId: (roomId) => set({ currentRoomId: roomId }),
       setDateRange: (range) => set({ dateRange: range }),
+      setNickname: (nickname) => set({ nickname }),
     }),
     {
       name: 'room-store',
-      partialize: (state) => ({ currentRoomId: state.currentRoomId }),
+      partialize: (state) => ({ currentRoomId: state.currentRoomId, nickname: state.nickname }),
     },
   ),
 );

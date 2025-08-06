@@ -2,22 +2,47 @@ import { useState } from 'react';
 import CircleBtn from '../../../components/ui/CircleBtn';
 import ModalForm from '../../../components/ui/modal/ModalForm';
 
+import { useNavigate } from 'react-router-dom';
+import { useCreateRoom } from '../../../hooks/queries/room';
+import { useUserStore } from '../../../stores/user.store';
+import { useRoomStore } from './../../../stores/room.store';
+
 type ModalType = 'room' | 'name';
 
 const RoomMakeWithModals = () => {
+  const navigate = useNavigate();
+  const { userId } = useUserStore();
+  const { setNickname } = useRoomStore();
+  const createRoomMutation = useCreateRoom(userId!);
+
   const [isOpen, setIsOpen] = useState(false);
   const [modalType, setModalType] = useState<ModalType>('room');
+
+  const [roomTitle, setRoomTitle] = useState('');
 
   const handleSubmit = (inputValue: string) => {
     // 여기에 실제 room 생성 로직 또는 console.log 등 추가
     if (modalType === 'room') {
-      console.log('방 이름 제출됨:', inputValue);
+      setRoomTitle(inputValue);
       setModalType('name');
       return;
     }
     if (modalType === 'name') {
-      console.log('닉네임 제출됨:', inputValue);
-      setIsOpen(false);
+      setNickname(inputValue);
+
+      createRoomMutation.mutate(
+        { roomTitle, nickname: inputValue },
+        {
+          onSuccess: (data) => {
+            if (data) {
+              setIsOpen(false);
+              navigate(`/${data.roomId}/schedule`);
+            } else {
+              console.error('방 생성 응답이 null입니다.');
+            }
+          },
+        },
+      );
     }
   };
 
@@ -35,7 +60,7 @@ const RoomMakeWithModals = () => {
   };
 
   return (
-    <div className="">
+    <div>
       <ModalForm
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
