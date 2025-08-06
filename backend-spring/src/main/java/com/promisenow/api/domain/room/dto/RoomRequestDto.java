@@ -53,8 +53,13 @@ public class RoomRequestDto {
     public static class CreateRequest {
 
         @Schema(description = "방 제목", example = "우리 팀 약속방")
-        @NotBlank(message = "방 제목은 필수입니다.")
         private String roomTitle;
+
+        @Schema(description = "생성하는 사용자 ID", example = "1")
+        private Long userId;
+
+        @Schema(description = "참가할 닉네임", example = "홍길동")
+        private String nickname;
     }
 
     // 약속 가능 날짜 범위에 대한 수정
