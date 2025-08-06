@@ -38,6 +38,4 @@ export interface SimpleInfoResponse {
 }
 
 // 방 참가자 목록 응답
-export interface GetUsersInRoomResponse {
-  data: SimpleInfoResponse[];
-}
+export type GetUsersInRoomResponse = SimpleInfoResponse[];

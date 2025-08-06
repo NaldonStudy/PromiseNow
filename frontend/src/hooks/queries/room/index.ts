@@ -3,6 +3,7 @@ export { roomKeys, useInvalidateRoomQueries } from './keys';
 
 // Query Hooks
 export {
+  useJoinedRooms,
   useRoomTitleCode,
   useRoomStatus,
   useRoomDateRange,

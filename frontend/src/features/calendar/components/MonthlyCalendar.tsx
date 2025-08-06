@@ -12,6 +12,7 @@ import {
 import { getOpacityForMonth } from '../calendar.util';
 import { useCalendarStore } from '../calendar.store';
 import type { TotalAvailabilityResponse } from '../../../apis/availability/availability.types';
+import { useRoomStore } from '../../../stores/room.store';
 
 interface Props {
   mode: 'view' | 'edit';
@@ -21,7 +22,8 @@ interface Props {
 }
 
 const MonthlyCalendar = ({ mode, totalDatas, currentDate, totalMembers }: Props) => {
-  const { startDate, endDate, setCurrentDate, setView } = useCalendarStore();
+  const { setCurrentDate, setView } = useCalendarStore();
+  const { dateRange } = useRoomStore();
   const currentMonth = startOfMonth(currentDate);
 
   const days = useMemo(() => {
@@ -38,17 +40,17 @@ const MonthlyCalendar = ({ mode, totalDatas, currentDate, totalMembers }: Props)
   }, [currentMonth]);
 
   const isDisabled = (day: Date) => {
-    if (!startDate || !endDate) return true;
+    if (!dateRange?.start || !dateRange?.end) return true;
 
     const dayStart = startOfDay(day);
-    const start = startOfDay(startDate);
-    const end = startOfDay(endDate);
+    const start = startOfDay(dateRange.start);
+    const end = startOfDay(dateRange.end);
 
     return isBefore(dayStart, start) || isAfter(dayStart, end);
   };
 
   const getDateData = (date: string) => {
-    return totalDatas?.totalDatas?.find(item => item.date === date);
+    return totalDatas?.totalDatas?.find((item) => item.date === date);
   };
 
   return (
