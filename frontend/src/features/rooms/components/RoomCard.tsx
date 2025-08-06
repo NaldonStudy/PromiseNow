@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import AppointmentInfo from '../../../components/ui/AppointmentInfo';
 import Card from '../../../components/ui/Card';
 import Profile from '../../../components/ui/Profile';
+import { useRoomStore } from '../../../stores/room.store';
 
 interface Props {
   id: number;
@@ -20,6 +21,8 @@ const RoomCard = ({
   locationTime,
   locationName,
 }: Props): React.ReactElement => {
+  const { setCurrentRoomId } = useRoomStore();
+
   const now = new Date();
   const date = locationDate ? new Date(locationDate) : null;
   const isPast = date ? date < now : false;
@@ -37,9 +40,13 @@ const RoomCard = ({
   const formattedLocation = locationName || '확정되지 않았습니다';
   const cardOpacityClass = isPast ? 'opacity-50' : 'opacity-100';
 
+  const handleRoomClick = () => {
+    setCurrentRoomId(id);
+  };
+
   return (
     <div className="flex justify-center pt-3">
-      <Link to={`/${id}/schedule`} className="w-full max-w-3xl">
+      <Link to={`/${id}/schedule`} className="w-full max-w-3xl" onClick={handleRoomClick}>
         <Card
           className={`flex justify-between items-center gap-6 px-3 py-4 w-full transition-opacity duration-300 ${cardOpacityClass}`}
         >

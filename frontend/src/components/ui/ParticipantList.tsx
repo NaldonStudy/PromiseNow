@@ -1,11 +1,15 @@
-import { dummyParticipants } from '../layout/roomHeader/dummy';
+import type { SimpleInfoResponse } from '../../apis/room/roomuser.types';
 import ProfileName from './ProfileName';
 
-const ParticipantList = () => {
+interface Props {
+  users: SimpleInfoResponse[] | undefined;
+}
+
+const ParticipantList = ({ users }: Props) => {
   return (
     <div className="flex flex-col gap-2">
-      {dummyParticipants.map((p, idx) => (
-        <ProfileName key={idx} name={p.name} profileImg={p.profileImg} />
+      {users?.map((user, idx) => (
+        <ProfileName key={idx} name={user.nickname} profileImg={user.profileImage} />
       ))}
     </div>
   );
