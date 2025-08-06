@@ -49,7 +49,7 @@ const ChatScreen = () => {
       onConnect: () => {
         console.log('🟢 WebSocket 연결 성공');
 
-        // ✅ 구독: /topic/chat/{roomId}
+        // ✅ 구독: /topic/chat/{id}
         client.subscribe(`/topic/chat/${parsedRoomId}`, (message: IMessage) => {
           const payload: ChatMessage = JSON.parse(message.body);
           setMessages((prev) => [...prev, payload]);
