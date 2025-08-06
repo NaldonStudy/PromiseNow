@@ -3,8 +3,13 @@ import Card from '../../../components/ui/Card';
 import { useRoomStore } from '../../../stores/room.store';
 import { useCalendarStore } from '../calendar.store';
 import SquareBtn from '../../../components/ui/SquareBtn';
+import type { DateRangeUpdateRequest } from '../../../apis/room/room.types';
 
-const DateRangeSelector = () => {
+interface DateRangeSelectorProps {
+  onDateRangeUpdate: (dateRangeData: DateRangeUpdateRequest) => void;
+}
+
+const DateRangeSelector = ({ onDateRangeUpdate }: DateRangeSelectorProps) => {
   const { dateRange, setDateRange } = useRoomStore();
   const { setCurrentDate } = useCalendarStore();
 
@@ -16,6 +21,12 @@ const DateRangeSelector = () => {
   const startDate = dateRange?.start ? new Date(dateRange.start) : null;
   const endDate = dateRange?.end ? new Date(dateRange.end) : null;
 
+  // 유효성 검사
+  const isValidDateRange = () => {
+    if (!tempStartDate || !tempEndDate) return false;
+    return new Date(tempStartDate) <= new Date(tempEndDate);
+  };
+
   // 수정 모드 시작
   const handleEdit = () => {
     setIsEditing(true);
@@ -23,9 +34,19 @@ const DateRangeSelector = () => {
     setTempEndDate(endDate ? endDate.toISOString().split('T')[0] : '');
   };
 
-  // 확인 (저장)
+  // 저장
   const handleConfirm = () => {
-    if (tempStartDate && tempEndDate) {
+    if (isValidDateRange()) {
+      const dateRangeData: DateRangeUpdateRequest = {
+        startDate: tempStartDate,
+        endDate: tempEndDate,
+      };
+
+      console.log('새로운 시작일:', tempStartDate);
+      console.log('새로운 종료일:', tempEndDate);
+
+      onDateRangeUpdate(dateRangeData);
+
       const newStartDate = new Date(tempStartDate);
       const newEndDate = new Date(tempEndDate);
 
@@ -34,8 +55,8 @@ const DateRangeSelector = () => {
         end: newEndDate,
       });
       setCurrentDate(newStartDate);
+      setIsEditing(false);
     }
-    setIsEditing(false);
   };
 
   // 취소
@@ -79,6 +100,7 @@ const DateRangeSelector = () => {
               type="date"
               value={tempStartDate}
               onChange={(e) => setTempStartDate(e.target.value)}
+              max={tempEndDate}
             />
             <span className="flex-shrink-0 text-xs">~</span>
             <input
@@ -86,11 +108,12 @@ const DateRangeSelector = () => {
               type="date"
               value={tempEndDate}
               onChange={(e) => setTempEndDate(e.target.value)}
+              min={tempStartDate}
             />
           </div>
           <div className="flex gap-2">
             <SquareBtn onClick={handleCancel} text={'취소'} template={'outlined'} width="w-full" />
-            <SquareBtn onClick={handleConfirm} text={'확인'} template={'filled'} width="w-full" />
+            <SquareBtn onClick={handleConfirm} template={'filled'} width="w-full" text="저장" />
           </div>
         </div>
       )}
