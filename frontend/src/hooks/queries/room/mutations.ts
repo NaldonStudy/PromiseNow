@@ -2,29 +2,27 @@ import { useMutation } from '@tanstack/react-query';
 import {
   createRoom,
   deleteRoom,
-  updateRoomTitle,
-  updateRoomDateRange,
   updateAppointment,
+  updateRoomDateRange,
   updateRoomState,
+  updateRoomTitle,
 } from '../../../apis/room/room.api';
+import type {
+  AppointmentUpdateRequest,
+  CreateRoomRequest,
+  DateRangeUpdateRequest,
+  RoomState,
+  TitleUpdateRequest,
+} from '../../../apis/room/room.types';
 import {
   joinRoomByInviteCode,
-  joinAlreadyParticipatedRoom,
   quitRoom,
   updateAlarmSetting,
 } from '../../../apis/room/roomuser.api';
 import type {
-  CreateRoomRequest,
-  TitleUpdateRequest,
-  DateRangeUpdateRequest,
-  AppointmentUpdateRequest,
-  RoomState,
-} from '../../../apis/room/room.types';
-import type {
-  JoinRequest,
-  RejoinRoomRequest,
-  QuitRoomRequest,
   AlarmUpdateRequest,
+  JoinRequest,
+  QuitRoomRequest,
 } from '../../../apis/room/roomuser.types';
 import { useInvalidateRoomQueries } from './keys';
 
@@ -108,18 +106,6 @@ export const useJoinRoomByInviteCode = (userId: number) => {
     mutationFn: (request: JoinRequest) => joinRoomByInviteCode(request),
     onSuccess: () => {
       invalidateRoom({ userId });
-    },
-  });
-};
-
-// 기존 참가 방 재입장
-export const useRejoinRoom = (roomId: number, userId: number) => {
-  const { invalidateRoom } = useInvalidateRoomQueries();
-
-  return useMutation({
-    mutationFn: (request: RejoinRoomRequest) => joinAlreadyParticipatedRoom(request),
-    onSuccess: () => {
-      invalidateRoom({ roomId, userId });
     },
   });
 };

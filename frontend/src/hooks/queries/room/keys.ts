@@ -9,7 +9,7 @@ export const roomKeys = {
   appointment: (roomId: number) => [...roomKeys.detail(roomId), 'appointment'] as const,
   dateRange: (roomId: number) => [...roomKeys.detail(roomId), 'date-range'] as const,
   titleCode: (roomId: number) => [...roomKeys.detail(roomId), 'title-code'] as const,
-  users: (roomId: number) => [roomKeys.detail(roomId), 'users'] as const,
+  users: (roomId: number) => [...roomKeys.detail(roomId), 'users'] as const,
 };
 
 export const useInvalidateRoomQueries = () => {
