@@ -1,5 +1,6 @@
 package com.promisenow.api.common;
 
+import com.promisenow.api.domain.chat.exception.FileStorageException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -90,4 +91,13 @@ public class    GlobalExceptionHandler {
         log.error("Unexpected error occurred", ex);
         return ApiUtils.error(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다.");
     }
+    /**
+     * 이미지 저장 오류
+     */
+    @ExceptionHandler(FileStorageException.class)
+    public ResponseEntity<ApiUtils.ApiResponse<Void>>handleFileStorageException(FileStorageException ex) {
+        log.warn("File storage error: {}", ex.getMessage());
+        return ApiUtils.error(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
 } 

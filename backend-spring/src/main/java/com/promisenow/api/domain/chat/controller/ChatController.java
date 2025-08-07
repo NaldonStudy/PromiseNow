@@ -1,6 +1,8 @@
 package com.promisenow.api.domain.chat.controller;
 
+import com.promisenow.api.common.ApiUtils;
 import com.promisenow.api.domain.chat.dto.MessageResponseDto;
+import com.promisenow.api.domain.chat.exception.FileStorageException;
 import com.promisenow.api.domain.chat.service.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -9,7 +11,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
@@ -25,13 +26,13 @@ import java.nio.file.Paths;
 import java.util.List;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/api/chatting")
 @RequiredArgsConstructor
 @Tag(name = "Chat API", description = "채팅 메시지 및 이미지 업로드 관련 API")
 public class ChatController {
 
     private final ChatService chatService;
+    private final String uploadDir = "./uploaded-images/";
 
     @Operation(
             summary = "채팅 메시지 조회",
@@ -44,14 +45,15 @@ public class ChatController {
             }
     )
     @GetMapping("/{roomId}/messages")
-    public ResponseEntity<List<MessageResponseDto>> getMessages(
+    public ResponseEntity<ApiUtils.ApiResponse<List<MessageResponseDto>>> getMessages(
             @Parameter(description = "채팅방 ID", example = "1") @PathVariable Long roomId) {
-        List<MessageResponseDto> messages = chatService.getMessages(roomId);
-        return ResponseEntity.ok(messages);
-    }
 
-    // 업로드 파일 저장 경로
-    private final String uploadDir = "./uploaded-images/";
+        List<MessageResponseDto> messages = chatService.getMessages(roomId);
+        if (messages == null || messages.isEmpty()) {
+            return ApiUtils.success(List.of());
+        }
+        return ApiUtils.success(messages);
+    }
 
     @PostMapping(
             value = "/upload/image",
@@ -69,17 +71,18 @@ public class ChatController {
                     @ApiResponse(responseCode = "500", description = "서버 오류")
             }
     )
-    public ResponseEntity<?> uploadImage(
+    public ResponseEntity<ApiUtils.ApiResponse<ImageUploadResponse>> uploadImage(
             @Parameter(
                     description = "업로드할 이미지 파일",
                     required = true,
                     schema = @Schema(type = "string", format = "binary")
             )
-            @RequestPart("file") MultipartFile file) {
+            @RequestPart("file") MultipartFile file,
+            @RequestParam("lat") Double lat,
+            @RequestParam("lng") Double lng,
+            @RequestParam(value = "timestamp", required = false) String timestampStr) {
 
-        if (file.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("파일이 비어있습니다.");
-        }
+
 
         try {
             File uploadPath = new File(uploadDir);
@@ -98,12 +101,11 @@ public class ChatController {
                     .path(fileName)
                     .toUriString();
 
-            return ResponseEntity.ok().body(new ImageUploadResponse(fileDownloadUri));
+            return ApiUtils.success(new ImageUploadResponse(fileDownloadUri));
 
         } catch (IOException e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("파일 저장 중 오류가 발생했습니다.");
+            throw new FileStorageException("파일 저장 중 오류가 발생했습니다.");
         }
     }
 
@@ -118,10 +120,6 @@ public class ChatController {
 
         public String getImageUrl() {
             return imageUrl;
-        }
-
-        public void setImageUrl(String imageUrl) {
-            this.imageUrl = imageUrl;
         }
     }
 }

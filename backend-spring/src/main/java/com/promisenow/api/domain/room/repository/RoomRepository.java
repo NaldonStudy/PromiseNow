@@ -14,4 +14,4 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
 
     // 'SELECT COUNT(*) > 0 FROM room WHERE invite_code = ?' 의 역할과 같다. 있으면 true반환 없으면 false
     boolean existsByInviteCode(String inviteCode);
-} 
+}
