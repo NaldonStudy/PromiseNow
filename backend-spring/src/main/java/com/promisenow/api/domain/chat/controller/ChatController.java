@@ -1,8 +1,11 @@
 package com.promisenow.api.domain.chat.controller;
 
 import com.promisenow.api.common.ApiUtils;
+import com.promisenow.api.domain.chat.dto.ImageResponseDto;
 import com.promisenow.api.domain.chat.dto.MessageResponseDto;
+import com.promisenow.api.domain.chat.entity.Image;
 import com.promisenow.api.domain.chat.exception.FileStorageException;
+import com.promisenow.api.domain.chat.repository.ImageRepository;
 import com.promisenow.api.domain.chat.service.ChatImageService;
 import com.promisenow.api.domain.chat.service.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,6 +38,7 @@ public class ChatController {
     private final ChatService chatService;
     private final String uploadDir = "./uploaded-images/";
     private final ChatImageService chatImageService;
+    private final ImageRepository imageRepository;  // 추가
 
     @Operation(
             summary = "채팅 메시지 조회",
@@ -123,4 +127,37 @@ public class ChatController {
             return imageUrl;
         }
     }
+    @Operation(
+            summary = "채팅방 내 이미지 목록 조회",
+            description = "특정 채팅방(roomId)에 업로드된 이미지들을 반환합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "이미지 목록 조회 성공"),
+                    @ApiResponse(responseCode = "404", description = "채팅방을 찾을 수 없음")
+            }
+    )
+
+    @GetMapping("/{roomId}/images")
+    public ResponseEntity<ApiUtils.ApiResponse<List<ImageResponseDto>>> getImagesByRoomId(
+            @Parameter(description = "채팅방 ID", example = "1") @PathVariable Long roomId) {
+
+        List<Image> images = imageRepository.findAllByRoomId(roomId);
+
+        if (images.isEmpty()) {
+            return ApiUtils.success(List.of());
+        }
+
+        List<ImageResponseDto> response = images.stream()
+                .map(img -> new ImageResponseDto(
+                        img.getImageUrl(),
+                        img.getLat(),
+                        img.getLng(),
+                        img.getTimestamp()
+                ))
+                .toList();
+
+        return ApiUtils.success(response);
+    }
+
+
+
 }
