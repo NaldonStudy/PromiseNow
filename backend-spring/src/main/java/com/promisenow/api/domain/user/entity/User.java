@@ -6,21 +6,22 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDate;
 
 @Entity
-@Table(name = "Users")
+@Table(name = "users")
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
-    
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private Long userId;
+
+    @Column(name = "join_date", nullable = false)
+    private LocalDate joinDate;
     
     @Column(name = "username", nullable = false)
     private String username;
@@ -30,4 +31,5 @@ public class User {
     
     @Column(name = "password")
     private String password;
+
 } 

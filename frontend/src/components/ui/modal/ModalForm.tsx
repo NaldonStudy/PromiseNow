@@ -27,6 +27,15 @@ const ModalForm = ({
   secondBtnText = '기본 이미지로 변경',
 }: Props) => {
   const [value, setValue] = useState('');
+  useEffect(() => {
+    setValue('');
+  }, [title, placeholder]);
+
+  const handleSubmit = () => {
+    onSubmit(value);
+  };
+
+  if (!isOpen) return null;
 
   useEffect(() => {
     if (isOpen) {
