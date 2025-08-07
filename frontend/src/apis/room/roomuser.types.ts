@@ -11,6 +11,11 @@ export interface JoinRequest {
   nickname: string;
 }
 
+//방 참가자 정보 수정
+export interface UpdateNicknameRequest {
+  nickname: string;
+}
+
 // 방 나가기
 export interface QuitRoomRequest {
   roomId: number;
@@ -34,7 +39,12 @@ export interface SimpleInfoResponse {
 // 방 참가자 목록 응답
 export type GetUsersInRoomResponse = SimpleInfoResponse[];
 
-
+// 알림 설정 응답
 export interface AlarmSettingResponse {
   isAgreed: boolean;
+}
+
+// 닉네임 변경 응답
+export interface UpdateNicknameResponse {
+  nickname: string;
 }

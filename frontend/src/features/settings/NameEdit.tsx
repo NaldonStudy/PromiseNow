@@ -1,6 +1,11 @@
 import { useState } from 'react';
+import { useParams } from 'react-router-dom';
+
 import Icon from '../../components/ui/Icon';
 import ModalForm from '../../components/ui/modal/ModalForm';
+import { useUpdateNickname } from '../../hooks/queries/room/mutations';
+import { useRoomStore } from '../../stores/room.store';
+import { useUserStore } from '../../stores/user.store';
 
 interface Props {
   name: string;
@@ -11,10 +16,32 @@ const NameEdit = ({ name, onUpdate }: Props) => {
   const [isModal, setIsModal] = useState(false);
   const [userName, setUserName] = useState(name);
 
+  const { userId } = useUserStore(); // number | null
+  const { id } = useParams(); // string | undefined
+  const roomId = id ? Number(id) : undefined;
+
+  const { setNickname } = useRoomStore();
+
+  const { mutate: updateNicknameMutate } = useUpdateNickname(userId, roomId);
+
   const handleSubmit = (newName: string) => {
+    if (userId === null) {
+      console.warn('userId is null');
+      return;
+    }
+
     setUserName(newName);
-    onUpdate(newName); // zustand로 업데이트
+    onUpdate(newName);
     setIsModal(false);
+
+    updateNicknameMutate(
+      { nickname: newName },
+      {
+        onSuccess: () => {
+          setNickname(newName);
+        },
+      }
+    );
   };
 
   return (

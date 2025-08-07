@@ -4,25 +4,25 @@ import {
   deleteRoom,
   updateAppointment,
   updateRoomDateRange,
-  updateRoomState,
   updateRoomTitle,
 } from '../../../apis/room/room.api';
 import type {
   AppointmentUpdateRequest,
   CreateRoomRequest,
   DateRangeUpdateRequest,
-  RoomState,
   TitleUpdateRequest,
 } from '../../../apis/room/room.types';
 import {
   joinRoomByInviteCode,
   quitRoom,
   updateAlarmSetting,
+  updateNickname,
 } from '../../../apis/room/roomuser.api';
 import type {
   AlarmUpdateRequest,
   JoinRequest,
   QuitRoomRequest,
+  UpdateNicknameRequest,
 } from '../../../apis/room/roomuser.types';
 import { useInvalidateRoomQueries } from './keys';
 
@@ -74,18 +74,6 @@ export const useUpdateAppointment = (roomId: number) => {
   });
 };
 
-// 방 상태 변경
-export const useUpdateRoomState = (roomId: number) => {
-  const { invalidateRoom } = useInvalidateRoomQueries();
-
-  return useMutation({
-    mutationFn: (newState: RoomState) => updateRoomState(roomId, newState),
-    onSuccess: () => {
-      invalidateRoom({ roomId });
-    },
-  });
-};
-
 // 방 삭제
 export const useDeleteRoom = (roomId: number, userId: number) => {
   const { invalidateRoom } = useInvalidateRoomQueries();
@@ -130,6 +118,25 @@ export const useUpdateAlarmSetting = (roomId: number, userId: number) => {
     mutationFn: (request: AlarmUpdateRequest) => updateAlarmSetting(roomId, userId, request),
     onSuccess: () => {
       invalidateRoom({ roomId, userId });
+    },
+  });
+};
+
+// 방 참가자 정보 수정
+export const useUpdateNickname = (userId: number | null, roomId?: number) => {
+  const { invalidateRoom } = useInvalidateRoomQueries();
+
+  return useMutation({
+    mutationFn: async (request: UpdateNicknameRequest) => {
+      if (userId === null || roomId === undefined) {
+        throw new Error('userId 또는 roomId가 유효하지 않음');
+      }
+      return updateNickname(roomId, userId, request); // 인자 순서 수정!
+    },
+    onSuccess: () => {
+      if (userId !== null && roomId !== undefined) {
+        invalidateRoom({ userId, roomId });
+      }
     },
   });
 };

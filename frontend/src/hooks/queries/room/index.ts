@@ -6,7 +6,6 @@ export {
   useAppointment,
   useJoinedRooms,
   useRoomDateRange,
-  useRoomStatus,
   useRoomTitleCode,
   useUsersInRoom,
 } from './queries';
@@ -20,6 +19,5 @@ export {
   useUpdateAlarmSetting,
   useUpdateAppointment,
   useUpdateRoomDateRange,
-  useUpdateRoomState,
   useUpdateRoomTitle,
 } from './mutations';
