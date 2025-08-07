@@ -17,43 +17,40 @@ const DateRangeSelector = ({ onDateRangeUpdate }: DateRangeSelectorProps) => {
   const [tempStartDate, setTempStartDate] = useState('');
   const [tempEndDate, setTempEndDate] = useState('');
 
-  const startDate = dateRange?.start ? new Date(dateRange.start) : null;
-  const endDate = dateRange?.end ? new Date(dateRange.end) : null;
+  const today = new Date();
 
-  const isUnsetDate = (date: Date | null) => !date || date.getFullYear() === 1970;
+  const isValidDate = (date?: Date | null) => date instanceof Date && !isNaN(date.getTime());
 
-  const formatDate = (date: Date | null) => (date ? date.toISOString().split('T')[0] : '');
+  const startDate = isValidDate(dateRange?.start) ? dateRange!.start : today;
+  const endDate = isValidDate(dateRange?.end) ? dateRange!.end : today;
 
-  const formatDisplayDate = (date: Date | null) =>
-    isUnsetDate(date) ? '미설정' : formatDate(date);
+  const formatDate = (date: Date) => date.toISOString().split('T')[0];
 
   const handleEdit = () => {
     setIsEditing(true);
-    setTempStartDate(isUnsetDate(startDate) ? '' : formatDate(startDate));
-    setTempEndDate(isUnsetDate(endDate) ? '' : formatDate(endDate));
+    setTempStartDate(formatDate(startDate));
+    setTempEndDate(formatDate(endDate));
   };
 
   const handleConfirm = () => {
-    const today = new Date().toISOString().split('T')[0];
+    const todayStr = new Date().toISOString().split('T')[0];
 
-    const start = tempStartDate || today;
-    const end = tempEndDate || today;
-
-    if (new Date(start) > new Date(end)) return;
+    const safeStartDate =
+      tempStartDate && tempStartDate !== '1970-01-01' ? tempStartDate : todayStr;
+    const safeEndDate = tempEndDate && tempEndDate !== '1970-01-01' ? tempEndDate : todayStr;
 
     const dateRangeData: DateRangeUpdateRequest = {
-      startDate: start,
-      endDate: end,
+      startDate: safeStartDate,
+      endDate: safeEndDate,
     };
 
     onDateRangeUpdate(dateRangeData);
 
-    setDateRange({
-      start: new Date(start),
-      end: new Date(end),
-    });
+    const start = new Date(safeStartDate);
+    const end = new Date(safeEndDate);
 
-    setCurrentDate(new Date(start));
+    setDateRange({ start, end });
+    setCurrentDate(start);
     setIsEditing(false);
   };
 
@@ -73,19 +70,14 @@ const DateRangeSelector = ({ onDateRangeUpdate }: DateRangeSelectorProps) => {
         <div className="space-y-3">
           <div className="flex items-center gap-1 sm:gap-2">
             <div className="flex-1 px-3 py-2 text-xs bg-gray rounded-md text-center">
-              {formatDisplayDate(startDate)}
+              {formatDate(startDate)}
             </div>
             <span className="flex-shrink-0 text-xs">~</span>
             <div className="flex-1 px-3 py-2 text-xs bg-gray rounded-md text-center">
-              {formatDisplayDate(endDate)}
+              {formatDate(endDate)}
             </div>
           </div>
-          <SquareBtn
-            onClick={handleEdit}
-            text={'기간 수정하기'}
-            template={'outlined'}
-            width="w-full"
-          />
+          <SquareBtn onClick={handleEdit} text="기간 수정하기" template="outlined" width="w-full" />
         </div>
       ) : (
         <div className="space-y-3">
@@ -94,7 +86,6 @@ const DateRangeSelector = ({ onDateRangeUpdate }: DateRangeSelectorProps) => {
               className="border border-gray-dark rounded-md px-3 py-2 text-xs flex-1 min-w-0"
               type="date"
               value={tempStartDate}
-              placeholder="미설정"
               onChange={(e) => setTempStartDate(e.target.value)}
               max={tempEndDate || undefined}
             />
@@ -103,14 +94,13 @@ const DateRangeSelector = ({ onDateRangeUpdate }: DateRangeSelectorProps) => {
               className="border border-gray-dark rounded-md px-3 py-2 text-xs flex-1 min-w-0"
               type="date"
               value={tempEndDate}
-              placeholder="미설정"
               onChange={(e) => setTempEndDate(e.target.value)}
               min={tempStartDate || undefined}
             />
           </div>
           <div className="flex gap-2">
-            <SquareBtn onClick={handleCancel} text={'취소'} template={'outlined'} width="w-full" />
-            <SquareBtn onClick={handleConfirm} text={'저장'} template={'filled'} width="w-full" />
+            <SquareBtn onClick={handleCancel} text="취소" template="outlined" width="w-full" />
+            <SquareBtn onClick={handleConfirm} text="저장" template="filled" width="w-full" />
           </div>
         </div>
       )}
