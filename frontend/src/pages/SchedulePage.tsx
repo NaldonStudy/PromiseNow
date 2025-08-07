@@ -1,5 +1,8 @@
 import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import type { MyAvailabilityResponse } from '../apis/availability/availability.types';
+import type { AppointmentUpdateRequest, DateRangeUpdateRequest } from '../apis/room/room.types';
+import { useCalendarStore } from '../features/calendar/calendar.store';
 import {
   useMyAvailability,
   useTotalAvailability,
@@ -12,9 +15,6 @@ import {
   useUpdateRoomDateRange,
 } from '../hooks/queries/room';
 import { useRoomStore } from '../stores/room.store';
-import { useCalendarStore } from '../features/calendar/calendar.store';
-import type { AppointmentUpdateRequest, DateRangeUpdateRequest } from '../apis/room/room.types';
-import type { MyAvailabilityResponse } from '../apis/availability/availability.types';
 
 import ScheduleTemplate from './templates/ScheduleTemplate';
 
@@ -32,14 +32,24 @@ const SchedulePage = () => {
   const updateRoomDateRangeMutation = useUpdateRoomDateRange(roomId);
   const updateUserSelectionsMutation = useUpdateAvailability(roomId);
 
-  // dateRange 조회
   useEffect(() => {
-    if (roomDateRangeData) {
-      setDateRange({
-        start: new Date(roomDateRangeData.startDate),
-        end: new Date(roomDateRangeData.endDate),
-      });
-    }
+    if (!roomDateRangeData) return;
+
+    const rawStart = roomDateRangeData.startDate;
+    const rawEnd = roomDateRangeData.endDate;
+
+    const isValidDateStr = (d: unknown) => typeof d === 'string' && d !== '' && d !== '1970-01-01';
+
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+
+    const safeStartStr = isValidDateStr(rawStart) ? rawStart : todayStr;
+    const safeEndStr = isValidDateStr(rawEnd) ? rawEnd : todayStr;
+
+    const start = new Date(safeStartStr);
+    const end = new Date(safeEndStr);
+
+    setDateRange({ start, end });
   }, [roomDateRangeData, setDateRange]);
 
   // userSelections 조회
@@ -82,7 +92,7 @@ const SchedulePage = () => {
   };
 
   const handleUserSelectionsUpdate = (userSelections: Record<string, boolean[]>) => {
-    const roomUserId = 1;
+    const roomUserId = 1; // TODO: 실제 유저 ID로 변경
     const updatedDataList = Object.entries(userSelections).map(([date, timeArray]) => ({
       date,
       timeData: timeArray.map((selected) => (selected ? '1' : '0')).join(''),

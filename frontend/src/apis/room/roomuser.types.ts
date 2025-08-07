@@ -33,3 +33,8 @@ export interface SimpleInfoResponse {
 
 // 방 참가자 목록 응답
 export type GetUsersInRoomResponse = SimpleInfoResponse[];
+
+
+export interface AlarmSettingResponse {
+  isAgreed: boolean;
+}

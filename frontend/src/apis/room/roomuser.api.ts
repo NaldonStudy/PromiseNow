@@ -6,6 +6,7 @@ import type {
   JoinInfoResponse,
   JoinRequest,
   QuitRoomRequest,
+  AlarmSettingResponse
 } from './roomuser.types';
 
 // 초대코드로 방 참가
@@ -24,6 +25,14 @@ export const quitRoom = async (request: QuitRoomRequest) => {
 // 방 참가자 목록 조회
 export const getUsersInRoom = async (roomId: number) => {
   const data = await handleApi<GetUsersInRoomResponse>(axiosInstance.get(`/rooms/${roomId}/users`));
+  return data;
+};
+
+// 알림 상태 조회
+export const getAlarmSetting = async (roomId: number, userId: number) => {
+  const data = await handleApi<AlarmSettingResponse>(
+    axiosInstance.get(`/rooms/${roomId}/users/${userId}/alarm`),
+  );
   return data;
 };
 

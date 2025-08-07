@@ -1,17 +1,20 @@
 import { useState } from 'react';
-import Icon from './../../components/ui/Icon';
-import ModalForm from './../../components/ui/modal/ModalForm';
+import Icon from '../../components/ui/Icon';
+import ModalForm from '../../components/ui/modal/ModalForm';
 
 interface Props {
   name: string;
+  onUpdate: (newName: string) => void;
 }
 
-const NameEdit = ({ name }: Props) => {
+const NameEdit = ({ name, onUpdate }: Props) => {
   const [isModal, setIsModal] = useState(false);
   const [userName, setUserName] = useState(name);
 
   const handleSubmit = (newName: string) => {
     setUserName(newName);
+    onUpdate(newName); // zustand로 업데이트
+    setIsModal(false);
   };
 
   return (
