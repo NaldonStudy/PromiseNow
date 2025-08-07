@@ -15,6 +15,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint("/ws-chat") // 서버와 웹소켓 연결을 위한 엔드포인트
                 .setAllowedOriginPatterns("*")  // 또는 정확한 프론트 주소로 제한 가능
                 .withSockJS(); // SockJS 지원
+        //리더보드용 웹소켓 설정
+        registry.addEndpoint("/ws-leaderboard")
+                .setAllowedOriginPatterns("*")
+                .withSockJS();
+        //테스트용
+        registry.addEndpoint("/ws-leaderboard-native")
+                .setAllowedOriginPatterns("*");
     }
 
     @Override

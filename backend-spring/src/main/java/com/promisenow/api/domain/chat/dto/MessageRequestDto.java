@@ -19,4 +19,6 @@ public class MessageRequestDto {
     private String content;
     private Chat.ChatType type;
     private String imageUrl;
+    private double lat;
+    private double lng;
 }

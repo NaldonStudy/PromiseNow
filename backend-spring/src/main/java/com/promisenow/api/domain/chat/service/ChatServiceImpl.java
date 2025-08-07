@@ -6,12 +6,14 @@ import com.promisenow.api.domain.chat.entity.Chat;
 import com.promisenow.api.domain.chat.entity.Image;
 import com.promisenow.api.domain.chat.repository.ChatRepository;
 import com.promisenow.api.domain.chat.repository.ImageRepository;
+import com.promisenow.api.domain.redis.entity.UserRedis;
 import com.promisenow.api.domain.room.entity.RoomUser;
 import com.promisenow.api.domain.room.repository.RoomUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,51 +24,104 @@ public class ChatServiceImpl implements ChatService {
     private final ChatRepository chatRepository;
     private final ImageRepository imageRepository;
     private final RoomUserRepository roomUserRepository;
-
+    private final NanoGptService nanoGptService; // 새로 추가!
 
     @Override
-    public MessageResponseDto saveMessage(MessageRequestDto messageRequestDto) {
-        Optional<RoomUser> roomUser = roomUserRepository.findById(messageRequestDto.getRoomUserId());
-        if (roomUser.isPresent()) {
-            Chat chat = Chat.builder()
-                    .messageId(messageRequestDto.getMessageId())
-                    .roomUser(roomUser.get())
-                    .content(messageRequestDto.getContent())
-                    .type(messageRequestDto.getType())
-                    .sentDate(LocalDateTime.now())
-                    .build();
-            chatRepository.save(chat);
-            String imageUrl = null;
-            // 2. 이미지 메시지면 Image 테이블에도 저장
-            if (chat.getType() == Chat.ChatType.IMAGE && messageRequestDto.getImageUrl() != null) {
-                imageUrl = messageRequestDto.getImageUrl();
-                Image image = Image.builder()
-                        .chat(chat) // FK 연관설정 (chat의 message_id 들어감)
-                        .imageUrl(messageRequestDto.getImageUrl())
-                        .build();
-                imageRepository.save(image);
-            }
-            System.out.println("chatMessageDto.getType() = " + messageRequestDto.getType());
-            System.out.println("chat.getType() = " + chat.getType());
-            System.out.println("chatMessageDto.getImageUrl() = " + messageRequestDto.getImageUrl());
-            System.out.println("chatMessageDto.getImageUrl() = " + chat.getRoomUser().getNickname());
-            // WebSocket 응답 DTO 반환
-            return new MessageResponseDto(
-                    chat.getContent(),
-                    messageRequestDto.getUserId(),
-                    chat.getRoomUser().getNickname(),
-                    chat.getSentDate(),
-                    chat.getType() != null ? chat.getType() : null,  // Enum을 문자열로 변환,
-                    imageUrl
-            );
-        } else {
+    public List<MessageResponseDto> saveMessagePair(MessageRequestDto req) {
+        List<MessageResponseDto> result = new ArrayList<>();
+
+        Optional<RoomUser> roomUserOpt = roomUserRepository.findById(req.getRoomUserId());
+        if (roomUserOpt.isEmpty()) {
             throw new NullPointerException("Room User Not Found");
         }
+        RoomUser roomUser = roomUserOpt.get();
+
+        // @PINO 명령어 처리
+        if (req.getContent() != null && req.getContent().startsWith("@PINO")) {
+            // 1. 사용자 명령 메시지 DB 저장 및 DTO 생성
+            Chat userChat = chatRepository.save(Chat.builder()
+                    .roomUser(roomUser)
+                    .content(req.getContent())
+                    .type(Chat.ChatType.TEXT) // 명령 메시지는 일반 TEXT
+                    .sentDate(LocalDateTime.now())
+                    .build());
+            result.add(new MessageResponseDto(
+                    userChat.getContent(),
+                    roomUser.getUser().getUserId(),
+                    roomUser.getNickname(),
+                    userChat.getSentDate(),
+                    Chat.ChatType.TEXT,
+                    null
+            ));
+
+            // 2. AI(PINO) 응답 생성 및 저장/DTO 생성
+            String prompt = req.getContent().replaceFirst("@PINO", "").trim();
+            String gptReply;
+            try {
+                gptReply = nanoGptService.generateGptReply(prompt);
+            } catch (Exception e) {
+                gptReply = "AI 서버 오류: 잠시 후 다시 시도해 주세요.";
+            }
+
+            // PINO RoomUser(PK -1L 등) 가져오기
+            RoomUser pinoUser = roomUserRepository.findById(-1L)
+                    .orElseThrow(() -> new IllegalStateException("PINO 챗봇(RoomUser) 정보가 없음"));
+
+            Chat aiChat = chatRepository.save(Chat.builder()
+                    .roomUser(pinoUser)
+                    .content(gptReply)
+                    .type(Chat.ChatType.PINO)
+                    .sentDate(LocalDateTime.now())
+                    .build());
+            result.add(new MessageResponseDto(
+                    gptReply,
+                    pinoUser.getUser().getUserId(),
+                    pinoUser.getNickname(),
+                    aiChat.getSentDate(),
+                    Chat.ChatType.PINO,
+                    null
+            ));
+            return result;
+        }
+
+        // 일반 메시지(이미지 포함)에 대한 기존 처리는 아래와 같이 보완
+        Chat.ChatType msgType = req.getType() != null ? req.getType() : Chat.ChatType.TEXT;
+        Chat chat = chatRepository.save(Chat.builder()
+                .roomUser(roomUser)
+                .content(req.getContent())
+                .type(msgType)
+                .sentDate(LocalDateTime.now())
+                .build());
+
+        String imageUrl = null;
+        LocalDateTime sentTime=LocalDateTime.now();
+        // 위치 정보 객체 생성 (UserRedis.LocationData 타입)
+        UserRedis.LocationData location = new UserRedis.LocationData(req.getLat(), req.getLng(), sentTime);
+        if (msgType == Chat.ChatType.IMAGE && req.getImageUrl() != null) {
+            imageUrl = req.getImageUrl();
+            Image image = Image.builder()
+                    .chat(chat)
+                    .location(location)
+                    .imageUrl(imageUrl)
+                    .build();
+            imageRepository.save(image);
+        }
+        result.add(new MessageResponseDto(
+                chat.getContent(),
+                roomUser.getUser().getUserId(),
+                roomUser.getNickname(),
+                chat.getSentDate(),
+                msgType,
+                imageUrl
+        ));
+        return result;
     }
 
     @Override
     public List<MessageResponseDto> getMessages(Long roomId) {
         List<Chat> chats = chatRepository.findByRoomUser_Room_RoomIdOrderBySentDateAsc(roomId);
+        System.out.println("roomId = " + roomId + ", chats size = " + chats.size());
+        chats.forEach(chat -> System.out.println("ChatId: " + chat.getMessageId() + ", content: " + chat.getContent()));
         return chats.stream().map(
                 chat -> {
                     String imageUrl = null;
@@ -88,12 +143,4 @@ public class ChatServiceImpl implements ChatService {
                 }).toList();
 
     }
-//    private final OpenAiChatClient openAiChatClient;
-//    @Override
-//    public MessageResponseDto handlePinoCommand(MessageRequestDto messageRequestDto) {
-//
-//
-//
-//        return null;
-//    }
 }
