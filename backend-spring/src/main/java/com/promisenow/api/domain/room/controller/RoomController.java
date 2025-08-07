@@ -10,16 +10,15 @@ import com.promisenow.api.domain.room.service.RoomService;
 import com.promisenow.api.domain.room.service.RoomUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.*;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -1096,6 +1095,39 @@ public class RoomController {
         return ApiUtils.success();
     }
 
-    
+    // 방에서 프로필 이미지 설정
+    @PatchMapping(
+            value = "/{roomId}/profile-image/{userId}",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            summary = "프로필 이미지 변경",
+            description = "사용자가 방에서 사용하는 프로필 이미지를 업로드합니다.",
+            parameters = {
+                    @Parameter(name = "roomId", description = "방 ID", required = true),
+                    @Parameter(name = "userId", description = "사용자 ID", required = true)
+            },
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "업로드 성공",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ImageUploadResponse.class))),
+                    @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+                    @ApiResponse(responseCode = "500", description = "서버 오류")
+            }
+    )
+    public ResponseEntity<ApiUtils.ApiResponse<ImageUploadResponse>> updateProfileImage(
+            @PathVariable Long roomId,
+            @PathVariable Long userId,
+            @RequestPart("file") MultipartFile file
+    ) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("파일이 null이거나 비어 있습니다. form-data의 key가 'file'인지 확인하세요.");
+        }
+
+        String imageUrl = roomUserService.updateProfileImage(roomId, userId, file);
+        return ApiUtils.success(new ImageUploadResponse(imageUrl));
+    }
+
 
 } 
