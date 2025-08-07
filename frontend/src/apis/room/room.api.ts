@@ -1,17 +1,15 @@
 import axiosInstance from '../../lib/axiosInstance';
 import handleApi from '../../lib/handleApi';
 import type {
-  CreateRoomRequest,
-  TitleUpdateRequest,
-  DateRangeUpdateRequest,
-  AppointmentUpdateRequest,
   AppointmentResponse,
+  AppointmentUpdateRequest,
+  CreateRoomRequest,
   CreateRoomResponse,
   DateRangeResponse,
+  DateRangeUpdateRequest,
   RoomListItem,
-  StateResponse,
   TitleCodeResponse,
-  RoomState,
+  TitleUpdateRequest,
 } from './room.types';
 
 // 방 생성
@@ -29,12 +27,6 @@ export const deleteRoom = async (roomId: number) => {
 // 방 제목 + 초대코드 조회
 export const getRoomTitleAndCode = async (roomId: number) => {
   const data = await handleApi<TitleCodeResponse>(axiosInstance.get(`/rooms/${roomId}/title-code`));
-  return data;
-};
-
-// 방 상태 조회
-export const getRoomStatus = async (roomId: number) => {
-  const data = await handleApi<StateResponse>(axiosInstance.get(`/rooms/${roomId}/status`));
   return data;
 };
 
@@ -73,12 +65,5 @@ export const updateRoomDateRange = async (roomId: number, request: DateRangeUpda
 // 세부 약속 정보 설정
 export const updateAppointment = async (roomId: number, request: AppointmentUpdateRequest) => {
   const data = await handleApi<void>(axiosInstance.patch(`/rooms/${roomId}/appointment`, request));
-  return data;
-};
-
-// 방 상태 변경 (WAITING, ACTIVE, COMPLETED, CANCELLED)
-export const updateRoomState = async (roomId: number, newState: RoomState) => {
-  const path = newState.toLowerCase();
-  const data = await handleApi<void>(axiosInstance.patch(`/rooms/${roomId}/state/${path}`));
   return data;
 };

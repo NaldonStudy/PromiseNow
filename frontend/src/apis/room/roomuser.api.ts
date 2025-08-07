@@ -1,12 +1,14 @@
 import axiosInstance from '../../lib/axiosInstance';
 import handleApi from '../../lib/handleApi';
 import type {
+  AlarmSettingResponse,
   AlarmUpdateRequest,
   GetUsersInRoomResponse,
   JoinInfoResponse,
   JoinRequest,
   QuitRoomRequest,
-  AlarmSettingResponse
+  UpdateNicknameRequest,
+  UpdateNicknameResponse,
 } from './roomuser.types';
 
 // 초대코드로 방 참가
@@ -25,6 +27,18 @@ export const quitRoom = async (request: QuitRoomRequest) => {
 // 방 참가자 목록 조회
 export const getUsersInRoom = async (roomId: number) => {
   const data = await handleApi<GetUsersInRoomResponse>(axiosInstance.get(`/rooms/${roomId}/users`));
+  return data;
+};
+
+// 방 참가자 수정
+export const updateNickname = async (
+  roomId: number,
+  userId: number,
+  payload: UpdateNicknameRequest,
+) => {
+  const data = await handleApi<UpdateNicknameResponse>(
+    axiosInstance.patch(`/rooms/${roomId}/nickname/${userId}`, payload),
+  );
   return data;
 };
 

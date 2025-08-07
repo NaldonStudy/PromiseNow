@@ -3,7 +3,6 @@ import {
   getAppointment,
   getJoinedRoom,
   getRoomDateRange,
-  getRoomStatus,
   getRoomTitleAndCode,
 } from '../../../apis/room/room.api';
 import { getUsersInRoom } from '../../../apis/room/roomuser.api';
@@ -11,7 +10,6 @@ import type {
   AppointmentResponse,
   DateRangeResponse,
   RoomListItem,
-  StateResponse,
   TitleCodeResponse,
 } from '../../../apis/room/room.types';
 import type { GetUsersInRoomResponse } from '../../../apis/room/roomuser.types';
@@ -37,19 +35,6 @@ export const useRoomTitleCode = (roomId: number) => {
     queryFn: async () => {
       const result = await getRoomTitleAndCode(roomId);
       if (result === null) throw new Error('방 제목 및 초대코드 조회 실패');
-      return result;
-    },
-    enabled: !!roomId,
-  });
-};
-
-// 방 상태 조회
-export const useRoomStatus = (roomId: number) => {
-  return useQuery<StateResponse>({
-    queryKey: roomKeys.status(roomId),
-    queryFn: async () => {
-      const result = await getRoomStatus(roomId);
-      if (result === null) throw new Error('방 상태 조회 실패');
       return result;
     },
     enabled: !!roomId,

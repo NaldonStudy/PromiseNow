@@ -10,10 +10,30 @@ import ModalConfirm from './../../components/ui/modal/ModalConfirm';
 
 const LeaveRoom = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeletingRoom, setIsDeletingRoom] = useState(false); // ✅ 삭제 여부 상태
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { currentRoomId, setCurrentRoomId } = useRoomStore();
   const { userId } = useUserStore();
+
+  // ✅ 모달 열기 전에 참여자 수 확인
+  const openModal = async () => {
+    if (!currentRoomId) return;
+
+    try {
+      const participants = await getUsersInRoom(currentRoomId);
+
+      if (!participants || participants.length === 0) {
+        return;
+      }
+
+      setIsDeletingRoom(participants.length === 1); // 마지막 1인 → 방 삭제
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error('참여자 조회 실패:', error);
+      alert('참여자 정보를 불러올 수 없습니다.');
+    }
+  };
 
   const handleLeaveRoom = async () => {
     if (!currentRoomId || userId === null) {
@@ -22,10 +42,7 @@ const LeaveRoom = () => {
     }
 
     try {
-      const participants = await getUsersInRoom(currentRoomId);
-      const isLastOne = participants!.length === 1;
-
-      if (isLastOne) {
+      if (isDeletingRoom) {
         await deleteRoom(currentRoomId);
       } else {
         await quitRoom({ roomId: currentRoomId, userId });
@@ -33,7 +50,7 @@ const LeaveRoom = () => {
 
       setCurrentRoomId(null);
 
-      // ✅ 방 목록 캐시 무효화 → 자동 refetch
+      // ✅ 방 목록 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['joinedRooms', userId] });
 
       navigate('/home');
@@ -53,14 +70,18 @@ const LeaveRoom = () => {
           template="filled"
           width="w-full"
           textSize="text-md"
-          onClick={() => setIsModalOpen(true)}
+          onClick={openModal} // ✅ 참여자 확인 후 모달 오픈
         />
       </div>
 
       <ModalConfirm
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={`정보가 모두 사라집니다.\n방을 나가시겠습니까?`}
+        title={
+          isDeletingRoom
+            ? '방 전체가 삭제됩니다.\n정말 나가시겠습니까?'
+            : '정보가 모두 사라집니다.\n방을 나가시겠습니까?'
+        }
         onConfirm={handleLeaveRoom}
       />
     </>
