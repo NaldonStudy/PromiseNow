@@ -31,10 +31,6 @@ const ModalForm = ({
     setValue('');
   }, [title, placeholder]);
 
-  const handleSubmit = () => {
-    onSubmit(value);
-  };
-
   if (!isOpen) return null;
 
   useEffect(() => {
