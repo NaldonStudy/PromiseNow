@@ -71,6 +71,7 @@ public class RoomController {
                         "success": true,
                         "data": {
                             "roomId": 101,
+                            "roomUserId": 8,
                             "roomTitle": "우리 팀 약속방",
                             "roomCode": "Ab12Cd",
                             "nickname": "홍길동"
@@ -179,6 +180,7 @@ public class RoomController {
                             "success": true,
                             "data": {
                                 "roomId": 123,
+                                "roomUserId": 8,
                                 "roomTitle": "약속방 A",
                                 "nickname": "홍길동"
                             },

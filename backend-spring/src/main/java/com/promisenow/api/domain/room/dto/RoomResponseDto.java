@@ -49,6 +49,9 @@ public class RoomResponseDto {
         @Schema(description = "생성된 방 ID", example = "101")
         private Long roomId;
 
+        @Schema(description = "생성된 방에서의 내 RoomUserId", example = "8")
+        private Long roomUserId;
+
         @Schema(description = "방 제목", example = "우리 팀 약속방")
         private String roomTitle;
 

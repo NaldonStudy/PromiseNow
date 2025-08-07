@@ -48,6 +48,7 @@ public class RoomUserServiceImpl implements RoomUserService {
 
         return new JoinInfoResponse(
                 room.getRoomId(),
+                roomUser.getRoomUserId(),
                 room.getRoomTitle(),
                 dto.getNickname()
                 );

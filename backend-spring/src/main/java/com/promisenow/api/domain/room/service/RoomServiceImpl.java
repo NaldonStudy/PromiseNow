@@ -54,6 +54,7 @@ public class RoomServiceImpl implements RoomService {
 
         return CreateResponse.builder()
                 .roomId(room.getRoomId())
+                .roomUserId(roomUser.getRoomUserId())
                 .roomTitle(room.getRoomTitle())
                 .roomCode(room.getInviteCode())
                 .nickname(nickname)
