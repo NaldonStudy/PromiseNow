@@ -1,5 +1,6 @@
 package com.promisenow.api.domain.room.service;
 
+import com.promisenow.api.common.ErrorMessage;
 import com.promisenow.api.domain.room.dto.RoomRequestDto;
 import com.promisenow.api.domain.room.dto.RoomResponseDto.*;
 import com.promisenow.api.domain.room.entity.Room;
@@ -26,6 +27,17 @@ public class RoomServiceImpl implements RoomService {
     private final RoomUserRepository roomUserRepository;
     private final UserRepository userRepository;
 
+    // 메서드로 묶어서 관리
+    private Room findRoomOrThrow(Long roomId) {
+        return roomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException(ErrorMessage.ROOM_NOT_FOUND));
+    }
+
+    private User findUserOrThrow(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException(ErrorMessage.USER_NOT_FOUND));
+    }
+
     // 방 만드는 서비스
     @Override
     public CreateResponse createRoomWithUser(String roomTitle, Long userId, String nickname) {
@@ -40,8 +52,7 @@ public class RoomServiceImpl implements RoomService {
 
         roomRepository.save(room);
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다"));
+        User user = findUserOrThrow(userId);
 
         RoomUser roomUser = RoomUser.builder()
                 .room(room)
@@ -61,44 +72,48 @@ public class RoomServiceImpl implements RoomService {
                 .build();
     }
 
-
-
     @Override
     public void deleteRoom(Long roomId) {
-        Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("방이 존재하지 않습니다."));
+        Room room = findRoomOrThrow(roomId);
+
+        List<RoomUser> roomUsers = roomUserRepository.findByRoom_RoomId(roomId);
+
+        if(roomUsers.size() > 1) {
+            throw new IllegalArgumentException(ErrorMessage.ROOM_DELETE_NOT_ALLOWED);
+        }
+
+        if(roomUsers.size() == 1) {
+            roomUserRepository.delete(roomUsers.get(0));
+        }
+
         roomRepository.delete(room);
     }
 
     // 방제목 & 방참여코드 GET
     @Override
     public TitleCodeResponse getRoomTitleAndCode(Long roomId) {
-        Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 방이 존재하지 않습니다 : " + roomId));
+        Room room = findRoomOrThrow(roomId);
         return new TitleCodeResponse(room.getRoomTitle(), room.getInviteCode());
     }
 
     // 방 상태 GET
     @Override
     public StateResponse getRoomStatus(Long roomId) {
-        Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 방이 존재하지 않습니다 : " + roomId));
+        Room room = findRoomOrThrow(roomId);
         return new StateResponse(room.getRoomState());
     }
 
     // 방 약속기간 GET
     @Override
     public DateRangeResponse getRoomDateRange(Long roomId) {
-        Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 방이 존재하지 않습니다 : " + roomId));
+        Room room = findRoomOrThrow(roomId);
         return new DateRangeResponse(room.getStartDate(), room.getEndDate());
     }
 
     // 방 세부약속 GET
     @Override
     public AppointmentResponse getRoomAppointment(Long roomId) {
-        Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 방이 존재하지 않습니다 : " + roomId));
+        Room room = findRoomOrThrow(roomId);
 
         return new AppointmentResponse(
                 room.getLocationDate(),
@@ -146,8 +161,7 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     public void updateRoomState(Long roomId, Room.RoomState roomState) {
-        Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 방이 존재하지 않습니다."));
+        Room room = findRoomOrThrow(roomId);
 
         room.changeRoomState(roomState);
     }
@@ -155,8 +169,7 @@ public class RoomServiceImpl implements RoomService {
     // 방 제목 변경
     @Transactional
     public void updateRoomTitle(Long roomId, String newTitle) {
-        Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 방이 존재하지 않습니다."));
+        Room room = findRoomOrThrow(roomId);
 
         room.updateTitle(newTitle);
     }
@@ -165,8 +178,7 @@ public class RoomServiceImpl implements RoomService {
     @Override
     @Transactional
     public void updateRoomDateRange(Long roomId, RoomRequestDto.DateRangeUpdateRequest dto) {
-        Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 방입니다"));
+        Room room = findRoomOrThrow(roomId);
 
         room.upadteDateRange(dto.getStartDate(), dto.getEndDate());
     }
@@ -174,8 +186,7 @@ public class RoomServiceImpl implements RoomService {
     @Override
     @Transactional
     public void updateRoomAppointment(Long roomId, RoomRequestDto.AppointmentUpdateRequest dto) {
-        Room room = roomRepository.findById((roomId))
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 방입니다"));
+        Room room = findRoomOrThrow(roomId);
 
         room.updateAppointment(
                 dto.getLocationDate(),
