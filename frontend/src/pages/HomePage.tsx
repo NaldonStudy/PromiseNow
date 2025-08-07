@@ -1,8 +1,8 @@
 import BrandHeader from '../features/rooms/components/BrandHeader';
+import RoomMakeWithModals from '../features/rooms/components/RoomMakeWithModals';
 import { dummy } from '../features/rooms/dummy';
 import RoomFind from './../features/rooms/components/RoomFind';
 import RoomList from './../features/rooms/components/RoomList';
-import RoomMake from './../features/rooms/components/RoomMake';
 const HomePage = () => {
   return (
     <>
@@ -12,7 +12,7 @@ const HomePage = () => {
 
       <RoomList rooms={dummy} />
 
-      <RoomMake />
+      <RoomMakeWithModals />
     </>
   );
 };

@@ -1,26 +1,24 @@
 package com.promisenow.api.domain.leaderboard.entity;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.redis.core.RedisHash;
 
-@Entity
-@Table(name = "Leaderboard")
+
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@RedisHash(value = "user-location")
+
 public class Leaderboard {
-    
-    @Id
-    @Column(name = "leaderboard_id", nullable = false)
-    private String leaderboardId;
-    
-    @Column(name = "user_nickname", nullable = false, length = 30)
-    private String userNickname;
-    
-    @Column(name = "ranking_order", nullable = false)
-    private Integer rankingOrder;
-} 
+    private Long roomUserId;
+    private double lat;
+    private double lng;
+    private boolean online;
+    private double velocity;
+    private double distance; // Goal까지 남은 거리
+    private double progress; // 출발-도착 대비 진행률
+}

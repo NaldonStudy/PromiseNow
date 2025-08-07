@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import Modal from './Modal';
-import SquareBtn from '../SquareBtn';
+import { useEffect, useState } from 'react';
 import Input from '../Input';
+import SquareBtn from '../SquareBtn';
+import Modal from './Modal';
 
 interface Props {
   isOpen: boolean;
@@ -21,21 +21,22 @@ const ModalForm = ({
   onSubmit,
 }: Props) => {
   const [value, setValue] = useState('');
+  useEffect(() => {
+    setValue('');
+  }, [title, placeholder]);
+
+  const handleSubmit = () => {
+    onSubmit(value);
+  };
+
+  if (!isOpen) return null;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <p className="font-semibold mb-4">{title}</p>
       <Input value={value} onChange={(e) => setValue(e.target.value)} placeholder={placeholder} />
       <div className="flex justify-end gap-2 mt-3">
-        <SquareBtn
-          text={submitText}
-          width="w-full"
-          onClick={() => {
-            onSubmit(value);
-            onClose();
-          }}
-          template="filled"
-        />
+        <SquareBtn text={submitText} width="w-full" onClick={handleSubmit} template="filled" />
       </div>
     </Modal>
   );

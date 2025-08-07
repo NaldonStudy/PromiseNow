@@ -22,4 +22,14 @@ public class User {
 
     @Column(name = "join_date", nullable = false)
     private LocalDate joinDate;
+    
+    @Column(name = "username", nullable = false)
+    private String username;
+    
+    @Column(name = "email")
+    private String email;
+    
+    @Column(name = "password")
+    private String password;
+
 } 
