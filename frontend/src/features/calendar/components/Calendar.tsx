@@ -12,9 +12,14 @@ import Card from '../../../components/ui/Card';
 interface CalendarProps {
   totalAvailabilityData?: TotalAvailabilityResponse;
   onDateRangeUpdate: (dateRangeData: DateRangeUpdateRequest) => void;
+  onUserSelectionsUpdate: (userSelections: Record<string, boolean[]>) => void;
 }
 
-const Calendar = ({ totalAvailabilityData, onDateRangeUpdate }: CalendarProps) => {
+const Calendar = ({
+  totalAvailabilityData,
+  onDateRangeUpdate,
+  onUserSelectionsUpdate,
+}: CalendarProps) => {
   const { view, mode, currentDate } = useCalendarStore();
   const totalMembers = 5; //임시
 
@@ -42,7 +47,7 @@ const Calendar = ({ totalAvailabilityData, onDateRangeUpdate }: CalendarProps) =
             mode={mode}
           />
         )}
-        <ScheduleEditBtn />
+        <ScheduleEditBtn onUserSelectionsUpdate={onUserSelectionsUpdate} />
       </Card>
     </>
   );
