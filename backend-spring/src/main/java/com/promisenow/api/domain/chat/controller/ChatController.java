@@ -108,8 +108,6 @@ public class ChatController {
             e.printStackTrace();
             throw new FileStorageException("파일 저장 중 오류가 발생했습니다.");
         }
-        String fileDownloadUri = chatImageService.uploadImage(file, lat, lng, timestampStr);
-        return ApiUtils.success(new ImageUploadResponse(fileDownloadUri));
     }
 
     @Schema(description = "이미지 업로드 응답 DTO")
