@@ -1,4 +1,5 @@
 import VideoTile from './VideoTile';
+import { useCallScreenStore } from '../callScreen.store';
 
 interface Participant {
   id: string;
@@ -13,8 +14,58 @@ interface Props {
 }
 
 const VideoGrid = ({ participants = [] }: Props) => {
+  const { viewMode, selectedParticipantId, setSelectedParticipant } = useCallScreenStore();
   const participantCount = participants.length;
 
+  const handleParticipantClick = (participantId: string) => {
+    setSelectedParticipant(participantId);
+  };
+
+  // Spotlight 모드
+  if (viewMode === 'spotlight' && selectedParticipantId) {
+    const selectedParticipant = participants.find((p) => p.id === selectedParticipantId);
+    const otherParticipants = participants.filter((p) => p.id !== selectedParticipantId);
+    const otherCount = otherParticipants.length;
+
+    return (
+      <div className="flex flex-col h-full">
+        {/* 상단: 나머지 참가자들 일렬 */}
+        <div className="h-32 flex overflow-x-auto hide-scrollbar select-none">
+          {otherParticipants.map((participant) => (
+            <div
+              key={participant.id}
+              className={`flex-shrink-0 h-full ${otherCount === 3 ? 'w-1/3' : 'w-31'}`}
+            >
+              <VideoTile
+                id={participant.id}
+                name={participant.name}
+                isOnline={participant.isOnline}
+                isMuted={participant.isMuted}
+                videoStream={participant.videoStream}
+                onClick={handleParticipantClick}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* 하단: 선택된 참가자 */}
+        <div className="flex-1">
+          {selectedParticipant && (
+            <VideoTile
+              id={selectedParticipant.id}
+              name={selectedParticipant.name}
+              isOnline={selectedParticipant.isOnline}
+              isMuted={selectedParticipant.isMuted}
+              videoStream={selectedParticipant.videoStream}
+              onClick={handleParticipantClick}
+            />
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Grid 모드
   // 홀수명: 상단 1명 + 하단 2열 grid
   if (participantCount % 2 !== 0) {
     const topParticipant = participants[0];
@@ -24,11 +75,12 @@ const VideoGrid = ({ participants = [] }: Props) => {
       <div className="flex flex-col h-full">
         <div className="flex-1">
           <VideoTile
-            key={topParticipant.id}
+            id={topParticipant.id}
             name={topParticipant.name}
             isOnline={topParticipant.isOnline}
             isMuted={topParticipant.isMuted}
             videoStream={topParticipant.videoStream}
+            onClick={handleParticipantClick}
           />
         </div>
 
@@ -36,10 +88,12 @@ const VideoGrid = ({ participants = [] }: Props) => {
           {bottomParticipants.map((participant) => (
             <VideoTile
               key={participant.id}
+              id={participant.id}
               name={participant.name}
               isOnline={participant.isOnline}
               isMuted={participant.isMuted}
               videoStream={participant.videoStream}
+              onClick={handleParticipantClick}
             />
           ))}
         </div>
@@ -53,10 +107,12 @@ const VideoGrid = ({ participants = [] }: Props) => {
       {participants.map((participant) => (
         <VideoTile
           key={participant.id}
+          id={participant.id}
           name={participant.name}
           isOnline={participant.isOnline}
           isMuted={participant.isMuted}
           videoStream={participant.videoStream}
+          onClick={handleParticipantClick}
         />
       ))}
     </div>

@@ -1,8 +1,20 @@
 import SquareBtn from '../../../components/ui/SquareBtn';
 import { useCalendarStore } from '../calendar.store';
 
-const ScheduleEditBtn = () => {
-  const { mode, setMode } = useCalendarStore();
+interface ScheduleEditBtnProps {
+  onUserSelectionsUpdate: (userSelections: Record<string, boolean[]>) => void;
+}
+
+const ScheduleEditBtn = ({ onUserSelectionsUpdate }: ScheduleEditBtnProps) => {
+  const { mode, setMode, userSelections } = useCalendarStore();
+
+  const handleSave = () => {
+    if (onUserSelectionsUpdate) {
+      onUserSelectionsUpdate(userSelections);
+    }
+    setMode('view');
+  };
+
   return (
     <>
       {mode === 'view' ? (
@@ -19,7 +31,7 @@ const ScheduleEditBtn = () => {
           template="filled"
           width="w-full"
           height="h-10"
-          onClick={() => setMode('view')}
+          onClick={handleSave}
         />
       )}
     </>

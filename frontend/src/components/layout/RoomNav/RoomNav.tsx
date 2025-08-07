@@ -9,7 +9,7 @@ const RoomNav = () => {
   return (
     <div className="relative">
       <div
-        className="relative bg-white py-4 px-10 flex justify-between items-center"
+        className="relative bg-white py-2 px-3 flex justify-around items-center"
         style={{
           filter: 'drop-shadow(0 -1px 3px rgba(0, 0, 0, 0.1))',
         }}
@@ -22,7 +22,7 @@ const RoomNav = () => {
         </div>
         <NavItem type="roulette" text="룰렛" link={`/${id}/roulette`} />
         <NavItem type="calendar" text="일정" link={`/${id}/schedule`} />
-        <div className="w-10" />
+        <div className="w-15" />
         <NavItem type="location" text="위치" link={`/${id}/location`} />
         <NavItem type="settings" text="설정" link={`/${id}/settings`} />
       </div>

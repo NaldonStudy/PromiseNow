@@ -3,21 +3,28 @@ import Profile from '../../../components/ui/Profile';
 import Icon from '../../../components/ui/Icon';
 
 interface Props {
+  id: string;
   name: string;
   isOnline: boolean;
   isMuted: boolean;
   videoStream: MediaStream | null;
+  onClick?: (id: string) => void;
 }
 
-const VideoTile = ({ name, isOnline, isMuted, videoStream }: Props) => {
-  const bgColors = ['bg-gray', 'bg-gray-input', 'bg-gray-input/10'];
-  const getRandomColor = () => {
+const VideoTile = ({ id, name, isOnline, isMuted, videoStream, onClick }: Props) => {
+  const bgColors = useMemo(() => ['bg-gray', 'bg-gray-input', 'bg-gray-input/10'], []);
+  const randomBg = useMemo(() => {
     return bgColors[Math.floor(Math.random() * bgColors.length)];
+  }, [bgColors]);
+
+  const handleClick = () => {
+    if (onClick) {
+      onClick(id);
+    }
   };
-  const randomBg = useMemo(() => getRandomColor(), []);
 
   return (
-    <div className="relative h-full overflow-hidden">
+    <div className={`relative h-full overflow-hidden cursor-pointer`} onClick={handleClick}>
       {videoStream ? (
         <video />
       ) : (
