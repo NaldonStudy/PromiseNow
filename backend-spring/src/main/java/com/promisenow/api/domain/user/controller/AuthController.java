@@ -1,65 +1,73 @@
 package com.promisenow.api.domain.user.controller;
 
-import com.promisenow.api.domain.user.service.AuthService;
-import io.swagger.v3.oas.annotations.Hidden;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import com.promisenow.api.global.jwt.JwtTokenProvider;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
-@Tag(name = "로그인/로그아웃", description = "카카오 OAuth 2.0 인증 API")
+import static com.promisenow.api.common.ApiUtils.success;
+
+@Tag(name = "로그아웃/리프레쉬 토큰 발급", description = "카카오 로그아웃과 리프레쉬 토큰 발급 API")
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthService authService;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    @Value("${auth.front-redirect-uri}")
-    private String frontendRedirectUri;
+    @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
+    String kakaoClientId;
 
-    @Operation(
-            summary = "카카오 로그인 리다이렉트",
-            description = "브라우저를 통해 호출되어야 하는 API입니다.",
-            responses = {
-                    @ApiResponse(responseCode = "302", description = "카카오 로그인 페이지로 리디렉트")
-            }
-    )
-    @GetMapping("/login")
-    public void getKakaoRedirectUri(HttpServletResponse response) throws IOException {
-        String redirectUrl = authService.getKakaoLoginUrl();
-        response.sendRedirect(redirectUrl);
+    @Value("${auth.front-login-uri}")
+    String frontLoginUri;
+
+    @GetMapping("/logout")
+    public void logout(HttpServletResponse response) throws IOException {
+        // 쿠키 삭제
+        ResponseCookie expiredAccessTokenCookie = jwtTokenProvider.expireAccessTokenCookie();
+        ResponseCookie expiredRefreshTokenCookie = jwtTokenProvider.expireRefreshTokenCookie();
+
+        response.addHeader("Set-Cookie", expiredAccessTokenCookie.toString());
+        response.addHeader("Set-Cookie", expiredRefreshTokenCookie.toString());
+
+        // 카카오 로그아웃 리다이렉트
+        String kakaoLogoutUrl = "https://kauth.kakao.com/oauth/logout"
+                + "?client_id=" + kakaoClientId
+                + "&logout_redirect_uri=" + URLEncoder.encode(frontLoginUri, StandardCharsets.UTF_8);
+
+        response.sendRedirect(kakaoLogoutUrl);
     }
 
-    @Operation(
-            summary = "로그아웃 (access_token 쿠키 삭제)",
-            description = "프론트엔드에서 호출 시 JWT 쿠키를 삭제합니다.",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "로그아웃 완료")
-            }
-    )
-    @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletResponse response) {
-        ResponseCookie cookie = authService.expireAccessTokenCookie();
-        response.addHeader("Set-Cookie", cookie.toString());
-        return ResponseEntity.ok("로그아웃 완료");
-    }
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshAccessToken(HttpServletRequest request, HttpServletResponse response) {
+        // 쿠키에서 refresh_token 추출
+        String refreshToken = jwtTokenProvider.resolveTokenFromCookie(request, "refresh_token");
 
-    @Hidden
-    @GetMapping("/callback")
-    public void kakaoCallback(
-            @RequestParam String code,
-            HttpServletResponse response
-    ) throws IOException {
-        String jwt = authService.handleKakaoLogin(code);
-        ResponseCookie cookie = authService.createAccessTokenCookie(jwt);
-        response.addHeader("Set-Cookie", cookie.toString());
-        response.sendRedirect(frontendRedirectUri);
+        if (refreshToken == null || !jwtTokenProvider.validateToken(refreshToken)) {
+            return ResponseEntity.status(401).body("Invalid or missing refresh token");
+        }
+
+        // 토큰에서 userId 추출
+        Long userId = jwtTokenProvider.getUserId(refreshToken);
+
+        // 새 access token 발급
+        String newAccessToken = jwtTokenProvider.generateAccessToken(userId);
+
+        ResponseCookie accessCookie = jwtTokenProvider.createAccessTokenCookie(newAccessToken);
+        response.addHeader("Set-Cookie", accessCookie.toString());
+
+        return success();
     }
 }
