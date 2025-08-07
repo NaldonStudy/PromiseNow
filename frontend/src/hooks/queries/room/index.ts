@@ -3,24 +3,23 @@ export { roomKeys, useInvalidateRoomQueries } from './keys';
 
 // Query Hooks
 export {
-  useJoinedRooms,
-  useRoomTitleCode,
-  useRoomStatus,
-  useRoomDateRange,
   useAppointment,
+  useJoinedRooms,
+  useRoomDateRange,
+  useRoomStatus,
+  useRoomTitleCode,
   useUsersInRoom,
 } from './queries';
 
 // Mutation Hooks
 export {
   useCreateRoom,
-  useUpdateRoomTitle,
-  useUpdateRoomDateRange,
-  useUpdateAppointment,
-  useUpdateRoomState,
   useDeleteRoom,
   useJoinRoomByInviteCode,
-  useRejoinRoom,
   useQuitRoom,
   useUpdateAlarmSetting,
+  useUpdateAppointment,
+  useUpdateRoomDateRange,
+  useUpdateRoomState,
+  useUpdateRoomTitle,
 } from './mutations';

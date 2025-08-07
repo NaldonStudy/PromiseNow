@@ -1,15 +1,20 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 import ModalConfirm from '../../../components/ui/modal/ModalConfirm';
+import ModalForm from '../../../components/ui/modal/ModalForm';
 
 interface Props {
   code: string;
   triggerKey: number;
+  onJoinRoom: (inviteCode: string, nickname: string, onSuccess: (roomId: number) => void) => void;
 }
 
-type ModalType = 'confirm' | null;
+type ModalType = 'confirm' | 'nickname' | null;
 
-const RoomFindModals = ({ code, triggerKey }: Props) => {
+const RoomFindModals = ({ code, triggerKey, onJoinRoom }: Props) => {
   const [modalType, setModalType] = useState<ModalType>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!triggerKey) return;
@@ -18,16 +23,19 @@ const RoomFindModals = ({ code, triggerKey }: Props) => {
       alert('참여 코드를 입력해주세요.');
       return;
     }
-    if (code !== '1234') {
-      alert('해당 코드의 방이 존재하지 않습니다.');
-      return;
-    }
+
     setModalType('confirm');
   }, [triggerKey]);
 
   const handleConfirm = () => {
+    setModalType('nickname');
+  };
+
+  const handleNicknameSubmit = (nickname: string) => {
+    onJoinRoom(code, nickname, (roomId) => {
+      navigate(`/${roomId}/schedule`);
+    });
     setModalType(null);
-    // 참여 api 호출
   };
 
   const handleClose = () => setModalType(null);
@@ -40,6 +48,17 @@ const RoomFindModals = ({ code, triggerKey }: Props) => {
           onClose={handleClose}
           onConfirm={handleConfirm}
           title="방에 참여하시겠습니까?"
+        />
+      )}
+
+      {modalType === 'nickname' && (
+        <ModalForm
+          isOpen={true}
+          onClose={handleClose}
+          title="닉네임을 입력하세요"
+          placeholder="ex) 홍길동"
+          submitText="참여하기"
+          onSubmit={handleNicknameSubmit}
         />
       )}
     </>

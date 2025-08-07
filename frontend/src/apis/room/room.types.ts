@@ -5,6 +5,8 @@ export type RoomState = 'WAITING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
 // 방 생성 요청
 export interface CreateRoomRequest {
   roomTitle: string;
+  nickname: string;
+  userId: number;
 }
 
 // 방 제목 수정 요청
@@ -41,6 +43,9 @@ export interface AppointmentResponse {
 export interface CreateRoomResponse {
   roomTitle: string;
   roomCode: string;
+  roomId: number;
+  roomUserId: number;
+  nickName: string;
 }
 
 // 약속 가능범위 설정
@@ -53,9 +58,9 @@ export interface DateRangeResponse {
 export interface RoomListItem {
   roomId: number;
   roomTitle: string;
-  locationDate: string;
-  locationTime: string;
-  locationName: string;
+  locationDate: string | null;
+  locationTime: string | null;
+  locationName: string | null;
   participantSummary: string;
 }
 
