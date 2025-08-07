@@ -1,12 +1,14 @@
 package com.promisenow.api.domain.chat.entity;
 
 
-import com.promisenow.api.domain.redis.entity.UserRedis;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name="image")
@@ -27,12 +29,14 @@ public class Image {
     @Column(name = "image_url", nullable = false)
     private String imageUrl;
 
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "lat", column = @Column(name = "location_lat")),
-            @AttributeOverride(name = "lng", column = @Column(name = "location_lng")),
-            @AttributeOverride(name = "timestamp", column = @Column(name = "location_timestamp"))
-    })
-    private UserRedis.LocationData location;
+    @Column(name = "location_lat")
+    private Double lat;
+
+    @Column(name = "location_lng")
+    private Double lng;
+
+    // 시간은 DB에 맞는 타입으로 변경 (Timestamp, LocalDateTime, Long 등 선택 가능)
+    @Column(name = "location_timestamp")
+    private LocalDateTime timestamp;
 
 }

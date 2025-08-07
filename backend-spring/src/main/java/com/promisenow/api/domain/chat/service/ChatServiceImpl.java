@@ -6,7 +6,6 @@ import com.promisenow.api.domain.chat.entity.Chat;
 import com.promisenow.api.domain.chat.entity.Image;
 import com.promisenow.api.domain.chat.repository.ChatRepository;
 import com.promisenow.api.domain.chat.repository.ImageRepository;
-import com.promisenow.api.domain.redis.entity.UserRedis;
 import com.promisenow.api.domain.room.entity.RoomUser;
 import com.promisenow.api.domain.room.repository.RoomUserRepository;
 import lombok.RequiredArgsConstructor;
@@ -84,25 +83,27 @@ public class ChatServiceImpl implements ChatService {
             return result;
         }
 
-        // 일반 메시지(이미지 포함)에 대한 기존 처리는 아래와 같이 보완
+        // 일반 메시지(이미지 포함)에 대한 처리
         Chat.ChatType msgType = req.getType() != null ? req.getType() : Chat.ChatType.TEXT;
+        LocalDateTime sentTime = LocalDateTime.now();
         Chat chat = chatRepository.save(Chat.builder()
                 .roomUser(roomUser)
                 .content(req.getContent())
                 .type(msgType)
-                .sentDate(LocalDateTime.now())
+                .sentDate(sentTime)
                 .build());
 
         String imageUrl = null;
-        LocalDateTime sentTime=LocalDateTime.now();
-        // 위치 정보 객체 생성 (UserRedis.LocationData 타입)
-        UserRedis.LocationData location = new UserRedis.LocationData(req.getLat(), req.getLng(), sentTime);
         if (msgType == Chat.ChatType.IMAGE && req.getImageUrl() != null) {
             imageUrl = req.getImageUrl();
+
+            // Image 엔티티에 위치 정보 직접 필드로 저장
             Image image = Image.builder()
                     .chat(chat)
-                    .location(location)
                     .imageUrl(imageUrl)
+                    .lat(req.getLat())
+                    .lng(req.getLng())
+                    .timestamp(sentTime) // timestamp 타입이 LocalDateTime 일 경우
                     .build();
             imageRepository.save(image);
         }
@@ -116,6 +117,7 @@ public class ChatServiceImpl implements ChatService {
         ));
         return result;
     }
+
 
     @Override
     public List<MessageResponseDto> getMessages(Long roomId) {
