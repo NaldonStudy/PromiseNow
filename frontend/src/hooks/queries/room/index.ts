@@ -18,6 +18,7 @@ export {
   useQuitRoom,
   useUpdateAlarmSetting,
   useUpdateAppointment,
+  useUpdateNickname,
   useUpdateRoomDateRange,
   useUpdateRoomTitle,
 } from './mutations';
