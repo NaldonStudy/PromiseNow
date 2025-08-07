@@ -2,11 +2,10 @@ import axiosInstance from '../../lib/axiosInstance';
 import handleApi from '../../lib/handleApi';
 import type {
   AlarmUpdateRequest,
+  GetUsersInRoomResponse,
   JoinInfoResponse,
   JoinRequest,
-  RejoinRoomRequest,
   QuitRoomRequest,
-  GetUsersInRoomResponse,
 } from './roomuser.types';
 
 // 초대코드로 방 참가
@@ -15,21 +14,10 @@ export const joinRoomByInviteCode = async (request: JoinRequest) => {
   return data;
 };
 
-// 기존 참가한 방 재입장
-export const joinAlreadyParticipatedRoom = async (request: RejoinRoomRequest) => {
-  const { roomId, userId } = request;
-  const data = await handleApi<JoinInfoResponse>(
-    axiosInstance.post(`/rooms/${roomId}/join`, null, { params: { userId } }),
-  );
-  return data;
-};
-
 // 방 나가기
 export const quitRoom = async (request: QuitRoomRequest) => {
   const { roomId, userId } = request;
-  const data = await handleApi<void>(
-    axiosInstance.get(`/rooms/${roomId}/quit`, { params: { userId } }),
-  );
+  const data = await handleApi<void>(axiosInstance.delete(`/rooms/${roomId}/${userId}`));
   return data;
 };
 

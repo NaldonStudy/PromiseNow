@@ -11,12 +11,6 @@ export interface JoinRequest {
   nickname: string;
 }
 
-// 방 재참가
-export interface RejoinRoomRequest {
-  roomId: number;
-  userId: number;
-}
-
 // 방 나가기
 export interface QuitRoomRequest {
   roomId: number;
