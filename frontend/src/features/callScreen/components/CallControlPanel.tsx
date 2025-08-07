@@ -1,13 +1,34 @@
+import { useState } from 'react';
 import CircleBtn from '../../../components/ui/CircleBtn';
+import { useCallScreenStore } from '../callScreen.store';
 
-const CallControlPanel = () => {
+interface Props {
+  onClick: () => void;
+}
+
+const CallControlPanel = ({ onClick }: Props) => {
+  const [micOn, setMicOn] = useState(false);
+  const [videoOn, setVideoOn] = useState(false);
+  const { toggleViewMode } = useCallScreenStore();
+
   return (
-    <div className="absolute bottom-7 left-0 w-full px-7 flex justify-between items-end">
-      <div className="flex gap-4 items-end">
-        <CircleBtn iconType={'micOff'} color={'primary'} />
-        <CircleBtn iconType={'video'} color={'white'} />
+    <div className="absolute bottom-7 left-0 w-full px-7 flex justify-between items-end pointer-events-none">
+      <div className="flex gap-4 items-end pointer-events-auto">
+        <CircleBtn
+          iconType={micOn ? 'mic' : 'micOff'}
+          color={micOn ? 'primary' : 'white'}
+          onClick={() => setMicOn((prev) => !prev)}
+        />
+        <CircleBtn
+          iconType={videoOn ? 'video' : 'videoOff'}
+          color={videoOn ? 'primary' : 'white'}
+          onClick={() => setVideoOn((prev) => !prev)}
+        />
       </div>
-      <CircleBtn iconType={'chat'} color={'point'} iconSize={39} />
+      <div className="flex gap-4 items-end pointer-events-auto">
+        <CircleBtn iconType="grid" color={'white'} onClick={toggleViewMode} />
+        <CircleBtn iconType="chat" color="point" iconSize={39} onClick={onClick} />
+      </div>
     </div>
   );
 };

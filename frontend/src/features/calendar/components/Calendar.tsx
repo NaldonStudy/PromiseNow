@@ -1,5 +1,6 @@
 import { useCalendarStore } from '../calendar.store';
-import { dummyData } from '../dummy';
+import type { TotalAvailabilityResponse } from '../../../apis/availability/availability.types';
+import type { DateRangeUpdateRequest } from '../../../apis/room/room.types';
 
 import DateRangeSelector from './DateRangeSelector';
 import CalendarHeader from './CalendarHeader';
@@ -8,14 +9,24 @@ import WeeklyCalendar from './WeeklyCalendar';
 import ScheduleEditBtn from './ScheduleEditBtn';
 import Card from '../../../components/ui/Card';
 
-const Calendar = () => {
+interface CalendarProps {
+  totalAvailabilityData?: TotalAvailabilityResponse;
+  onDateRangeUpdate: (dateRangeData: DateRangeUpdateRequest) => void;
+  onUserSelectionsUpdate: (userSelections: Record<string, boolean[]>) => void;
+}
+
+const Calendar = ({
+  totalAvailabilityData,
+  onDateRangeUpdate,
+  onUserSelectionsUpdate,
+}: CalendarProps) => {
   const { view, mode, currentDate } = useCalendarStore();
   const totalMembers = 5; //임시
 
   return (
     <>
       <div className="mb-5">
-        <DateRangeSelector />
+        <DateRangeSelector onDateRangeUpdate={onDateRangeUpdate} />
       </div>
 
       <Card className="flex flex-col gap-5 p-5">
@@ -23,7 +34,7 @@ const Calendar = () => {
 
         {view === 'month' ? (
           <MonthlyCalendar
-            totalDatas={dummyData.totalDatas}
+            totalDatas={totalAvailabilityData}
             currentDate={currentDate}
             totalMembers={totalMembers}
             mode={mode}
@@ -31,12 +42,12 @@ const Calendar = () => {
         ) : (
           <WeeklyCalendar
             currentDate={currentDate}
-            totalDatas={dummyData.totalDatas}
+            totalDatas={totalAvailabilityData}
             totalMembers={totalMembers}
             mode={mode}
           />
         )}
-        <ScheduleEditBtn />
+        <ScheduleEditBtn onUserSelectionsUpdate={onUserSelectionsUpdate} />
       </Card>
     </>
   );

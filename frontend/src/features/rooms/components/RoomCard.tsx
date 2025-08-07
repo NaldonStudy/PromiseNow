@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import AppointmentInfo from '../../../components/ui/AppointmentInfo';
 import Card from '../../../components/ui/Card';
 import Profile from '../../../components/ui/Profile';
+import { useRoomStore } from '../../../stores/room.store';
 
 interface Props {
   id: number;
@@ -20,6 +21,8 @@ const RoomCard = ({
   locationTime,
   locationName,
 }: Props): React.ReactElement => {
+  const { setCurrentRoomId } = useRoomStore();
+
   const now = new Date();
   const date = locationDate ? new Date(locationDate) : null;
   const isPast = date ? date < now : false;
@@ -37,18 +40,22 @@ const RoomCard = ({
   const formattedLocation = locationName || '확정되지 않았습니다';
   const cardOpacityClass = isPast ? 'opacity-50' : 'opacity-100';
 
+  const handleRoomClick = () => {
+    setCurrentRoomId(id);
+  };
+
   return (
-    <div className="flex justify-center px-8 pt-3">
-      <Link to={`/${id}/schedule`} className="w-full max-w-3xl">
+    <div className="flex justify-center pt-3">
+      <Link to={`/${id}/schedule`} className="w-full max-w-3xl" onClick={handleRoomClick}>
         <Card
           className={`flex justify-between items-center gap-6 px-3 py-4 w-full transition-opacity duration-300 ${cardOpacityClass}`}
         >
           {/* 좌측 */}
           <div className="flex flex-col items-start gap-2 w-2/5 pl-2">
-            <span className="font-bold text-md pl-1 pb-1">{roomTitle}</span>
-            <div className="flex items-center gap-2 w-full">
+            <span className="font-bold text-base">{roomTitle}</span>
+            <div className="flex items-center gap-1 w-full">
               <div className="w-1/4 flex justify-center">
-                <Profile width="w-7" iconSize={13} />
+                <Profile width="w-4" iconSize={10} />
               </div>
               <div className="w-3/4 text-xs">{participantSummary}</div>
             </div>
@@ -56,11 +63,11 @@ const RoomCard = ({
 
           <div className="border-l h-16 border-gray-dark" />
 
-          <div className="flex flex-col gap-1 w-3/5">
+          <div className="w-3/5">
             <AppointmentInfo
               iconColor="text-secondary"
               textColor="text-black"
-              iconSize={18}
+              iconSize={13}
               textSize="text-xs"
               calenderText={formattedDate}
               timeText={formattedTime}

@@ -4,12 +4,20 @@ interface Props {
   children: React.ReactNode;
 }
 
-const Modal = ({ isOpen, children }: Props) => {
+const Modal = ({ isOpen, onClose, children }: Props) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded p-10 w-[80vw] max-w-[500px] shadow-lg">{children}</div>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded p-10 w-[80vw] max-w-[500px] shadow-lg"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {children}
+      </div>
     </div>
   );
 };

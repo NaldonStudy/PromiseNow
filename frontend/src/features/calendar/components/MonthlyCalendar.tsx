@@ -7,19 +7,23 @@ import {
   isSameMonth,
   isBefore,
   isAfter,
+  startOfDay,
 } from 'date-fns';
 import { getOpacityForMonth } from '../calendar.util';
 import { useCalendarStore } from '../calendar.store';
+import type { TotalAvailabilityResponse } from '../../../apis/availability/availability.types';
+import { useRoomStore } from '../../../stores/room.store';
 
 interface Props {
   mode: 'view' | 'edit';
   currentDate: Date;
-  totalDatas: Record<string, { timeData: string }>;
+  totalDatas?: TotalAvailabilityResponse;
   totalMembers: number;
 }
 
 const MonthlyCalendar = ({ mode, totalDatas, currentDate, totalMembers }: Props) => {
-  const { startDate, endDate, setCurrentDate, setView } = useCalendarStore();
+  const { setCurrentDate, setView } = useCalendarStore();
+  const { dateRange } = useRoomStore();
   const currentMonth = startOfMonth(currentDate);
 
   const days = useMemo(() => {
@@ -36,7 +40,17 @@ const MonthlyCalendar = ({ mode, totalDatas, currentDate, totalMembers }: Props)
   }, [currentMonth]);
 
   const isDisabled = (day: Date) => {
-    return isBefore(day, startDate) || isAfter(day, endDate);
+    if (!dateRange?.start || !dateRange?.end) return true;
+
+    const dayStart = startOfDay(day);
+    const start = startOfDay(dateRange.start);
+    const end = startOfDay(dateRange.end);
+
+    return isBefore(dayStart, start) || isAfter(dayStart, end);
+  };
+
+  const getDateData = (date: string) => {
+    return totalDatas?.totalDatas?.find((item) => item.date === date);
   };
 
   return (
@@ -50,8 +64,9 @@ const MonthlyCalendar = ({ mode, totalDatas, currentDate, totalMembers }: Props)
 
         {days.map((day) => {
           const key = format(day, 'yyyy-MM-dd');
-          const count = totalDatas[key]?.timeData
-            ? [...totalDatas[key].timeData].reduce((acc, v) => acc + Number(v), 0)
+          const dateData = getDateData(key);
+          const count = dateData?.timeData
+            ? [...dateData.timeData].reduce((acc, v) => acc + Number(v), 0)
             : 0;
 
           const isOutOfRange = isDisabled(day);
