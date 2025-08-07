@@ -10,6 +10,7 @@ interface ScheduleTemplateProps {
   totalAvailabilityData?: TotalAvailabilityResponse;
   onAppointmentUpdate: (appointmentData: AppointmentUpdateRequest) => void;
   onDateRangeUpdate: (dateRangeData: DateRangeUpdateRequest) => void;
+  onUserSelectionsUpdate: (userSelections: Record<string, boolean[]>) => void;
 }
 
 const ScheduleTemplate = ({
@@ -17,6 +18,7 @@ const ScheduleTemplate = ({
   totalAvailabilityData,
   onAppointmentUpdate,
   onDateRangeUpdate,
+  onUserSelectionsUpdate,
 }: ScheduleTemplateProps) => {
   return (
     <RoomLayout>
@@ -28,6 +30,7 @@ const ScheduleTemplate = ({
         <Calendar
           totalAvailabilityData={totalAvailabilityData}
           onDateRangeUpdate={onDateRangeUpdate}
+          onUserSelectionsUpdate={onUserSelectionsUpdate}
         />
         <ScheduleRecommendation />
       </div>

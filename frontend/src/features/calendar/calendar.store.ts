@@ -14,7 +14,9 @@ interface CalendarStore {
 
   userSelections: Record<string, boolean[]>;
   setUserSelections: (
-    update: (prev: Record<string, boolean[]>) => Record<string, boolean[]>,
+    update:
+      | Record<string, boolean[]>
+      | ((prev: Record<string, boolean[]>) => Record<string, boolean[]>),
   ) => void;
 }
 
@@ -39,5 +41,8 @@ export const useCalendarStore = create<CalendarStore>((set) => ({
     })),
 
   userSelections: {},
-  setUserSelections: (update) => set((state) => ({ userSelections: update(state.userSelections) })),
+  setUserSelections: (update) =>
+    set((state) => ({
+      userSelections: typeof update === 'function' ? update(state.userSelections) : update,
+    })),
 }));
