@@ -17,7 +17,7 @@ public class ChatWebSocketController {
     private final ChatService chatService;
     private final SimpMessagingTemplate messagingTemplate;
     // /app이 생략 실제는 /app/chat
-//    @MessageMapping("/chat") //스프링에서 먼저 받는 주소(메세지 처리)
+    //@MessageMapping("/chat") //스프링에서 먼저 받는 주소(메세지 처리)
 
 
     @MessageMapping("/chat")
@@ -29,5 +29,4 @@ public class ChatWebSocketController {
             messagingTemplate.convertAndSend("/topic/chat/"+roomId, dto);
         }
     }
-
 }

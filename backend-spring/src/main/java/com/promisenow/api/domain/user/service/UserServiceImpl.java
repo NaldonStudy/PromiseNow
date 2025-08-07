@@ -1,5 +1,6 @@
 package com.promisenow.api.domain.user.service;
 
+import com.promisenow.api.domain.user.dto.UserResponseDto;
 import com.promisenow.api.domain.user.entity.User;
 import com.promisenow.api.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

@@ -3,6 +3,7 @@ package com.promisenow.api.domain.chat.controller;
 import com.promisenow.api.common.ApiUtils;
 import com.promisenow.api.domain.chat.dto.MessageResponseDto;
 import com.promisenow.api.domain.chat.exception.FileStorageException;
+import com.promisenow.api.domain.chat.service.ChatImageService;
 import com.promisenow.api.domain.chat.service.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -33,6 +34,7 @@ public class ChatController {
 
     private final ChatService chatService;
     private final String uploadDir = "./uploaded-images/";
+    private final ChatImageService chatImageService;
 
     @Operation(
             summary = "채팅 메시지 조회",
@@ -83,7 +85,6 @@ public class ChatController {
             @RequestParam(value = "timestamp", required = false) String timestampStr) {
 
 
-
         try {
             File uploadPath = new File(uploadDir);
             if (!uploadPath.exists()) {
@@ -107,11 +108,13 @@ public class ChatController {
             e.printStackTrace();
             throw new FileStorageException("파일 저장 중 오류가 발생했습니다.");
         }
+        String fileDownloadUri = chatImageService.uploadImage(file, lat, lng, timestampStr);
+        return ApiUtils.success(new ImageUploadResponse(fileDownloadUri));
     }
 
     @Schema(description = "이미지 업로드 응답 DTO")
     public static class ImageUploadResponse {
-        @Schema(description = "업로드된 이미지 URL", example = "http://localhost:8080/uploaded-images/1690859341256_image.png")
+        @Schema(description = "업로드된 이미지 URL", example = "http://localhost:8080/uploaded-images/chat/1690859341256_image.png")
         private String imageUrl;
 
         public ImageUploadResponse(String imageUrl) {

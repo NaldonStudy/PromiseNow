@@ -28,7 +28,7 @@ interface MessageRequestDto {
 const SOCKET_URL = "http://localhost:8080/ws-chat";
 
 function App() {
-    // == 사용자 입력 값 상태 =
+    // == 사용자 입력 값 상태 ==
     const [roomUserId, setRoomUserId] = useState("");
     const [roomId, setRoomId] = useState("");
     const [userId, setUserId] = useState("");
@@ -49,7 +49,6 @@ function App() {
             stompClientRef.current.deactivate();
         }
 
-
         const socket = new SockJS(SOCKET_URL);
         const stompClient = new Client({
             webSocketFactory: () => socket as any,
@@ -57,8 +56,6 @@ function App() {
             onConnect: () => {
 
                 console.log("[STOMP] 연결 성공: ", stompClient);
-
-
                 const callback = (message: any) => {
                     if (message.body) {
                         console.log("[STOMP] 메시지 수신: ", message.body);
@@ -98,8 +95,10 @@ function App() {
             if (!response.ok) {
                 throw new Error('채팅 내역 불러오기 실패');
             }
-            const data: MessageResponseDto[] = await response.json();
-            setMessages(data);
+            const json = await response.json();
+
+            // 백엔드 ApiResponse 구조이므로 data만 꺼내 배열 상태로 저장
+            setMessages(json.data ?? []);
         } catch (error) {
             alert("채팅 내역 로딩 실패");
         }
@@ -144,15 +143,16 @@ function App() {
                     alert("이미지 업로드 실패: " + res.status);
                     return;
                 }
-                const { imageUrl } = await res.json();
-
+                // 응답 또한 ApiResponse 감싸짐 가정 시
+                const apiResp = await res.json();
+                const imageUrl = apiResp.data?.imageUrl ?? "";
                 const chatMessage: MessageRequestDto = {
                     roomUserId: parseInt(roomUserId),
                     roomId: parseInt(roomId),
                     userId: parseInt(userId),
                     content: "이미지",
                     type: "IMAGE",
-                    lat: latitude,                         // 위치정보 추가
+                    lat: latitude,
                     lng: longitude,
                     imageUrl,
                     sendDate: new Date().toISOString(),
@@ -253,9 +253,8 @@ function App() {
                         {messages.map((message, index) => (
                             <div
                                 key={index}
-                                style={{maxWidth: 300}}
+                                style={{ maxWidth: 300 }}
                             >
-                                {/* 여기서 userId를 누가 보냈는지 왼쪽 혹은 위에 표시 */}
                                 <div className="mb-1 text-xs font-semibold text-gray-500">
                                     👤 User {message.nickname} 보낸날짜 {message.sentDate}
                                 </div>
