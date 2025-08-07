@@ -19,4 +19,6 @@ public interface RoomUserService {
     // 알람 true false 설정
     void updateAlarm(Long roomId, Long userId, boolean isAgreed);
 
+    // 알람 상태 유무 true false GET
+    boolean getAlarmAgreement(Long roomId, Long userId);
 } 

@@ -980,4 +980,56 @@ public class RoomController {
         return ApiUtils.success();
     }
 
+    // 유저 알람 정보 GET
+    @GetMapping("/{roomId}/users/{userId}/alarm")
+    @Operation(
+            summary = "개인 알람 설정 조회",
+            description = "사용자가 특정 방에서 알람 수신 여부를 확인합니다.",
+            parameters = {
+                    @Parameter(
+                            name = "roomId",
+                            description = "알람 정보를 확인할 방 ID",
+                            required = true,
+                            example = "101"
+                    ),
+                    @Parameter(
+                            name = "userId",
+                            description = "알람 정보를 확인할 사용자 ID",
+                            required = true,
+                            example = "1"
+                    )
+            },
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "알람 설정 조회 성공",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = AlarmCheckResponse.class),
+                                    examples = @ExampleObject(
+                                            name = "성공 응답 예시",
+                                            value = """
+                    {
+                        "success": true,
+                        "data": {
+                            "isAgreed": true
+                        },
+                        "message": null
+                    }
+                    """
+                                    )
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "방 또는 사용자 정보를 찾을 수 없음"
+                    )
+            }
+    )
+    public ResponseEntity<?> getAlarmSetting(@PathVariable Long roomId, @PathVariable Long userId) {
+        boolean isAgreed = roomUserService.getAlarmAgreement(roomId, userId);
+        return ApiUtils.success(new AlarmCheckResponse(isAgreed));
+    }
+
+
 } 

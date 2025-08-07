@@ -79,4 +79,12 @@ public class RoomUserServiceImpl implements RoomUserService {
 
         roomUser.updateAlarm(isAgreed);
     }
+
+    @Override
+    public boolean getAlarmAgreement(Long roomId, Long userId) {
+        RoomUser roomUser = roomUserRepository.findByRoom_RoomIdAndUser_UserId(roomId, userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자 정보를 찾을 수 없습니다."));
+
+        return roomUser.getIsAgreed();
+    }
 } 
