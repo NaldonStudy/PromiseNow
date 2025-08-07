@@ -46,4 +46,8 @@ public class RoomUser {
     public void updateAlarm(boolean isAgreed) {
         this.isAgreed = isAgreed;
     }
+
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+    }
 }

@@ -87,4 +87,13 @@ public class RoomUserServiceImpl implements RoomUserService {
 
         return roomUser.getIsAgreed();
     }
+
+    @Override
+    public void updateNickname(Long roomId, Long userId, String newNickname) {
+        RoomUser roomUser = roomUserRepository.findByRoom_RoomIdAndUser_UserId(roomId, userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자 정보를 찾을 수 없습니다."));
+        roomUser.updateNickname(newNickname);
+    }
+
+
 } 
