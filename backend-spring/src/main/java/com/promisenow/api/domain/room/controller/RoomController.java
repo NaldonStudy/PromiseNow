@@ -85,12 +85,12 @@ public class RoomController {
                     @ApiResponse(responseCode = "400", description = "방 생성 실패")
             }
     )
-    public ResponseEntity<?> createRoom(@RequestBody CreateRequest requestDto) {
+    public ResponseEntity<?> createRoom(@RequestBody CreateRequest request) {
         try {
             CreateResponse response = roomService.createRoomWithUser(
-                    requestDto.getRoomTitle(),
-                    requestDto.getUserId(),
-                    requestDto.getNickname()
+                    request.getRoomTitle(),
+                    request.getUserId(),
+                    request.getNickname()
             );
             return ApiUtils.success(response);
         } catch (Exception e) {
@@ -104,7 +104,7 @@ public class RoomController {
     @DeleteMapping("/{roomId}")
     @Operation(
             summary = "방 삭제하기",
-            description = "방 ID를 입력하여 해당 방을 삭제합니다. 해당 방에는 아무 사람도 없어야 합니다. 존재한다면 이전에 quit를 시키고 나서 진행해야 합니다.",
+            description = "방 ID를 입력하여 해당 방을 삭제합니다. 해당 방에는 1명만 존재해야 합니다.",
             parameters = {
                     @Parameter(
                             name = "roomId",
@@ -194,9 +194,9 @@ public class RoomController {
                     @ApiResponse(responseCode = "404", description = "사용자 또는 방을 찾을 수 없음")
             }
     )
-    public ResponseEntity<?> joinRoomByInviteCode(@RequestBody JoinRequest dto) {
+    public ResponseEntity<?> joinRoomByInviteCode(@RequestBody JoinRequest request) {
         try {
-            JoinInfoResponse response = roomUserService.joinRoomByInviteCode(dto);
+            JoinInfoResponse response = roomUserService.joinRoomByInviteCode(request);
             return ApiUtils.success(response);
         } catch (IllegalArgumentException | IllegalStateException e) {
             return ApiUtils.error(e.getMessage());
@@ -684,9 +684,9 @@ public class RoomController {
                     @ApiResponse(responseCode = "404", description = "해당 방을 찾을 수 없음")
             }
     )
-    public ResponseEntity<?> updateRoomDateRange(@PathVariable Long roomId, @RequestBody DateRangeUpdateRequest dto) {
+    public ResponseEntity<?> updateRoomDateRange(@PathVariable Long roomId, @RequestBody DateRangeUpdateRequest request) {
         try {
-            roomService.updateRoomDateRange(roomId, dto);
+            roomService.updateRoomDateRange(roomId, request);
             return ApiUtils.success();
         } catch (IllegalArgumentException e) {
             return ApiUtils.error(e.getMessage());
@@ -750,9 +750,9 @@ public class RoomController {
                     @ApiResponse(responseCode = "404", description = "방이 존재하지 않음")
             }
     )
-    public ResponseEntity<?> updateAppointment (@PathVariable Long roomId, @RequestBody AppointmentUpdateRequest dto) {
+    public ResponseEntity<?> updateAppointment (@PathVariable Long roomId, @RequestBody AppointmentUpdateRequest request) {
         try {
-            roomService.updateRoomAppointment(roomId, dto);
+            roomService.updateRoomAppointment(roomId, request);
             return ApiUtils.success();
         } catch (IllegalArgumentException e) {
             return ApiUtils.error(e.getMessage());
@@ -975,8 +975,8 @@ public class RoomController {
                     @ApiResponse(responseCode = "404", description = "방 또는 사용자 정보를 찾을 수 없음")
             }
     )
-    public ResponseEntity<?> updateAlarmSetting(@PathVariable Long roomId, @PathVariable Long userId, @RequestBody AlarmUpdateRequest dto) {
-        roomUserService.updateAlarm(roomId, userId, dto.isAgreed());
+    public ResponseEntity<?> updateAlarmSetting(@PathVariable Long roomId, @PathVariable Long userId, @RequestBody AlarmUpdateRequest request) {
+        roomUserService.updateAlarm(roomId, userId, request.isAgreed());
         return ApiUtils.success();
     }
 
@@ -1031,5 +1031,71 @@ public class RoomController {
         return ApiUtils.success(new AlarmCheckResponse(isAgreed));
     }
 
+    // 방에서 유저 닉네임 변경
+    @PatchMapping("/{roomId}/nickname/{userId}")
+    @Operation(
+            summary = "방 안에서 닉네임 변경",
+            description = "사용자가 특정 방에서 사용하는 닉네임을 수정합니다.",
+            parameters = {
+                    @Parameter(
+                            name = "roomId",
+                            description = "닉네임을 변경할 방 ID",
+                            required = true,
+                            example = "101"
+                    ),
+                    @Parameter(
+                            name = "userId",
+                            description = "닉네임을 변경할 사용자 ID",
+                            required = true,
+                            example = "3"
+                    )
+            },
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "변경할 닉네임 정보",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UpdateNicknameRequest.class),
+                            examples = @ExampleObject(
+                                    name = "요청 예시",
+                                    value = """
+                {
+                    "nickname": "짱구"
+                }
+                """
+                            )
+                    )
+            ),
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "닉네임 변경 성공",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    examples = @ExampleObject(
+                                            name = "성공 응답 예시",
+                                            value = """
+                    {
+                        "success": true,
+                        "data": null,
+                        "message": null
+                    }
+                    """
+                                    )
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "해당 RoomUser를 찾을 수 없음"
+                    )
+            }
+    )
+    public ResponseEntity<?> updateNickname (@PathVariable Long roomId, @PathVariable Long userId, @RequestBody UpdateNicknameRequest request) {
+
+        roomUserService.updateNickname(roomId, userId, request.getNickname());
+        return ApiUtils.success();
+    }
+
+    
 
 } 
