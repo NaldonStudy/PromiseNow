@@ -6,6 +6,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -19,8 +20,11 @@ public class JwtTokenProvider {
     @Value("${jwt.secret}")
     private String secretKey;
 
-    @Value("${jwt.expiration}")
-    private long tokenValidityInMilliseconds;
+    @Value("${jwt.access-expiration}")  // ex) 3600000 (1시간)
+    private long accessTokenValidity;
+
+    @Value("${jwt.refresh-expiration}") // ex) 1209600000 (14일)
+    private long refreshTokenValidity;
 
     private Key key;
 
@@ -31,14 +35,29 @@ public class JwtTokenProvider {
     }
 
     /**
-     * JWT 생성
+     * Access Token 생성
      */
-    public String generateToken(Long userId) {
+    public String generateAccessToken(Long userId) {
+        return createToken(userId, accessTokenValidity, "access");
+    }
+
+    /**
+     * Refresh Token 생성
+     */
+    public String generateRefreshToken(Long userId) {
+        return createToken(userId, refreshTokenValidity, "refresh");
+    }
+
+    /**
+     * JWT 생성 공통 로직
+     */
+    public String createToken(Long userId, long validityInMillis, String type) {
         Date now = new Date();
-        Date expiry = new Date(now.getTime() + tokenValidityInMilliseconds);
+        Date expiry = new Date(now.getTime() + validityInMillis);
 
         return Jwts.builder()
                 .setSubject(String.valueOf(userId))
+                .claim("type", type)
                 .setIssuedAt(now)
                 .setExpiration(expiry)
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -75,25 +94,70 @@ public class JwtTokenProvider {
     }
 
     /**
-     * HTTP 요청에서 JWT 추출
+     * 요청 쿠키에서 지정된 이름의 토큰 값을 추출
      */
-    public String resolveToken(HttpServletRequest request) {
-        // Authorization 헤더 확인
-        String bearer = request.getHeader("Authorization");
-        if (bearer != null && bearer.startsWith("Bearer ")) {
-            return bearer.substring(7);
-        }
-
-        // 쿠키에서 access token 확인
+    public String resolveTokenFromCookie(HttpServletRequest request, String cookieName) {
         if (request.getCookies() != null) {
             for (var cookie : request.getCookies()) {
-                if ("access_token".equals(cookie.getName())) {
+                if (cookieName.equals(cookie.getName())) {
                     return cookie.getValue();
                 }
             }
         }
-
         return null;
     }
+
+    /**
+     * Access Token을 담은 HttpOnly 쿠키를 생성
+     */
+    public ResponseCookie createAccessTokenCookie(String token) {
+        return ResponseCookie.from("access_token", token)
+                .httpOnly(true)
+                .secure(false) // 프로덕션에서 true
+                .path("/")
+                .maxAge(60 * 60 * 3) // 3시간
+                .sameSite("Lax")
+                .build();
+    }
+
+    /**
+     * Refresh Token을 담은 HttpOnly 쿠키를 생성
+     */
+    public ResponseCookie createRefreshTokenCookie(String token) {
+        return ResponseCookie.from("refresh_token", token)
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(60 * 60 * 24 * 14) // 14일
+                .sameSite("Lax")
+                .build();
+    }
+
+    /**
+     * Access Token 쿠키를 즉시 만료시키는 빈 쿠키를 생성
+     */
+    public ResponseCookie expireAccessTokenCookie() {
+        return ResponseCookie.from("access_token", "")
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Lax")
+                .build();
+    }
+
+    /**
+     * Refresh Token 쿠키를 즉시 만료시키는 빈 쿠키를 생성
+     */
+    public ResponseCookie expireRefreshTokenCookie() {
+        return ResponseCookie.from("refresh_token", "")
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Lax")
+                .build();
+    }
+
 
 }

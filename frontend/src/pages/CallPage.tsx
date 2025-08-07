@@ -1,9 +1,10 @@
 import RoomLayout from '../components/layout/RoomLayout';
+import CallScreen from '../features/callScreen/components/CallScreen';
 
 const CallPage = () => {
   return (
     <RoomLayout>
-      <h1>통화 페이지</h1>
+      <CallScreen />
     </RoomLayout>
   );
 };

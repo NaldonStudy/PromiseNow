@@ -7,6 +7,8 @@ import LocationPage from './pages/LocationPage';
 import RoulettePage from './pages/RoulettePage';
 import SchedulePage from './pages/SchedulePage';
 import SettingsPage from './pages/SettingsPage';
+import ChatPage from './pages/ChatPage';
+import LeaderPage from './pages/LeaderPage';
 
 function App() {
   return (
@@ -21,6 +23,8 @@ function App() {
             <Route path="/:id/call" element={<CallPage />} />
             <Route path="/:id/location" element={<LocationPage />} />
             <Route path="/:id/settings" element={<SettingsPage />} />
+            <Route path="/:id/chat" element={<ChatPage />} />
+            <Route path="/:id/leaderboard" element={<LeaderPage />} />
           </Routes>
         </BrowserRouter>
       </div>

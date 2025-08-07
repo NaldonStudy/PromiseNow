@@ -1,5 +1,6 @@
 package com.promisenow.api.domain.user.controller;
 
+import com.promisenow.api.common.ApiUtils;
 import com.promisenow.api.domain.user.dto.UserResponseDto;
 import com.promisenow.api.domain.user.entity.User;
 import com.promisenow.api.domain.user.service.UserService;
@@ -16,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import static com.promisenow.api.common.ApiUtils.success;
+
 @Tag(name = "사용자 정보", description = "카카오 고유 ID, 가입날짜 확인")
 @RestController
 @RequestMapping("/api/users")
@@ -27,7 +30,7 @@ public class UserController {
 
     @Operation(
             summary = "내 정보 조회",
-            description = "Authorization 헤더에 포함된 JWT 토큰을 기반으로 현재 로그인한 사용자 정보를 반환합니다.",
+            description = "HttpOnly 쿠키에 저장된 access_token JWT를 기반으로 현재 로그인한 사용자 정보를 반환합니다.",
             responses = {
                     @ApiResponse(
                             responseCode = "200",
@@ -47,11 +50,11 @@ public class UserController {
             }
     )
     @GetMapping("/me")
-    public ResponseEntity<UserResponseDto> getMyInfo(HttpServletRequest request) {
-        String token = jwtTokenProvider.resolveToken(request);
+    public ResponseEntity<ApiUtils.ApiResponse<User>> getMyInfo(HttpServletRequest request) {
+        String token = jwtTokenProvider.resolveTokenFromCookie(request, "access_token");
         Long userId = jwtTokenProvider.getUserId(token);
         User user = userService.findByUserId(userId);
 
-        return ResponseEntity.ok(UserResponseDto.from(user));
+        return success(user);
     }
 }
