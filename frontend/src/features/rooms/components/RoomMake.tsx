@@ -1,15 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 import CircleBtn from '../../../components/ui/CircleBtn';
 import ModalForm from '../../../components/ui/modal/ModalForm';
 
-import { useNavigate } from 'react-router-dom';
 import { useCreateRoom } from '../../../hooks/queries/room';
 import { useUserStore } from '../../../stores/user.store';
 import { useRoomStore } from './../../../stores/room.store';
 
 type ModalType = 'room' | 'name';
 
-const RoomMakeWithModals = () => {
+const RoomMake = () => {
   const navigate = useNavigate();
   const { userId } = useUserStore();
   const { setNickname } = useRoomStore();
@@ -17,21 +18,31 @@ const RoomMakeWithModals = () => {
 
   const [isOpen, setIsOpen] = useState(false);
   const [modalType, setModalType] = useState<ModalType>('room');
-
   const [roomTitle, setRoomTitle] = useState('');
 
+  useEffect(() => {
+    if (userId === null) {
+      alert('로그인이 필요합니다.');
+      navigate('/');
+    }
+  }, [userId, navigate]);
+
   const handleSubmit = (inputValue: string) => {
-    // 여기에 실제 room 생성 로직 또는 console.log 등 추가
     if (modalType === 'room') {
       setRoomTitle(inputValue);
       setModalType('name');
       return;
     }
+
     if (modalType === 'name') {
       setNickname(inputValue);
 
       createRoomMutation.mutate(
-        { roomTitle, nickname: inputValue },
+        {
+          roomTitle,
+          nickname: inputValue,
+          userId: userId!,
+        },
         {
           onSuccess: (data) => {
             if (data) {
@@ -85,4 +96,4 @@ const RoomMakeWithModals = () => {
   );
 };
 
-export default RoomMakeWithModals;
+export default RoomMake;
