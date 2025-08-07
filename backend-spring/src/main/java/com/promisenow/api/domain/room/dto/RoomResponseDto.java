@@ -128,6 +128,13 @@ public class RoomResponseDto {
         private String inviteCode;
     }
 
+    @Schema(description = "알람 여부 응답")
+    @Getter
+    @AllArgsConstructor
+    public static class AlarmCheckResponse {
 
+        @Schema(description = "알람 유무", example = "true")
+        private boolean isAgreed;
+    }
 
 }
