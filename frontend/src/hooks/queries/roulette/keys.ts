@@ -16,12 +16,12 @@ export const useInvalidateRouletteQueries = () => {
   };
 
   // 특정 룸 룰렛 리스트 무효화
-  const invalidateRoom = (roomId: number) => {
+  const invalidateList = (roomId: number) => {
     queryClient.invalidateQueries({ queryKey: rouletteKeys.list(roomId) });
   };
 
   return {
     invalidateAll,
-    invalidateRoom,
+    invalidateList,
   };
 };

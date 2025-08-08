@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { rouletteKeys } from './keys';
 import { getRoulette } from '../../../apis/roulette/roulette.api';
 import type { RouletteResponse } from '../../../apis/roulette/roulette.types';
+import { rouletteKeys } from './keys';
 
 // 룰렛 목록 조회
 export const useRouletteList = (roomId: number) => {
