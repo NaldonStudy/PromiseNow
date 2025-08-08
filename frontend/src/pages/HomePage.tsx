@@ -3,12 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { useJoinedRooms, useJoinRoomByInviteCode } from '../hooks/queries/room';
 import { useRoomUserStore } from '../stores/roomUser.store';
 import { useUserStore } from '../stores/user.store';
+import { useCalendarStore } from '../features/calendar/calendar.store';
+
 import HomeTemplate from './templates/HomeTemplate';
 
 const HomePage = () => {
   const navigate = useNavigate();
   const { userId, isAuthenticated } = useUserStore();
   const { setRoomUser } = useRoomUserStore();
+  const { setView, setMode } = useCalendarStore();
 
   const { data: rooms } = useJoinedRooms(userId!);
   const joinRoomMutation = useJoinRoomByInviteCode(userId!);
@@ -19,6 +22,13 @@ const HomePage = () => {
     }
   }, [isAuthenticated, userId, navigate]);
 
+  // 방 입장 시 초기화해야 하는 것들
+  const resetRoomState = () => {
+    setView('month');
+    setMode('view');
+  };
+
+  // 참여코드로 참여할 때
   const handleJoinRoom = (
     inviteCode: string,
     nickname: string,
@@ -48,7 +58,9 @@ const HomePage = () => {
     return <div>로딩 중...</div>;
   }
 
-  return <HomeTemplate rooms={rooms ?? []} onJoinRoom={handleJoinRoom} />;
+  return (
+    <HomeTemplate rooms={rooms ?? []} onJoinRoom={handleJoinRoom} resetRoomState={resetRoomState} />
+  );
 };
 
 export default HomePage;
