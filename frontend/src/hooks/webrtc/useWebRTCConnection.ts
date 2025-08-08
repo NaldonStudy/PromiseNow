@@ -57,7 +57,8 @@ export const useWebRTCConnection = ({ roomId, onPeerJoined, onPeerLeft }: UseWeb
       console.log('WebRTC 연결 URL:', url);
 
       // Protoo 연결
-      _protoo.current = new protooClient.Peer(url);
+      const transport = new protooClient.WebSocketTransport(url);
+      _protoo.current = new protooClient.Peer(transport);
       
       _protoo.current.on('open', () => {
         console.log('Protoo 연결 성공');
@@ -206,7 +207,8 @@ export const useWebRTCConnection = ({ roomId, onPeerJoined, onPeerLeft }: UseWeb
 
     } catch (error) {
       console.error('WebRTC 연결 실패:', error);
-      setState(prev => ({ ...prev, error: error.message, isConnecting: false }));
+      const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.';
+      setState(prev => ({ ...prev, error: errorMessage, isConnecting: false }));
     }
   }, [roomId, onPeerJoined, onPeerLeft]);
 
