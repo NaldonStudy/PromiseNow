@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 
-import Icon from '../../components/ui/Icon';
-import ModalForm from '../../components/ui/modal/ModalForm';
-import { useUpdateNickname } from '../../hooks/queries/room/mutations';
-import { useRoomStore } from '../../stores/room.store';
-import { useUserStore } from '../../stores/user.store';
+import Icon from './../../../components/ui/Icon';
+import ModalForm from './../../../components/ui/modal/ModalForm';
+import { useUpdateNickname } from './../../../hooks/queries/room/mutations';
+import { useRoomStore } from './../../../stores/room.store';
+import { useUserStore } from './../../../stores/user.store';
 
 interface Props {
   name: string;
@@ -40,7 +40,7 @@ const NameEdit = ({ name, onUpdate }: Props) => {
         onSuccess: () => {
           setNickname(newName);
         },
-      }
+      },
     );
   };
 

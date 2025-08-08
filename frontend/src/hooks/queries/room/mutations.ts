@@ -17,6 +17,7 @@ import {
   quitRoom,
   updateAlarmSetting,
   updateNickname,
+  updateProfileImage,
 } from '../../../apis/room/roomuser.api';
 import type {
   AlarmUpdateRequest,
@@ -122,7 +123,7 @@ export const useUpdateAlarmSetting = (roomId: number, userId: number) => {
   });
 };
 
-// 방 참가자 정보 수정
+// 방 참가자 닉네임 수정
 export const useUpdateNickname = (userId: number | null, roomId?: number) => {
   const { invalidateRoom } = useInvalidateRoomQueries();
 
@@ -140,3 +141,10 @@ export const useUpdateNickname = (userId: number | null, roomId?: number) => {
     },
   });
 };
+
+// 프로필 이미지 수정
+export const useUpdateProfileImage = () =>
+  useMutation({
+    mutationFn: ({ roomId, userId, file }: { roomId: number; userId: number; file: File }) =>
+      updateProfileImage(roomId, userId, { file }),
+  });

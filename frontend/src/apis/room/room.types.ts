@@ -1,3 +1,5 @@
+export type roomStateType = 'WAITING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
+
 // ------ Request 타입들 ------
 // 방 생성 요청
 export interface CreateRoomRequest {
@@ -59,6 +61,7 @@ export interface RoomListItem {
   locationTime: string | null;
   locationName: string | null;
   participantSummary: string;
+  roomState?: roomStateType;
 }
 
 // 방 제목 + 초대코드

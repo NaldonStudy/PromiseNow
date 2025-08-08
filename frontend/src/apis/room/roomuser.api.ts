@@ -9,6 +9,8 @@ import type {
   QuitRoomRequest,
   UpdateNicknameRequest,
   UpdateNicknameResponse,
+  UpdateProfileRequest,
+  UpdateProfileResponse,
 } from './roomuser.types';
 
 // 초대코드로 방 참가
@@ -30,7 +32,7 @@ export const getUsersInRoom = async (roomId: number) => {
   return data;
 };
 
-// 방 참가자 수정
+// 방 닉네임 수정
 export const updateNickname = async (
   roomId: number,
   userId: number,
@@ -40,6 +42,23 @@ export const updateNickname = async (
     axiosInstance.patch(`/rooms/${roomId}/nickname/${userId}`, payload),
   );
   return data;
+};
+
+// 프로필 이미지 수정
+export const updateProfileImage = async (
+  roomId: number,
+  userId: number,
+  request: UpdateProfileRequest,
+) => {
+  const formData = new FormData();
+  formData.append('file', request.file);
+
+  const res = await handleApi<UpdateProfileResponse>(
+    axiosInstance.patch(`/rooms/${roomId}/profile-image/${userId}/profile`, formData, {
+      withCredentials: true,
+    }),
+  );
+  return res;
 };
 
 // 알림 상태 조회
