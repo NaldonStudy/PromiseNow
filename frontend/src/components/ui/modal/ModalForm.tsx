@@ -27,6 +27,9 @@ const ModalForm = ({
   secondBtnText = '기본 이미지로 변경',
 }: Props) => {
   const [value, setValue] = useState('');
+  useEffect(() => {
+    setValue('');
+  }, [title, placeholder]);
 
   useEffect(() => {
     if (isOpen) {
@@ -41,6 +44,7 @@ const ModalForm = ({
     }
     onSubmit(value.trim());
   };
+  if (!isOpen) return null;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>

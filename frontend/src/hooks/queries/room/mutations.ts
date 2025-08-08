@@ -4,25 +4,26 @@ import {
   deleteRoom,
   updateAppointment,
   updateRoomDateRange,
-  updateRoomState,
   updateRoomTitle,
 } from '../../../apis/room/room.api';
 import type {
   AppointmentUpdateRequest,
   CreateRoomRequest,
   DateRangeUpdateRequest,
-  RoomState,
   TitleUpdateRequest,
 } from '../../../apis/room/room.types';
 import {
   joinRoomByInviteCode,
   quitRoom,
   updateAlarmSetting,
+  updateNickname,
+  updateProfileImage,
 } from '../../../apis/room/roomuser.api';
 import type {
   AlarmUpdateRequest,
   JoinRequest,
   QuitRoomRequest,
+  UpdateNicknameRequest,
 } from '../../../apis/room/roomuser.types';
 import { useInvalidateRoomQueries } from './keys';
 
@@ -68,18 +69,6 @@ export const useUpdateAppointment = (roomId: number) => {
 
   return useMutation({
     mutationFn: (request: AppointmentUpdateRequest) => updateAppointment(roomId, request),
-    onSuccess: () => {
-      invalidateRoom({ roomId });
-    },
-  });
-};
-
-// 방 상태 변경
-export const useUpdateRoomState = (roomId: number) => {
-  const { invalidateRoom } = useInvalidateRoomQueries();
-
-  return useMutation({
-    mutationFn: (newState: RoomState) => updateRoomState(roomId, newState),
     onSuccess: () => {
       invalidateRoom({ roomId });
     },
@@ -133,3 +122,29 @@ export const useUpdateAlarmSetting = (roomId: number, userId: number) => {
     },
   });
 };
+
+// 방 참가자 닉네임 수정
+export const useUpdateNickname = (userId: number | null, roomId?: number) => {
+  const { invalidateRoom } = useInvalidateRoomQueries();
+
+  return useMutation({
+    mutationFn: async (request: UpdateNicknameRequest) => {
+      if (userId === null || roomId === undefined) {
+        throw new Error('userId 또는 roomId가 유효하지 않음');
+      }
+      return updateNickname(roomId, userId, request); // 인자 순서 수정!
+    },
+    onSuccess: () => {
+      if (userId !== null && roomId !== undefined) {
+        invalidateRoom({ userId, roomId });
+      }
+    },
+  });
+};
+
+// 프로필 이미지 수정
+export const useUpdateProfileImage = () =>
+  useMutation({
+    mutationFn: ({ roomId, userId, file }: { roomId: number; userId: number; file: File }) =>
+      updateProfileImage(roomId, userId, { file }),
+  });

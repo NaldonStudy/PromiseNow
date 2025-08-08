@@ -3,7 +3,11 @@ import { useCalendarStore } from '../calendar.store';
 import Icon from '../../../components/ui/Icon';
 import SquareBtn from '../../../components/ui/SquareBtn';
 
-const CalendarHeader = () => {
+interface Props {
+  onRefreshCalendar: () => void;
+}
+
+const CalendarHeader = ({ onRefreshCalendar }: Props) => {
   const { view, currentDate, setView, moveWeek, moveMonth } = useCalendarStore();
 
   const handlePrev = () => (view === 'month' ? moveMonth(-1) : moveWeek(-1));
@@ -52,7 +56,7 @@ const CalendarHeader = () => {
           textSize="text-xs"
           onClick={() => setView('week')}
         />
-        <Icon type="repeat" color="text-text-dark" size={20} />
+        <Icon type="repeat" color="text-text-dark" size={20} onClick={onRefreshCalendar} />
       </div>
     </div>
   );

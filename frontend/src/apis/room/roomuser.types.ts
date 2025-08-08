@@ -11,6 +11,16 @@ export interface JoinRequest {
   nickname: string;
 }
 
+//방 참가자 닉네임 수정
+export interface UpdateNicknameRequest {
+  nickname: string;
+}
+
+// 프로필 이미지 수정 요청
+export interface UpdateProfileRequest {
+  file: File;
+}
+
 // 방 나가기
 export interface QuitRoomRequest {
   roomId: number;
@@ -23,6 +33,7 @@ export interface JoinInfoResponse {
   roomId: number;
   roomTitle: string;
   nickname: string;
+  roomUserId: number;
 }
 
 // 참가자 요약 정보
@@ -33,3 +44,18 @@ export interface SimpleInfoResponse {
 
 // 방 참가자 목록 응답
 export type GetUsersInRoomResponse = SimpleInfoResponse[];
+
+// 알림 설정 응답
+export interface AlarmSettingResponse {
+  isAgreed: boolean;
+}
+
+// 닉네임 변경 응답
+export interface UpdateNicknameResponse {
+  nickname: string;
+}
+
+// 프로필 이미지 수정 응답
+export interface UpdateProfileResponse {
+  imageUrl: string;
+}

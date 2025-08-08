@@ -1,12 +1,20 @@
-import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
-import HomeTemplate from './templates/HomeTemplate';
+import { useNavigate } from 'react-router-dom';
 import { useJoinedRooms, useJoinRoomByInviteCode } from '../hooks/queries/room';
+import { useRoomUserStore } from '../stores/roomUser.store';
 import { useUserStore } from '../stores/user.store';
+import { useCalendarStore } from '../features/calendar/calendar.store';
+import { useTitle } from '../hooks/common/useTitle';
+
+import HomeTemplate from './templates/HomeTemplate';
 
 const HomePage = () => {
+  useTitle('내 약속 목록 - PromiseNow');
+
   const navigate = useNavigate();
   const { userId, isAuthenticated } = useUserStore();
+  const { setRoomUser } = useRoomUserStore();
+  const { setView, setMode } = useCalendarStore();
 
   const { data: rooms } = useJoinedRooms(userId!);
   const joinRoomMutation = useJoinRoomByInviteCode(userId!);
@@ -17,13 +25,27 @@ const HomePage = () => {
     }
   }, [isAuthenticated, userId, navigate]);
 
-  const handleJoinRoom = (inviteCode: string, nickname: string, onSuccess: (roomId: number) => void) => {
+  // 방 입장 시 초기화해야 하는 것들
+  const resetRoomState = () => {
+    setView('month');
+    setMode('view');
+  };
+
+  // 참여코드로 참여할 때
+  const handleJoinRoom = (
+    inviteCode: string,
+    nickname: string,
+    onSuccess: (roomId: number, roomUserId: number) => void,
+  ) => {
     joinRoomMutation.mutate(
       { inviteCode, nickname, userId: userId! },
       {
         onSuccess: (data) => {
           if (data) {
-            onSuccess(data.roomId);
+            if (data.roomUserId) {
+              setRoomUser(data.roomId, data.roomUserId);
+            }
+            onSuccess(data.roomId, data.roomUserId);
           } else {
             alert('참여 실패: 응답이 없습니다.');
           }
@@ -33,6 +55,7 @@ const HomePage = () => {
         },
       },
     );
+    resetRoomState();
   };
 
   if (!isAuthenticated || !userId) {
@@ -40,10 +63,7 @@ const HomePage = () => {
   }
 
   return (
-    <HomeTemplate
-      rooms={rooms ?? []}
-      onJoinRoom={handleJoinRoom}
-    />
+    <HomeTemplate rooms={rooms ?? []} onJoinRoom={handleJoinRoom} resetRoomState={resetRoomState} />
   );
 };
 

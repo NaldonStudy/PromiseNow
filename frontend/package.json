@@ -15,9 +15,14 @@
     "@tanstack/react-query": "^5.83.0",
     "axios": "^1.11.0",
     "date-fns": "^4.1.0",
+<<<<<<< HEAD
     "mediasoup-client": "^3.14.0",
     "protoo-client": "4.0.5",
+=======
+    "dayjs": "^1.11.13",
+>>>>>>> 97c5f645ef0c6af2a870d2d57989630d7e7dea32
     "react": "^19.1.0",
+    "react-datepicker": "^8.4.0",
     "react-dom": "^19.1.0",
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.7.0",
@@ -31,6 +36,7 @@
     "@types/react": "^19.1.9",
     "@types/react-dom": "^19.1.6",
     "@types/react-router-dom": "^5.3.3",
+    "@types/sockjs-client": "^1.5.4",
     "@vitejs/plugin-react": "^4.6.0",
     "eslint": "^9.30.1",
     "eslint-plugin-react-hooks": "^5.2.0",
@@ -38,6 +44,7 @@
     "globals": "^16.3.0",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.35.1",
-    "vite": "^7.0.4"
+    "vite": "^7.0.4",
+    "vite-plugin-pwa": "^1.0.2"
   }
 }
