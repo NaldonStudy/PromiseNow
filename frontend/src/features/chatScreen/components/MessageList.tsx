@@ -1,11 +1,10 @@
 import { Fragment } from 'react';
-import type { ChatMessage } from '../../../apis/chat/chat.type';
+import type { ChatMessageResponse } from '../../../apis/chat/chat.types';
 import { isSameMinute } from '../utils/time';
 import MessageItem from './MessageItem';
 
 interface Props {
-  messages: ChatMessage[];
-  myUserId: number; // 안 써도 되지만 유지해도 무방
+  messages: ChatMessageResponse[];
 }
 
 const MessageList = ({ messages }: Props) => {
@@ -13,8 +12,8 @@ const MessageList = ({ messages }: Props) => {
     <div className="flex flex-col gap-1">
       {messages.map((msg, idx) => {
         const prev = messages[idx - 1];
-        const isSameSender = prev?.userId === msg.userId;
-        const isSameTime = isSameMinute(prev?.sentDate ?? '', msg.sentDate);
+        const isSameSender = prev?.roomUserId === msg.roomUserId;
+        const isSameTime = isSameMinute(prev?.sendDate ?? '', msg.sendDate);
         const showMeta = !(isSameSender && isSameTime);
 
         return (

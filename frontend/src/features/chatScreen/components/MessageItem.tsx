@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import type { ChatMessage } from '../../../apis/chat/chat.type';
+import type { ChatMessage } from '../../../apis/chat/chat.types';
 import Profile from '../../../components/ui/Profile';
 import { formatTime } from '../utils/time';
 
@@ -34,7 +34,7 @@ const MessageItem: FC<Props> = ({ message, showMeta }) => {
       <div className="flex flex-col w-full">
         {showMeta && (
           <div className="flex items-center gap-2 mb-1">
-            <Profile width="w-6" isPino={isFromPino}/>
+            <Profile width="w-6" isPino={isFromPino} />
             <span className="text-sm-10 text-black font-medium">{nickname}</span>
             <span className="text-[10px] text-gray-400">{formatTime(sentDate)}</span>
           </div>
