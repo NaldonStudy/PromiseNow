@@ -1,7 +1,11 @@
 // src/features/chat/components/Transmits.tsx
-import { useRef, useState } from 'react';
+import type { Client } from '@stomp/stompjs';
+import { useState } from 'react';
+
 import CircleBtn from '../../../components/ui/CircleBtn';
 import Input from '../../../components/ui/Input';
+import CameraPopCard from './CameraPopCard';
+
 import { useUploadChatImage } from '../../../hooks/chat';
 import { useRoomStore } from '../../../stores/room.store';
 import { useRoomUserStore } from '../../../stores/roomUser.store';
@@ -9,34 +13,31 @@ import { useRoomUserStore } from '../../../stores/roomUser.store';
 type Props = {
   // roomId를 부모에서 넘기더라도, 스토어에 있으면 스토어 값 우선 사용
   roomId?: number;
+  stompClient?: Client | null; // WS 붙일 때 사용 예정
 };
 
-const Transmits = ({ roomId: roomIdProp }: Props) => {
+const Transmits = ({ roomId: roomIdProp, stompClient }: Props) => {
   const [message, setMessage] = useState(''); // WS 붙일 때 사용 예정
   const [sending, setSending] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [openPicker, setOpenPicker] = useState(false);
 
-  // ✅ roomId: 스토어 우선 → prop fallback
+  // roomId: 스토어 우선 → prop fallback
   const currentRoomId = useRoomStore((s) => s.currentRoomId);
   const roomId = currentRoomId ?? roomIdProp ?? null;
 
-  // ✅ roomUserId: 방별로 저장된 값 조회
+  // roomUserId: 방별로 저장된 값 조회
   const roomUserId = useRoomUserStore((s) =>
     roomId != null ? s.getRoomUserId(roomId) : undefined,
   );
 
-  // ✅ 업로드 mutation
+  // 업로드 mutation
   const { mutateAsync: uploadImage } = useUploadChatImage();
 
   const disabledByContext = roomId == null || roomUserId == null;
 
-  const handlePickFile = () => fileInputRef.current?.click();
+  const handlePickFile = () => setOpenPicker((v) => !v);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    e.target.value = ''; // 같은 파일 재선택 가능
-    if (!file) return;
-
+  const handleFileSelected = async (file: File) => {
     if (disabledByContext) {
       alert('방 정보가 없어요. 방에 다시 입장해 주세요.');
       return;
@@ -45,9 +46,8 @@ const Transmits = ({ roomId: roomIdProp }: Props) => {
     try {
       setSending(true);
 
-      // ❗️lat/lng 필수: 위치 권한 없으면 업로드 중단
       const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
-        navigator.geolocation.getCurrentPosition(resolve, (err) => reject(err), {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
           enableHighAccuracy: true,
           timeout: 8000,
         }),
@@ -57,7 +57,6 @@ const Transmits = ({ roomId: roomIdProp }: Props) => {
       const longitude = pos.coords.longitude;
       const sentDate = new Date().toISOString();
 
-      // REST 업로드 호출
       const uploadResult = await uploadImage({
         file,
         latitude,
@@ -69,50 +68,87 @@ const Transmits = ({ roomId: roomIdProp }: Props) => {
         throw new Error('이미지 업로드 결과가 올바르지 않습니다.');
       }
 
-      const { imageUrl } = uploadResult;
-
-      // 👉 여기서 imageUrl 사용 (미리보기/알림/WS publish 등)
-      console.log('업로드 성공:', { imageUrl, roomId, roomUserId });
+      if (stompClient && stompClient.connected) {
+        stompClient.publish({
+          destination: '/app/chat',
+          body: JSON.stringify({
+            roomId,
+            roomUserId,
+            type: 'IMAGE',
+            content: '이미지',
+            imageUrl: uploadResult.imageUrl,
+            lat: latitude,
+            lng: longitude,
+            sentDate,
+          }),
+        });
+      }
     } catch (err) {
       console.error(err);
       alert('이미지 업로드 실패 또는 위치 권한이 필요합니다.');
     } finally {
       setSending(false);
+      setOpenPicker(false);
+    }
+  };
+
+  const handleSendText = () => {
+    if (!message.trim() || disabledByContext) return;
+    const sentDate = new Date().toISOString();
+
+    if (stompClient && stompClient.connected) {
+      stompClient.publish({
+        destination: '/app/chat',
+        body: JSON.stringify({
+          roomId,
+          roomUserId,
+          type: 'TEXT',
+          content: message.trim(),
+          sentDate,
+        }),
+      });
+      setMessage('');
     }
   };
 
   return (
-    <div className="flex items-center gap-5 px-1 bg-white rounded-xl">
-      {/* 이미지 업로드 버튼 */}
-      <CircleBtn
-        iconType="camera"
-        color="white"
-        onClick={handlePickFile}
-        className="shrink-0"
-        disabled={sending || disabledByContext}
-      />
-      <input
-        type="file"
-        accept="image/*"
-        className="hidden"
-        ref={fileInputRef}
-        onChange={handleFileChange}
-      />
+    <div className="flex items-center gap-5 px-1 bg-white rounded-xl relative">
+      <div className="relative">
+        <CircleBtn
+          iconType="camera"
+          color="white"
+          onClick={handlePickFile}
+          className="shrink-0"
+          disabled={sending || disabledByContext}
+        />
+        {openPicker && (
+          <CameraPopCard
+            onSelect={handleFileSelected}
+            onClose={() => setOpenPicker(false)}
+            disabled={sending || disabledByContext}
+          />
+        )}
+      </div>
 
-      {/* 텍스트 입력: 지금은 REST만, WS 붙일 때 활성화 */}
       <Input
-        placeholder={
-          disabledByContext ? '방 정보가 없어요' : '(실시간 전송은 추후 연결) 메시지를 입력하세요'
-        }
+        placeholder={disabledByContext ? '방 정보가 없어요' : '메시지를 입력하세요'}
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         className="bg-white flex-1"
         textSize="text-sm"
-        disabled // WS 전송 붙일 때 해제
+        disabled={disabledByContext || sending}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') handleSendText();
+        }}
       />
 
-      {/* 전송 버튼: WS 붙일 때 사용 */}
-      <CircleBtn iconType="send" color="primary" onClick={() => {}} className="shrink-0" disabled />
+      <CircleBtn
+        iconType="send"
+        color="primary"
+        onClick={handleSendText}
+        className="shrink-0"
+        disabled={disabledByContext || !message.trim() || sending}
+      />
     </div>
   );
 };

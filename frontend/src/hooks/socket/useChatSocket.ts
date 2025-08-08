@@ -1,71 +1,77 @@
-// src/hooks/useChatSocket.ts
-import type { IMessage } from '@stomp/stompjs';
+// src/hooks/socket/useChatSocket.ts
+import { useEffect, useRef, useState } from 'react';
 import { Client } from '@stomp/stompjs';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import type { IMessage } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
-type Json = Record<string, unknown>;
+type OnMessage = (payload: unknown) => void;
 
 export const useChatSocket = (
   roomId: number,
-  onMessage: (message: unknown) => void,
+  onMessage: OnMessage,
   {
+    // 서버 SockJS 엔드포인트 (필요 시 env로)
+    wsBase = 'http://localhost:8080/ws-chat',
+    // 서버가 푸시하는 구독 경로
     subscribeDest = (id: number) => `/topic/chat/${id}`,
-    publishDest = (id: number) => `/app/chat/${id}`,
-    baseUrl = import.meta.env.VITE_WS_BASE || 'http://localhost:8080/ws-chat',
+    // 연결 유지를 위한 하트비트(선택)
     heartbeat = { incoming: 10000, outgoing: 10000 },
-  } = {},
+    // 인증이 필요하면 여기에 헤더 추가
+    connectHeaders = {} as Record<string, string>,
+  } = {}
 ) => {
   const clientRef = useRef<Client | null>(null);
-  const [client, setClient] = useState<Client | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
     if (isNaN(roomId)) return;
 
-    const socket = new SockJS(baseUrl);
-    const c = new Client({
+    // 1) SockJS 소켓 생성
+    const socket = new SockJS(wsBase);
+
+    // 2) STOMP 클라이언트 구성
+    const client = new Client({
       webSocketFactory: () => socket,
-      reconnectDelay: 5000,
+      reconnectDelay: 5000, // 연결 끊기면 5초 마다 재시도
       heartbeatIncoming: heartbeat.incoming,
       heartbeatOutgoing: heartbeat.outgoing,
+      connectHeaders,
       onConnect: () => {
+        console.log('🟢 WS connected');
         setIsConnected(true);
-        c.subscribe(subscribeDest(roomId), (msg: IMessage) => {
+
+        // 3) 방 구독
+        client.subscribe(subscribeDest(roomId), (frame: IMessage) => {
           try {
-            onMessage(JSON.parse(msg.body));
-          } catch {
-            onMessage(msg.body);
+            // 서버에서 온 메시지(body는 문자열) → JSON 파싱
+            const payload = JSON.parse(frame.body);
+            onMessage(payload);
+          } catch (e) {
+            console.error('parse error:', e);
           }
         });
       },
-      onDisconnect: () => setIsConnected(false),
-      onStompError: () => setIsConnected(false),
-      debug: () => {}, // 콘솔 소음 방지
+      onDisconnect: () => {
+        console.log('🔴 WS disconnected');
+        setIsConnected(false);
+      },
+      onStompError: (err) => {
+        console.error('❌ STOMP error:', err);
+      },
+      debug: () => {}, // 로그 소음 줄이기
     });
 
-    c.activate();
-    clientRef.current = c;
-    setClient(c);
+    // 4) 연결 시작
+    client.activate();
+    clientRef.current = client;
 
+    // 5) 언마운트/roomId 변경 시 해제
     return () => {
-      c.deactivate();
-      setIsConnected(false);
+      client.deactivate();
       clientRef.current = null;
-      setClient(null);
+      setIsConnected(false);
     };
-  }, [roomId, baseUrl, onMessage, subscribeDest, heartbeat.incoming, heartbeat.outgoing]);
+  }, [roomId, wsBase, subscribeDest, heartbeat.incoming, heartbeat.outgoing, onMessage, connectHeaders]);
 
-  const sendJson = useCallback(
-    (payload: Json) => {
-      if (!clientRef.current || !isConnected) return;
-      clientRef.current.publish({
-        destination: publishDest(roomId),
-        body: JSON.stringify(payload),
-      });
-    },
-    [roomId, publishDest, isConnected],
-  );
-
-  return { client, isConnected, sendJson };
+  return { client: clientRef.current, isConnected };
 };

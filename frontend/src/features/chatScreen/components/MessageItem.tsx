@@ -1,10 +1,10 @@
 import type { FC } from 'react';
-import type { ChatMessage } from '../../../apis/chat/chat.types';
+import type { ChatMessageResponse } from '../../../apis/chat/chat.types';
 import Profile from '../../../components/ui/Profile';
 import { formatTime } from '../utils/time';
 
 interface Props {
-  message: ChatMessage;
+  message: ChatMessageResponse;
   showMeta: boolean;
 }
 
