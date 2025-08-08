@@ -28,6 +28,7 @@ export interface JoinInfoResponse {
   roomId: number;
   roomTitle: string;
   nickname: string;
+  roomUserId: number;
 }
 
 // 참가자 요약 정보

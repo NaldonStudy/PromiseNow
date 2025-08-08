@@ -1,33 +1,62 @@
-import { useState, useEffect } from 'react';
-import { useRouletteStore } from '../roulette.store';
+import { useEffect, useMemo, useState } from 'react';
 import { FaMapMarker } from 'react-icons/fa';
+import { useParams } from 'react-router-dom';
+
+import { useRouletteList } from '../../../hooks/queries/roulette/queries';
+import { useRouletteSpinStore } from '../../../stores/roulette.store'; // mustStartSpinning, prizeNumber, stopSpinning
+
+// 색상 팔레트 추가
+const PALETTE = [
+  { backgroundColor: '#fdf2eb', textColor: '#bb4f15' }, // 연오렌지 / 진갈색
+  { backgroundColor: '#f28145', textColor: '#ffffff' }, // 오렌지
+  { backgroundColor: '#bb4f15', textColor: '#ffffff' }, // 진갈색
+  { backgroundColor: 'var(--color-point)', textColor: '#ffffff' }, // 포인트(보라)
+  { backgroundColor: 'var(--color-gray-input)', textColor: '#000000' }, // 연회색
+];
 
 const RouletteWheel = () => {
-  const { options, mustStartSpinning, prizeNumber, stopSpinning } = useRouletteStore();
+  const { id } = useParams<{ id: string }>();
+  const roomId = Number(id);
+
+  // 서버 데이터 가져오기
+  const { data: rouletteList = [] } = useRouletteList(roomId);
+
+  const { mustStartSpinning, prizeNumber, stopSpinning } = useRouletteSpinStore();
+
+  // 서버 데이터 → 색상 부여
+  const options = useMemo(
+    () =>
+      rouletteList.map((it, i) => ({
+        option: it.content,
+        style: {
+          backgroundColor: PALETTE[i % PALETTE.length].backgroundColor,
+          textColor: PALETTE[i % PALETTE.length].textColor,
+        },
+      })),
+    [rouletteList],
+  );
+
   const [rotation, setRotation] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
 
   useEffect(() => {
-    if (mustStartSpinning && !isSpinning) {
+    if (mustStartSpinning && !isSpinning && options.length > 0) {
       setIsSpinning(true);
 
-      // 룰렛을 여러 바퀴 돌린 후 선택된 번호에 정확히 멈추도록 계산
       const segmentAngle = 360 / options.length;
       const targetAngle = 360 - prizeNumber * segmentAngle - segmentAngle / 2;
-      const spins = 5; // 5바퀴 추가 회전
+      const spins = 5;
       const finalRotation = rotation + 360 * spins + targetAngle;
 
       setRotation(finalRotation);
 
-      // 애니메이션 완료 후 콜백 호출
       setTimeout(() => {
         setIsSpinning(false);
         stopSpinning(prizeNumber);
-      }, 3000); // 3초 애니메이션
+      }, 3000);
     }
   }, [mustStartSpinning, prizeNumber, options.length, rotation, isSpinning, stopSpinning]);
 
-  // 옵션이 없을 때 기본 표시
   if (options.length === 0) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -59,7 +88,6 @@ const RouletteWheel = () => {
             const centerY = 160;
             const radius = 160;
 
-            // 선택지가 하나뿐일 때는 전체 원을 그리기
             if (options.length === 1) {
               return (
                 <svg
@@ -99,43 +127,27 @@ const RouletteWheel = () => {
             const y2 = centerY + radius * Math.sin(endAngleRad);
 
             const largeArcFlag = segmentAngle > 180 ? 1 : 0;
-
             const pathData = `M ${centerX} ${centerY} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
 
-            // 텍스트 위치 계산
             const textAngle = startAngle + segmentAngle / 2;
             const textAngleRad = (textAngle * Math.PI) / 180;
             const textRadius = radius * 0.7;
             const textX = centerX + textRadius * Math.cos(textAngleRad);
             const textY = centerY + textRadius * Math.sin(textAngleRad);
 
-            // 텍스트 길이에 따른 폰트 크기 및 줄바꿈 처리
             const text = option.option;
             let fontSize = 14;
             let lines: string[] = [text];
 
-            // 텍스트가 너무 길면 폰트 크기 줄이기
-            if (text.length > 8) {
-              fontSize = 12;
-            }
-            if (text.length > 12) {
-              fontSize = 10;
-            }
-            if (text.length > 16) {
-              fontSize = 8;
-            }
+            if (text.length > 8) fontSize = 12;
+            if (text.length > 12) fontSize = 10;
+            if (text.length > 16) fontSize = 8;
 
-            // 매우 긴 텍스트는 줄바꿈 처리
             if (text.length > 10) {
               const mid = Math.ceil(text.length / 2);
               let breakPoint = mid;
-
-              // 공백이 있으면 공백에서 줄바꿈
               const spaceIndex = text.indexOf(' ', mid - 3);
-              if (spaceIndex !== -1 && spaceIndex < mid + 3) {
-                breakPoint = spaceIndex;
-              }
-
+              if (spaceIndex !== -1 && spaceIndex < mid + 3) breakPoint = spaceIndex;
               lines = [text.substring(0, breakPoint).trim(), text.substring(breakPoint).trim()];
             }
 
