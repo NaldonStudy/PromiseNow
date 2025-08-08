@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import static com.promisenow.api.common.ApiUtils.success;
@@ -50,11 +51,8 @@ public class UserController {
             }
     )
     @GetMapping("/me")
-    public ResponseEntity<ApiUtils.ApiResponse<User>> getMyInfo(HttpServletRequest request) {
-        String token = jwtTokenProvider.resolveTokenFromCookie(request, "access_token");
-        Long userId = jwtTokenProvider.getUserId(token);
+    public ResponseEntity<ApiUtils.ApiResponse<User>> getMyInfo(@AuthenticationPrincipal Long userId) {
         User user = userService.findByUserId(userId);
-
         return success(user);
     }
 }

@@ -23,7 +23,7 @@ public class User {
     @Column(name = "join_date", nullable = false)
     private LocalDate joinDate;
     
-    @Column(name = "username", nullable = false)
+    @Column(name = "username")
     private String username;
     
     @Column(name = "email")
