@@ -41,10 +41,13 @@ export const useWebRTCConnection = ({ roomId, onPeerJoined, onPeerLeft }: UseWeb
     try {
       const peerId = uuidv4();
       const protooUrl = `wss://webrtc.promisenow.store/ws/?roomId=${roomId}&peerId=${peerId}`;
+      console.log('WebRTC 연결 URL:', protooUrl);
+      
       const protooTransport = new protooClient.WebSocketTransport(protooUrl);
       _protoo.current = new protooClient.Peer(protooTransport);
 
       _protoo.current.on('open', async () => {
+        console.log('Protoo 연결 성공');
         try {
           await joinRoom();
         } catch (error) {
@@ -59,16 +62,18 @@ export const useWebRTCConnection = ({ roomId, onPeerJoined, onPeerLeft }: UseWeb
       });
 
       _protoo.current.on('request', async (request: any, accept: () => void) => {
-        console.log('Protoo 요청:', request);
+        console.log('Protoo 요청 수신:', request);
         if (request.method === 'newConsumer') {
           try {
+            console.log('새로운 Consumer 요청:', request.data);
             const consumer = await _recvTransport.current.consume(request.data);
             _consumers.current.set(consumer.id, consumer);
 
-            console.log(`새로운 Consumer 생성: ${consumer.kind} - ID: ${consumer.id}`);
+            console.log(`새로운 Consumer 생성 성공: ${consumer.kind} - ID: ${consumer.id}`);
 
             if (consumer.kind === 'video') {
               const remoteStream = new MediaStream([consumer.track]);
+              console.log('원격 비디오 스트림 생성:', remoteStream);
               setState(prev => ({
                 ...prev,
                 remoteStreams: new Map(prev.remoteStreams.set(consumer.id, remoteStream))
@@ -76,6 +81,7 @@ export const useWebRTCConnection = ({ roomId, onPeerJoined, onPeerLeft }: UseWeb
             }
 
             consumer.on('transportclose', () => {
+              console.log('Consumer transport 종료:', consumer.id);
               _consumers.current.delete(consumer.id);
               setState(prev => {
                 const newRemoteStreams = new Map(prev.remoteStreams);
@@ -92,17 +98,27 @@ export const useWebRTCConnection = ({ roomId, onPeerJoined, onPeerLeft }: UseWeb
       });
 
       _protoo.current.on('notification', (notification: any) => {
-        console.log('Protoo 알림:', notification);
+        console.log('Protoo 알림 수신:', notification);
 
         switch (notification.method) {
           case 'newPeer': {
             const peer = notification.data;
+            console.log('새로운 참가자 입장:', peer);
             onPeerJoined?.(peer.id);
             break;
           }
           case 'peerClosed': {
             const peer = notification.data;
+            console.log('참가자 퇴장:', peer);
             onPeerLeft?.(peer.id);
+            break;
+          }
+          case 'newConsumer': {
+            console.log('newConsumer 알림 수신:', notification.data);
+            break;
+          }
+          case 'consumerClosed': {
+            console.log('consumerClosed 알림 수신:', notification.data);
             break;
           }
         }
@@ -120,27 +136,36 @@ export const useWebRTCConnection = ({ roomId, onPeerJoined, onPeerLeft }: UseWeb
 
   const joinRoom = async () => {
     try {
+      console.log('미디어스프 디바이스 생성 중...');
       _mediasoupDevice.current = new mediasoupClient.Device();
       const routerRtpCapabilities = await _protoo.current.request('getRouterRtpCapabilities');
+      console.log('Router RTP Capabilities:', routerRtpCapabilities);
+      
       await _mediasoupDevice.current.load({
         routerRtpCapabilities,
       });
+      console.log('미디어스프 디바이스 로드 완료');
 
       // 송출용 Transport 생성
+      console.log('송출용 Transport 생성 중...');
       const sendTransportInfo = await _protoo.current.request('createWebRtcTransport', {
         producing: true,
         consuming: false,
       });
+      console.log('송출용 Transport 정보:', sendTransportInfo);
+      
       _sendTransport.current = _mediasoupDevice.current.createSendTransport(sendTransportInfo);
 
       _sendTransport.current.on(
         'connect',
         async ({ dtlsParameters }: any, callback: () => void) => {
           try {
+            console.log('송출용 Transport 연결 중...');
             await _protoo.current.request('connectWebRtcTransport', {
               transportId: _sendTransport.current.id,
               dtlsParameters,
             });
+            console.log('송출용 Transport 연결 성공');
             callback();
           } catch (error) {
             console.error('WebRTC SendTransport 연결 실패:', error);
@@ -156,6 +181,7 @@ export const useWebRTCConnection = ({ roomId, onPeerJoined, onPeerLeft }: UseWeb
         ) => {
           try {
             const { kind, rtpParameters } = parameters;
+            console.log(`${kind} Producer 생성 요청:`, parameters);
             const id = await _protoo.current.request('produce', {
               transportId: _sendTransport.current.id,
               kind,
@@ -170,19 +196,24 @@ export const useWebRTCConnection = ({ roomId, onPeerJoined, onPeerLeft }: UseWeb
       );
 
       // 수신용 Transport 생성
+      console.log('수신용 Transport 생성 중...');
       const recvTransportInfo = await _protoo.current.request('createWebRtcTransport', {
         producing: false,
         consuming: true,
       });
+      console.log('수신용 Transport 정보:', recvTransportInfo);
+      
       _recvTransport.current = _mediasoupDevice.current.createRecvTransport(recvTransportInfo);
       _recvTransport.current.on(
         'connect',
         async ({ dtlsParameters }: any, callback: () => void) => {
           try {
+            console.log('수신용 Transport 연결 중...');
             await _protoo.current.request('connectWebRtcTransport', {
               transportId: _recvTransport.current.id,
               dtlsParameters,
             });
+            console.log('수신용 Transport 연결 성공');
             callback();
           } catch (error) {
             console.error('WebRTC RecvTransport 연결 실패:', error);
@@ -216,8 +247,11 @@ export const useWebRTCConnection = ({ roomId, onPeerJoined, onPeerLeft }: UseWeb
     if (!_sendTransport.current) return;
 
     try {
+      console.log('오디오 스트림 요청 중...');
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const audioTrack = stream.getAudioTracks()[0];
+      console.log('오디오 트랙:', audioTrack);
+      
       const audioProducer = await _sendTransport.current.produce({ track: audioTrack });
       _producers.current.set(audioProducer.id, audioProducer);
       
@@ -232,8 +266,11 @@ export const useWebRTCConnection = ({ roomId, onPeerJoined, onPeerLeft }: UseWeb
     if (!_sendTransport.current) return;
 
     try {
+      console.log('비디오 스트림 요청 중...');
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       const videoTrack = stream.getVideoTracks()[0];
+      console.log('비디오 트랙:', videoTrack);
+      
       const videoProducer = await _sendTransport.current.produce({ track: videoTrack });
       _producers.current.set(videoProducer.id, videoProducer);
       
