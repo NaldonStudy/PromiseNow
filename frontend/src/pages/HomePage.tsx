@@ -1,9 +1,9 @@
-import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
-import HomeTemplate from './templates/HomeTemplate';
+import { useNavigate } from 'react-router-dom';
 import { useJoinedRooms, useJoinRoomByInviteCode } from '../hooks/queries/room';
-import { useUserStore } from '../stores/user.store';
 import { useRoomUserStore } from '../stores/roomUser.store'; // ✅ roomUser store import
+import { useUserStore } from '../stores/user.store';
+import HomeTemplate from './templates/HomeTemplate';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -22,7 +22,7 @@ const HomePage = () => {
   const handleJoinRoom = (
     inviteCode: string,
     nickname: string,
-    onSuccess: (roomId: number) => void
+    onSuccess: (roomId: number, roomUserId: number) => void,
   ) => {
     joinRoomMutation.mutate(
       { inviteCode, nickname, userId: userId! }, // ✅ roomUserId는 request에서 제외
@@ -33,7 +33,7 @@ const HomePage = () => {
             if (data.roomUserId) {
               setRoomUser(data.roomId, data.roomUserId);
             }
-            onSuccess(data.roomId);
+            onSuccess(data.roomId, data.roomUserId);
           } else {
             alert('참여 실패: 응답이 없습니다.');
           }
@@ -41,7 +41,7 @@ const HomePage = () => {
         onError: () => {
           alert('코드가 유효하지 않거나 이미 참여한 방입니다.');
         },
-      }
+      },
     );
   };
 
@@ -49,12 +49,7 @@ const HomePage = () => {
     return <div>로딩 중...</div>;
   }
 
-  return (
-    <HomeTemplate
-      rooms={rooms ?? []}
-      onJoinRoom={handleJoinRoom}
-    />
-  );
+  return <HomeTemplate rooms={rooms ?? []} onJoinRoom={handleJoinRoom} />;
 };
 
 export default HomePage;

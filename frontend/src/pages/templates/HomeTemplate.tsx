@@ -6,7 +6,11 @@ import type { RoomResponse } from '../../features/rooms/dummy';
 
 interface Props {
   rooms: RoomResponse[];
-  onJoinRoom: (inviteCode: string, nickname: string, onSuccess: (roomId: number) => void) => void;
+  onJoinRoom: (
+    inviteCode: string,
+    nickname: string,
+    onSuccess: (roomId: number, roomUserId: number) => void,
+  ) => void;
 }
 
 const HomeTemplate = ({ rooms, onJoinRoom }: Props) => {
