@@ -103,6 +103,9 @@ public class RoomResponseDto {
 
         @Schema(description = "참가자 요약 정보", example = "홍길동 외 3명")
         private String participantSummary;
+
+        @Schema(description = "방 상태 정보", example = "ACTIVE")
+        private Room.RoomState roomState;
     }
 
     // 방 상태 조회와 응답
