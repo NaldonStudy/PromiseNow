@@ -1,5 +1,6 @@
 package com.promisenow.api.domain.room.service;
 
+import com.promisenow.api.domain.chat.exception.FileStorageException;
 import com.promisenow.api.domain.room.dto.RoomUserRequestDto.*;
 import com.promisenow.api.domain.room.dto.RoomUserResponseDto.*;
 import com.promisenow.api.domain.room.entity.Room;
@@ -11,7 +12,15 @@ import com.promisenow.api.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,6 +32,8 @@ public class RoomUserServiceImpl implements RoomUserService {
     private final RoomRepository roomRepository;
     private final RoomUserRepository roomUserRepository;
     private final UserRepository userRepository;
+
+    private final String uploadDir = "./uploaded-images/profile/";
 
     // 방에 초대코드로 참가
     @Override
@@ -94,6 +105,36 @@ public class RoomUserServiceImpl implements RoomUserService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자 정보를 찾을 수 없습니다."));
         roomUser.updateNickname(newNickname);
     }
+
+
+    @Override
+    public String updateProfileImage(Long roomId, Long userId, MultipartFile file) {
+        RoomUser roomUser = roomUserRepository.findByRoom_RoomIdAndUser_UserId(roomId, userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자 정보를 찾을 수 없습니다."));
+
+        try {
+            File uploadPath = new File(uploadDir);
+            if (!uploadPath.exists()) uploadPath.mkdirs();
+
+            String originalFilename = StringUtils.cleanPath(file.getOriginalFilename());
+            String fileName = System.currentTimeMillis() + "_" + originalFilename;
+            Path filePath = Paths.get(uploadDir, fileName);
+            Files.write(filePath, file.getBytes());
+
+            String imageUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+                    .path("/uploaded-images/")
+                    .path(fileName)
+                    .toUriString();
+
+            roomUser.updateProfileImage(imageUrl);
+            return imageUrl;
+
+        } catch (IOException e) {
+            e.printStackTrace(); // 로그 출력
+            throw new FileStorageException("프로필 이미지 저장 중 오류가 발생했습니다.");
+        }
+    }
+
 
 
 } 

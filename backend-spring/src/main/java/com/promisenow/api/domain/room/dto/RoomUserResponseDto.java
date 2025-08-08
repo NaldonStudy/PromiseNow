@@ -40,4 +40,13 @@ public class RoomUserResponseDto {
         private String profileImage;
     }
 
+    // 프로필 이미지 수정 정보
+    @Schema(description = "수정된 프로필 이미지 정보 응답")
+    @Getter
+    @AllArgsConstructor
+    public static class ImageUploadResponse {
+
+        @Schema(description = "업로드된 이미지의 URL", example = "http://localhost:8080/uploaded-images/profile/1691429381785_profile.jpg")
+        private String imageUrl;
+    }
 }
