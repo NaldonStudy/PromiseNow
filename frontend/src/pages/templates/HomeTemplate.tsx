@@ -21,8 +21,8 @@ const HomeTemplate = ({ rooms, onJoinRoom, resetRoomState }: Props) => {
       <div className="flex flex-col gap-3 px-8 pt-10">
         <RoomFind onJoinRoom={onJoinRoom} />
         <RoomList rooms={rooms} resetRoomState={resetRoomState} />
-        <RoomMake />
       </div>
+        <RoomMake />
     </div>
   );
 };
