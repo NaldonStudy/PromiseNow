@@ -5,9 +5,9 @@ import CircleBtn from '../../../components/ui/CircleBtn';
 import ModalForm from '../../../components/ui/modal/ModalForm';
 
 import { useCreateRoom } from '../../../hooks/queries/room';
-import { useUserStore } from '../../../stores/user.store';
 import { useRoomStore } from '../../../stores/room.store';
 import { useRoomUserStore } from '../../../stores/roomUser.store';
+import { useUserStore } from '../../../stores/user.store';
 
 type ModalType = 'room' | 'name';
 
@@ -85,7 +85,7 @@ const RoomMake = () => {
         onSubmit={handleSubmit}
       />
 
-      <div className="absolute bottom-6 right-6 z-50">
+      <div className="fixed bottom-6 right-6 z-50">
         <CircleBtn
           iconType="plus"
           color="primary"
