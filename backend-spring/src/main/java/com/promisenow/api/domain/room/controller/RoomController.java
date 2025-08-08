@@ -428,20 +428,22 @@ public class RoomController {
                             "success": true,
                             "data": [
                                 {
-                                    "roomId": 1,
+                                    "roomId": 13,
                                     "roomTitle": "스터디 약속방",
                                     "locationDate": "2025-08-10",
                                     "locationTime": "14:30",
                                     "locationName": "강남역 2번 출구",
-                                    "participantSummary": "홍길동 외 3명"
+                                    "participantSummary": "홍길동 외 3명",
+                                    "roomState": "WAITING"
                                 },
                                 {
-                                    "roomId": 2,
+                                    "roomId": 14,
                                     "roomTitle": "회식 일정 방",
                                     "locationDate": "2025-08-20",
                                     "locationTime": "18:00",
                                     "locationName": "을지로입구역",
-                                    "participantSummary": "김싸피 외 2명"
+                                    "participantSummary": "김싸피 외 2명",
+                                    "roomState": "ACTIVE"
                                 }
                             ],
                             "message": null
