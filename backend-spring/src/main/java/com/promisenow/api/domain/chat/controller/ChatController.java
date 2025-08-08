@@ -4,7 +4,6 @@ import com.promisenow.api.common.ApiUtils;
 import com.promisenow.api.domain.chat.dto.ImageResponseDto;
 import com.promisenow.api.domain.chat.dto.MessageResponseDto;
 import com.promisenow.api.domain.chat.entity.Image;
-import com.promisenow.api.domain.chat.exception.FileStorageException;
 import com.promisenow.api.domain.chat.repository.ImageRepository;
 import com.promisenow.api.domain.chat.service.ChatImageService;
 import com.promisenow.api.domain.chat.service.ChatService;
@@ -14,19 +13,13 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 @RestController
@@ -36,7 +29,6 @@ import java.util.List;
 public class ChatController {
 
     private final ChatService chatService;
-    private final String uploadDir = "./uploaded-images/";
     private final ChatImageService chatImageService;
     private final ImageRepository imageRepository;  // 추가
 
@@ -88,32 +80,12 @@ public class ChatController {
             @RequestParam("lng") Double lng,
             @RequestParam(value = "timestamp", required = false) String timestampStr) {
 
-
-        try {
-            File uploadPath = new File(uploadDir);
-            if (!uploadPath.exists()) {
-                uploadPath.mkdirs();
-            }
-
-            String originalFilename = StringUtils.cleanPath(file.getOriginalFilename());
-            String fileName = System.currentTimeMillis() + "_" + originalFilename;
-
-            Path filePath = Paths.get(uploadDir, fileName);
-            Files.write(filePath, file.getBytes());
-
-            String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                    .path("/uploaded-images/")
-                    .path(fileName)
-                    .toUriString();
-
-            return ApiUtils.success(new ImageUploadResponse(fileDownloadUri));
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new FileStorageException("파일 저장 중 오류가 발생했습니다.");
-        }
+        String fileDownloadUri = chatImageService.uploadImage(file, lat, lng, timestampStr);
+        return ApiUtils.success(new ImageUploadResponse(fileDownloadUri));
     }
 
+
+    @Getter
     @Schema(description = "이미지 업로드 응답 DTO")
     public static class ImageUploadResponse {
         @Schema(description = "업로드된 이미지 URL", example = "http://localhost:8080/uploaded-images/chat/1690859341256_image.png")
@@ -123,9 +95,6 @@ public class ChatController {
             this.imageUrl = imageUrl;
         }
 
-        public String getImageUrl() {
-            return imageUrl;
-        }
     }
     @Operation(
             summary = "채팅방 내 이미지 목록 조회",
