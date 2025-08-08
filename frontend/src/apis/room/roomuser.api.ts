@@ -6,7 +6,6 @@ import type {
   GetUsersInRoomResponse,
   JoinInfoResponse,
   JoinRequest,
-  QuitRoomRequest,
   UpdateNicknameRequest,
   UpdateNicknameResponse,
   UpdateProfileRequest,
@@ -20,9 +19,8 @@ export const joinRoomByInviteCode = async (request: JoinRequest) => {
 };
 
 // 방 나가기
-export const quitRoom = async (request: QuitRoomRequest) => {
-  const { roomId, userId } = request;
-  const data = await handleApi<void>(axiosInstance.delete(`/rooms/${roomId}/${userId}`));
+export const quitRoom = async (roomId: number, userId: number) => {
+  const data = await handleApi<void>(axiosInstance.delete(`/rooms/${roomId}/users/${userId}`));
   return data;
 };
 

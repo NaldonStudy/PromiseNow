@@ -1,64 +1,62 @@
+// src/features/settings/components/LeaveRoom.tsx
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { deleteRoom } from './../../../apis/room/room.api';
-import { getUsersInRoom, quitRoom } from './../../../apis/room/roomuser.api';
-import SquareBtn from './../../../components/ui/SquareBtn';
-import ModalConfirm from './../../../components/ui/modal/ModalConfirm';
-import { useRoomStore } from './../../../stores/room.store';
-import { useUserStore } from './../../../stores/user.store';
+import { deleteRoom } from '../../../apis/room/room.api';
+import { getUsersInRoom, quitRoom } from '../../../apis/room/roomuser.api';
+import SquareBtn from '../../../components/ui/SquareBtn';
+import ModalConfirm from '../../../components/ui/modal/ModalConfirm';
+import { useRoomStore } from '../../../stores/room.store';
+import { useUserStore } from '../../../stores/user.store';
 
 const LeaveRoom = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isDeletingRoom, setIsDeletingRoom] = useState(false); // ✅ 삭제 여부 상태
+  const [open, setOpen] = useState(false);
+  const [willDelete, setWillDelete] = useState(false); // 인원=1이면 quit 후 delete
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const qc = useQueryClient();
   const { currentRoomId, setCurrentRoomId } = useRoomStore();
   const { userId } = useUserStore();
 
-  // ✅ 모달 열기 전에 참여자 수 확인
-  const openModal = async () => {
+  // 모달 열 때 현재 인원 확인
+  const handleOpen = async () => {
     if (!currentRoomId) return;
-
     try {
-      const participants = await getUsersInRoom(currentRoomId);
-
-      if (!participants || participants.length === 0) {
-        return;
-      }
-
-      setIsDeletingRoom(participants.length === 1); // 마지막 1인 → 방 삭제
-      setIsModalOpen(true);
-    } catch (error) {
-      console.error('참여자 조회 실패:', error);
-      alert('참여자 정보를 불러올 수 없습니다.');
+      const users = await getUsersInRoom(currentRoomId); // SimpleInfoResponse[] | null
+      const count = users ? users.length : 0;
+      setWillDelete(count === 1); // 1명이면 quit+delete, 그 외 quit만
+      setOpen(true);
+    } catch (e) {
+      console.error('참여자 조회 실패', e);
+      // 조회 실패 시 기본은 quit만 시도
+      setWillDelete(false);
+      setOpen(true);
     }
   };
 
-  const handleLeaveRoom = async () => {
-    if (!currentRoomId || userId === null) {
-      alert('방 정보가 없거나 로그인 정보가 없습니다.');
-      return;
-    }
+  const handleConfirm = async () => {
+    if (!currentRoomId || userId == null) return;
 
     try {
-      if (isDeletingRoom) {
+      if (willDelete) {
+        // ✅ 1명일 때: quit → delete 순서로 실행
+        await quitRoom(currentRoomId, userId);
         await deleteRoom(currentRoomId);
       } else {
-        await quitRoom({ roomId: currentRoomId, userId });
+        // ✅ 2명 이상: quit만
+        await quitRoom(currentRoomId, userId);
       }
 
+      // 상태/캐시 정리
       setCurrentRoomId(null);
-
-      // ✅ 방 목록 캐시 무효화
-      queryClient.invalidateQueries({ queryKey: ['joinedRooms', userId] });
+      qc.invalidateQueries({ queryKey: ['joinedRooms', userId] });
+      qc.invalidateQueries({ queryKey: ['room', currentRoomId] });
 
       navigate('/home');
-    } catch (error) {
-      console.error('방 나가기 또는 삭제 실패:', error);
-      alert('방 나가기에 실패했습니다.');
+    } catch (e) {
+      console.error('방 나가기/삭제 실패', e);
+      alert('방 나가기/삭제에 실패했습니다.');
     } finally {
-      setIsModalOpen(false);
+      setOpen(false);
     }
   };
 
@@ -70,19 +68,19 @@ const LeaveRoom = () => {
           template="filled"
           width="w-full"
           textSize="text-md"
-          onClick={openModal} // ✅ 참여자 확인 후 모달 오픈
+          onClick={handleOpen}
         />
       </div>
 
       <ModalConfirm
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={open}
+        onClose={() => setOpen(false)}
         title={
-          isDeletingRoom
-            ? '방 전체가 삭제됩니다.\n정말 나가시겠습니까?'
-            : '정보가 모두 사라집니다.\n방을 나가시겠습니까?'
+          willDelete
+            ? '현재 방에 1명만 있습니다.\n나가면 방이 삭제됩니다. 진행할까요?'
+            : '방을 나가면 방과의 연결 정보가 삭제됩니다. 진행할까요?'
         }
-        onConfirm={handleLeaveRoom}
+        onConfirm={handleConfirm}
       />
     </>
   );
