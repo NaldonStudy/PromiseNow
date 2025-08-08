@@ -7,6 +7,7 @@ import {
   useMyAvailability,
   useTotalAvailability,
   useUpdateAvailability,
+  useInvalidateAvailabilityQueries,
 } from '../hooks/queries/availability';
 import {
   useAppointment,
@@ -15,14 +16,19 @@ import {
   useUpdateRoomDateRange,
 } from '../hooks/queries/room';
 import { useRoomStore } from '../stores/room.store';
+import { useRoomUserStore } from '../stores/roomUser.store';
 
 import ScheduleTemplate from './templates/ScheduleTemplate';
 
 const SchedulePage = () => {
   const { id } = useParams<{ id: string }>();
   const roomId = Number(id);
+  const roomUserId = useRoomUserStore((state) => state.getRoomUserId(roomId));
+
   const { setDateRange } = useRoomStore();
   const { setUserSelections } = useCalendarStore();
+
+  const { invalidateRoom } = useInvalidateAvailabilityQueries();
 
   const { data: totalAvailabilityData } = useTotalAvailability(roomId);
   const { data: roomDateRangeData } = useRoomDateRange(roomId);
@@ -92,13 +98,14 @@ const SchedulePage = () => {
   };
 
   const handleUserSelectionsUpdate = (userSelections: Record<string, boolean[]>) => {
-    const roomUserId = 1; // TODO: 실제 유저 ID로 변경
+    if (roomUserId === undefined) return;
+
     const updatedDataList = Object.entries(userSelections).map(([date, timeArray]) => ({
       date,
       timeData: timeArray.map((selected) => (selected ? '1' : '0')).join(''),
     }));
     const updateData = {
-      roomUserId,
+      roomUserId: roomUserId,
       updatedDataList,
     };
     updateUserSelectionsMutation.mutate(updateData, {
@@ -111,6 +118,11 @@ const SchedulePage = () => {
     });
   };
 
+  const handleInvalidateRoom = () => {
+    if (roomUserId === undefined) return;
+    invalidateRoom(roomId, roomUserId);
+  };
+
   return (
     <ScheduleTemplate
       appointmentData={appointmentData}
@@ -118,6 +130,7 @@ const SchedulePage = () => {
       onAppointmentUpdate={handleAppointmentUpdate}
       onDateRangeUpdate={handleDateRangeUpdate}
       onUserSelectionsUpdate={handleUserSelectionsUpdate}
+      onRefreshCalendar={handleInvalidateRoom}
     />
   );
 };
