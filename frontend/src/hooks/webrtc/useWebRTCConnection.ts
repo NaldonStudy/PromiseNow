@@ -47,9 +47,17 @@ export const useWebRTCConnection = ({ roomId, onPeerJoined, onPeerLeft }: UseWeb
   const _producers = useRef<Map<string, any>>(new Map());
   const _consumers = useRef<Map<string, any>>(new Map());
   const _localStream = useRef<MediaStream | null>(null);
+  const _isConnecting = useRef(false);
 
   const connect = useCallback(async () => {
+    // 이미 연결 중이면 중복 연결 방지
+    if (_isConnecting.current || state.isConnected) {
+      console.log('이미 연결 중이거나 연결된 상태입니다.');
+      return;
+    }
+
     try {
+      _isConnecting.current = true;
       setState(prev => ({ ...prev, isConnecting: true, error: null }));
 
       const peerId = uuidv4();
@@ -60,19 +68,31 @@ export const useWebRTCConnection = ({ roomId, onPeerJoined, onPeerLeft }: UseWeb
       const transport = new protooClient.WebSocketTransport(url);
       _protoo.current = new protooClient.Peer(transport);
       
-      _protoo.current.on('open', () => {
-        console.log('Protoo 연결 성공');
+      // 연결 완료를 기다리는 Promise
+      const connectionPromise = new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('WebSocket 연결 시간 초과'));
+        }, 10000); // 10초 타임아웃
+
+        _protoo.current!.on('open', () => {
+          console.log('Protoo 연결 성공');
+          clearTimeout(timeout);
+          resolve();
+        });
+
+        _protoo.current!.on('disconnected', () => {
+          console.log('Protoo 연결 해제');
+          setState(prev => ({ ...prev, isConnected: false }));
+        });
+
+        _protoo.current!.on('close', () => {
+          console.log('Protoo 연결 종료');
+          setState(prev => ({ ...prev, isConnected: false }));
+        });
       });
 
-      _protoo.current.on('disconnected', () => {
-        console.log('Protoo 연결 해제');
-        setState(prev => ({ ...prev, isConnected: false }));
-      });
-
-      _protoo.current.on('close', () => {
-        console.log('Protoo 연결 종료');
-        setState(prev => ({ ...prev, isConnected: false }));
-      });
+      // 연결 완료 대기
+      await connectionPromise;
 
       // 미디어스프 디바이스 생성
       console.log('미디어스프 디바이스 생성 중...');
@@ -204,13 +224,15 @@ export const useWebRTCConnection = ({ roomId, onPeerJoined, onPeerLeft }: UseWeb
       });
 
       setState(prev => ({ ...prev, isConnected: true, isConnecting: false }));
+      _isConnecting.current = false;
 
     } catch (error) {
       console.error('WebRTC 연결 실패:', error);
       const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.';
       setState(prev => ({ ...prev, error: errorMessage, isConnecting: false }));
+      _isConnecting.current = false;
     }
-  }, [roomId, onPeerJoined, onPeerLeft]);
+  }, [roomId, onPeerJoined, onPeerLeft, state.isConnected]);
 
   const handleNewConsumer = async (data: ConsumerData) => {
     console.log('newConsumer 알림 수신:', data);
@@ -341,6 +363,7 @@ export const useWebRTCConnection = ({ roomId, onPeerJoined, onPeerLeft }: UseWeb
     _device.current = null;
     _sendTransport.current = null;
     _recvTransport.current = null;
+    _isConnecting.current = false;
 
     setState({
       isConnected: false,
