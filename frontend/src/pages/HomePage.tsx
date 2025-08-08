@@ -1,14 +1,20 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useJoinedRooms, useJoinRoomByInviteCode } from '../hooks/queries/room';
-import { useRoomUserStore } from '../stores/roomUser.store'; // ✅ roomUser store import
+import { useRoomUserStore } from '../stores/roomUser.store';
 import { useUserStore } from '../stores/user.store';
+import { useCalendarStore } from '../features/calendar/calendar.store';
+import { useTitle } from '../hooks/common/useTitle';
+
 import HomeTemplate from './templates/HomeTemplate';
 
 const HomePage = () => {
+  useTitle('내 약속 목록 - PromiseNow');
+
   const navigate = useNavigate();
   const { userId, isAuthenticated } = useUserStore();
-  const { setRoomUser } = useRoomUserStore(); // ✅ roomUser 저장 함수 불러오기
+  const { setRoomUser } = useRoomUserStore();
+  const { setView, setMode } = useCalendarStore();
 
   const { data: rooms } = useJoinedRooms(userId!);
   const joinRoomMutation = useJoinRoomByInviteCode(userId!);
@@ -19,17 +25,23 @@ const HomePage = () => {
     }
   }, [isAuthenticated, userId, navigate]);
 
+  // 방 입장 시 초기화해야 하는 것들
+  const resetRoomState = () => {
+    setView('month');
+    setMode('view');
+  };
+
+  // 참여코드로 참여할 때
   const handleJoinRoom = (
     inviteCode: string,
     nickname: string,
     onSuccess: (roomId: number, roomUserId: number) => void,
   ) => {
     joinRoomMutation.mutate(
-      { inviteCode, nickname, userId: userId! }, // ✅ roomUserId는 request에서 제외
+      { inviteCode, nickname, userId: userId! },
       {
         onSuccess: (data) => {
           if (data) {
-            // ✅ 응답에서 받은 roomUserId 저장
             if (data.roomUserId) {
               setRoomUser(data.roomId, data.roomUserId);
             }
@@ -43,13 +55,16 @@ const HomePage = () => {
         },
       },
     );
+    resetRoomState();
   };
 
   if (!isAuthenticated || !userId) {
     return <div>로딩 중...</div>;
   }
 
-  return <HomeTemplate rooms={rooms ?? []} onJoinRoom={handleJoinRoom} />;
+  return (
+    <HomeTemplate rooms={rooms ?? []} onJoinRoom={handleJoinRoom} resetRoomState={resetRoomState} />
+  );
 };
 
 export default HomePage;

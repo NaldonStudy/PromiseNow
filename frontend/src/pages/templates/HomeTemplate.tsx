@@ -11,15 +11,16 @@ interface Props {
     nickname: string,
     onSuccess: (roomId: number, roomUserId: number) => void,
   ) => void;
+  resetRoomState: () => void;
 }
 
-const HomeTemplate = ({ rooms, onJoinRoom }: Props) => {
+const HomeTemplate = ({ rooms, onJoinRoom, resetRoomState }: Props) => {
   return (
     <div className="relative w-full h-full mx-auto bg-white overflow-y-auto">
       <BrandHeader />
       <div className="flex flex-col gap-3 px-8 pt-10">
         <RoomFind onJoinRoom={onJoinRoom} />
-        <RoomList rooms={rooms} />
+        <RoomList rooms={rooms} resetRoomState={resetRoomState} />
         <RoomMake />
       </div>
     </div>
