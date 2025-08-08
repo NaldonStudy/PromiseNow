@@ -17,10 +17,13 @@ import {
 } from '../hooks/queries/room';
 import { useRoomStore } from '../stores/room.store';
 import { useRoomUserStore } from '../stores/roomUser.store';
+import { useTitle } from '../hooks/common/useTitle';
 
 import ScheduleTemplate from './templates/ScheduleTemplate';
 
 const SchedulePage = () => {
+  useTitle('일정 - PromiseNow');
+
   const { id } = useParams<{ id: string }>();
   const roomId = Number(id);
   const roomUserId = useRoomUserStore((state) => state.getRoomUserId(roomId));

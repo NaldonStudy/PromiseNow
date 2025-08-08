@@ -4,10 +4,13 @@ import { useJoinedRooms, useJoinRoomByInviteCode } from '../hooks/queries/room';
 import { useRoomUserStore } from '../stores/roomUser.store';
 import { useUserStore } from '../stores/user.store';
 import { useCalendarStore } from '../features/calendar/calendar.store';
+import { useTitle } from '../hooks/common/useTitle';
 
 import HomeTemplate from './templates/HomeTemplate';
 
 const HomePage = () => {
+  useTitle('내 약속 목록 - PromiseNow');
+
   const navigate = useNavigate();
   const { userId, isAuthenticated } = useUserStore();
   const { setRoomUser } = useRoomUserStore();
