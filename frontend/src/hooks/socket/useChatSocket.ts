@@ -1,77 +1,94 @@
 // src/hooks/socket/useChatSocket.ts
-import { useEffect, useRef, useState } from 'react';
-import { Client } from '@stomp/stompjs';
 import type { IMessage } from '@stomp/stompjs';
+import { Client } from '@stomp/stompjs';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import SockJS from 'sockjs-client';
 
-type OnMessage = (payload: unknown) => void;
+type Options = {
+  wsBase?: string; // e.g. https://api.promisenow.store/ws-chat
+  subscribeDest?: (roomId: number) => string; // e.g. (id)=>`/topic/chat/${id}`
+  publishDest?: string; // default: /app/chat
+};
 
 export const useChatSocket = (
   roomId: number,
-  onMessage: OnMessage,
-  {
-    // 서버 SockJS 엔드포인트 (필요 시 env로)
-    wsBase = 'http://localhost:8080/ws-chat',
-    // 서버가 푸시하는 구독 경로
-    subscribeDest = (id: number) => `/topic/chat/${id}`,
-    // 연결 유지를 위한 하트비트(선택)
-    heartbeat = { incoming: 10000, outgoing: 10000 },
-    // 인증이 필요하면 여기에 헤더 추가
-    connectHeaders = {} as Record<string, string>,
-  } = {}
+  onMessage: (payload: Record<string, unknown>) => void,
+  options: Options = {},
 ) => {
   const clientRef = useRef<Client | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
+  // 최신 onMessage / options 를 ref로 유지 (deps에 함수 안 넣기 위함)
+  const onMessageRef = useRef(onMessage);
   useEffect(() => {
-    if (isNaN(roomId)) return;
+    onMessageRef.current = onMessage;
+  }, [onMessage]);
 
-    // 1) SockJS 소켓 생성
-    const socket = new SockJS(wsBase);
+  const subDestRef = useRef<Options['subscribeDest']>(options.subscribeDest);
+  useEffect(() => {
+    subDestRef.current = options.subscribeDest;
+  }, [options.subscribeDest]);
 
-    // 2) STOMP 클라이언트 구성
+  const pubDestRef = useRef<string>(options.publishDest ?? '/app/chat');
+  useEffect(() => {
+    pubDestRef.current = options.publishDest ?? '/app/chat';
+  }, [options.publishDest]);
+
+  const wsBase = options.wsBase ?? 'https://api.promisenow.store/ws-chat';
+
+  useEffect(() => {
+    if (Number.isNaN(roomId)) {
+      console.warn('[WS] invalid roomId', roomId);
+      return;
+    }
+
+    const sock = new SockJS(wsBase);
     const client = new Client({
-      webSocketFactory: () => socket,
-      reconnectDelay: 5000, // 연결 끊기면 5초 마다 재시도
-      heartbeatIncoming: heartbeat.incoming,
-      heartbeatOutgoing: heartbeat.outgoing,
-      connectHeaders,
+      webSocketFactory: () => sock as unknown as WebSocket,
+      reconnectDelay: 5000,
+      debug: (s) => console.log('[STOMP]', s),
       onConnect: () => {
-        console.log('🟢 WS connected');
         setIsConnected(true);
-
-        // 3) 방 구독
-        client.subscribe(subscribeDest(roomId), (frame: IMessage) => {
+        const topic = subDestRef.current ? subDestRef.current(roomId) : `/topic/chat/${roomId}`;
+        client.subscribe(topic, (msg: IMessage) => {
           try {
-            // 서버에서 온 메시지(body는 문자열) → JSON 파싱
-            const payload = JSON.parse(frame.body);
-            onMessage(payload);
+            const payload = JSON.parse(msg.body);
+            onMessageRef.current(payload);
           } catch (e) {
-            console.error('parse error:', e);
+            console.error('[WS] parse error', e, msg.body);
           }
         });
       },
-      onDisconnect: () => {
-        console.log('🔴 WS disconnected');
-        setIsConnected(false);
-      },
-      onStompError: (err) => {
-        console.error('❌ STOMP error:', err);
-      },
-      debug: () => {}, // 로그 소음 줄이기
+      onDisconnect: () => setIsConnected(false),
+      onStompError: (f) => console.error('[WS] STOMP error', f),
+      onWebSocketError: (e) => console.error('[WS] socket error', e),
     });
 
-    // 4) 연결 시작
     client.activate();
     clientRef.current = client;
 
-    // 5) 언마운트/roomId 변경 시 해제
     return () => {
       client.deactivate();
       clientRef.current = null;
-      setIsConnected(false);
     };
-  }, [roomId, wsBase, subscribeDest, heartbeat.incoming, heartbeat.outgoing, onMessage, connectHeaders]);
+    // ✅ deps는 원시값만: 함수(ref로 보관)는 넣지 않음 → 재연결 루프 방지 + lint 통과
+  }, [roomId, wsBase]);
 
-  return { client: clientRef.current, isConnected };
+  const sendMessage = useCallback(
+    (body: Record<string, unknown>) => {
+      const client = clientRef.current;
+      if (!client || !isConnected) {
+        console.warn('[WS] not connected');
+        return;
+      }
+      client.publish({
+        destination: pubDestRef.current,
+        body: JSON.stringify(body),
+        headers: { 'content-type': 'application/json' },
+      });
+    },
+    [isConnected],
+  );
+
+  return { client: clientRef.current, isConnected, sendMessage };
 };

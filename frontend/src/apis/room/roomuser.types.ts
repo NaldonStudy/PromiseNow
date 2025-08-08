@@ -11,9 +11,14 @@ export interface JoinRequest {
   nickname: string;
 }
 
-//방 참가자 정보 수정
+//방 참가자 닉네임 수정
 export interface UpdateNicknameRequest {
   nickname: string;
+}
+
+// 프로필 이미지 수정 요청
+export interface UpdateProfileRequest {
+  file: File;
 }
 
 // 방 나가기
@@ -48,4 +53,9 @@ export interface AlarmSettingResponse {
 // 닉네임 변경 응답
 export interface UpdateNicknameResponse {
   nickname: string;
+}
+
+// 프로필 이미지 수정 응답
+export interface UpdateProfileResponse {
+  imageUrl: string;
 }

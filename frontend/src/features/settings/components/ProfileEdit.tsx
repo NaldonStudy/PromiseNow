@@ -1,4 +1,4 @@
-import { useRoomStore } from '../../stores/room.store';
+import { useRoomStore } from '../../../stores/room.store';
 import ImgEdit from './ImgEdit';
 import NameEdit from './NameEdit';
 

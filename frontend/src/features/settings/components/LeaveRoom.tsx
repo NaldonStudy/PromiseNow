@@ -1,12 +1,12 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { deleteRoom } from '../../apis/room/room.api';
-import { getUsersInRoom, quitRoom } from '../../apis/room/roomuser.api';
-import { useRoomStore } from '../../stores/room.store';
-import { useUserStore } from '../../stores/user.store';
-import SquareBtn from './../../components/ui/SquareBtn';
-import ModalConfirm from './../../components/ui/modal/ModalConfirm';
+import { deleteRoom } from './../../../apis/room/room.api';
+import { getUsersInRoom, quitRoom } from './../../../apis/room/roomuser.api';
+import SquareBtn from './../../../components/ui/SquareBtn';
+import ModalConfirm from './../../../components/ui/modal/ModalConfirm';
+import { useRoomStore } from './../../../stores/room.store';
+import { useUserStore } from './../../../stores/user.store';
 
 const LeaveRoom = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);

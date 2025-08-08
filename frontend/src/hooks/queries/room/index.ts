@@ -19,6 +19,7 @@ export {
   useUpdateAlarmSetting,
   useUpdateAppointment,
   useUpdateNickname,
+  useUpdateProfileImage,
   useUpdateRoomDateRange,
   useUpdateRoomTitle,
 } from './mutations';
