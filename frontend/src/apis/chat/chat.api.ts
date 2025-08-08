@@ -18,7 +18,7 @@ export const uploadChatImage = async (request: UploadImageRequest) => {
 
   const res = await handleApi<UploadImageResponse>(
     axiosInstance.post(`/api/chatting/upload/image`, formData, {
-      params: { lat: request.latitude, lng: request.longitude, sendDate: request.sendDate },
+      params: { lat: request.latitude, lng: request.longitude, sentDate: request.sentDate },
     })
   );
   return res;

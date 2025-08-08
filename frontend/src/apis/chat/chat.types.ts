@@ -7,7 +7,7 @@ export type MessageType = 'TEXT' | 'IMAGE' | 'PINO';
 export interface UploadImageRequest {
   latitude: number | null;
   longitude: number | null;
-  sendDate: string;
+  sentDate: string;
   file: File;
 }
 
@@ -18,7 +18,7 @@ export interface ChatMessageResponse {
   content: string;
   roomUserId: number;
   nickname: string;
-  sendDate: string;
+  sentDate: string;
   type: MessageType;
   imageUrl: string | null;
 }

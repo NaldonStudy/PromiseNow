@@ -13,7 +13,7 @@ const MessageList = ({ messages }: Props) => {
       {messages.map((msg, idx) => {
         const prev = messages[idx - 1];
         const isSameSender = prev?.roomUserId === msg.roomUserId;
-        const isSameTime = isSameMinute(prev?.sendDate ?? '', msg.sendDate);
+        const isSameTime = isSameMinute(prev?.sentDate ?? '', msg.sentDate);
         const showMeta = !(isSameSender && isSameTime);
 
         return (

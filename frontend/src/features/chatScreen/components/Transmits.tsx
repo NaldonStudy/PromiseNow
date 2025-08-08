@@ -55,14 +55,14 @@ const Transmits = ({ roomId: roomIdProp }: Props) => {
 
       const latitude = pos.coords.latitude;
       const longitude = pos.coords.longitude;
-      const sendDate = new Date().toISOString();
+      const sentDate = new Date().toISOString();
 
       // REST 업로드 호출
       const uploadResult = await uploadImage({
         file,
         latitude,
         longitude,
-        sendDate,
+        sentDate,
       });
 
       if (!uploadResult || !uploadResult.imageUrl) {
