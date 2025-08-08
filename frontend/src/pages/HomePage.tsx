@@ -1,14 +1,14 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useJoinedRooms, useJoinRoomByInviteCode } from '../hooks/queries/room';
-import { useRoomUserStore } from '../stores/roomUser.store'; // ✅ roomUser store import
+import { useRoomUserStore } from '../stores/roomUser.store';
 import { useUserStore } from '../stores/user.store';
 import HomeTemplate from './templates/HomeTemplate';
 
 const HomePage = () => {
   const navigate = useNavigate();
   const { userId, isAuthenticated } = useUserStore();
-  const { setRoomUser } = useRoomUserStore(); // ✅ roomUser 저장 함수 불러오기
+  const { setRoomUser } = useRoomUserStore();
 
   const { data: rooms } = useJoinedRooms(userId!);
   const joinRoomMutation = useJoinRoomByInviteCode(userId!);
@@ -25,11 +25,10 @@ const HomePage = () => {
     onSuccess: (roomId: number, roomUserId: number) => void,
   ) => {
     joinRoomMutation.mutate(
-      { inviteCode, nickname, userId: userId! }, // ✅ roomUserId는 request에서 제외
+      { inviteCode, nickname, userId: userId! },
       {
         onSuccess: (data) => {
           if (data) {
-            // ✅ 응답에서 받은 roomUserId 저장
             if (data.roomUserId) {
               setRoomUser(data.roomId, data.roomUserId);
             }
