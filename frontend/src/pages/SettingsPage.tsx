@@ -1,16 +1,7 @@
-import RoomLayout from '../components/layout/RoomLayout';
-import LeaveRoom from './../features/settings/LeaveRoom';
-import Notification from './../features/settings/Notification';
-import ProfileEdit from './../features/settings/ProfileEdit';
+import SettingTemplate from './templates/SettingTemplate';
 
 const SettingsPage = () => {
-  return (
-    <RoomLayout>
-      <ProfileEdit />
-      <Notification />
-      <LeaveRoom />
-    </RoomLayout>
-  );
+  return <SettingTemplate />;
 };
 
 export default SettingsPage;

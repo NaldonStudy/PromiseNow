@@ -16,6 +16,7 @@ const LeaveRoom = () => {
           text="방 나가기"
           template="filled"
           width="w-full"
+          textSize="text-md"
           onClick={() => setIsModalOpen(true)}
         />
       </div>

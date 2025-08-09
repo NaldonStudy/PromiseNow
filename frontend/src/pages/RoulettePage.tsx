@@ -1,11 +1,7 @@
-import RoomLayout from '../components/layout/RoomLayout';
+import RouletteTemplate from './templates/RouletteTemplate';
 
 const RoulettePage = () => {
-  return (
-    <RoomLayout>
-      <h1>룰렛 페이지</h1>
-    </RoomLayout>
-  );
+  return <RouletteTemplate />;
 };
 
 export default RoulettePage;

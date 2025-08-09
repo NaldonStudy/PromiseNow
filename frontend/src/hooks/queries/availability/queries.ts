@@ -1,0 +1,51 @@
+import { useQuery } from '@tanstack/react-query';
+import type {
+  ConfirmedUsersResponse,
+  MyAvailabilityResponse,
+  TotalAvailabilityResponse,
+} from '../../../apis/availability/availability.types';
+import { availabilityKeys } from './keys';
+import {
+  getConfirmedUsers,
+  getMyAvailability,
+  getTotalAvailability,
+} from '../../../apis/availability/availability.api';
+
+// 전체 누적 데이터 조회
+export const useTotalAvailability = (roomId: number) => {
+  return useQuery<TotalAvailabilityResponse>({
+    queryKey: availabilityKeys.total(roomId),
+    queryFn: async () => {
+      const result = await getTotalAvailability({ roomId });
+      if (result === null) throw new Error('전체 누적 데이터 조회 실패');
+      return result;
+    },
+    enabled: !!roomId,
+  });
+};
+
+// 내 일정 조회
+export const useMyAvailability = (roomUserId: number) => {
+  return useQuery<MyAvailabilityResponse>({
+    queryKey: availabilityKeys.my(roomUserId),
+    queryFn: async () => {
+      const result = await getMyAvailability({ roomUserId });
+      if (result === null) throw new Error('내 일정 조회 실패');
+      return result;
+    },
+    enabled: !!roomUserId,
+  });
+};
+
+// 특정 시간대가 가능한 사용자 조회
+export const useConfirmedUsers = (roomId: number, date: string, slot: number) => {
+  return useQuery<ConfirmedUsersResponse>({
+    queryKey: availabilityKeys.confirmedUsers(roomId, date, slot),
+    queryFn: async () => {
+      const result = await getConfirmedUsers({ roomId, date, slot });
+      if (result === null) throw new Error('가능한 사용자 조회 실패');
+      return result;
+    },
+    enabled: !!roomId && !!date && slot !== undefined,
+  });
+};

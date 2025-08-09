@@ -1,16 +1,8 @@
-import { useEffect, useRef, useState } from "react";
-import './App.css';
-import { Client } from "@stomp/stompjs";
-import SockJS from "sockjs-client";
+import ChatTemplate from './templates/ChatTemplate';
 
-interface MessageResponseDto {
-    content: string;
-    type?: 'TEXT' | 'IMAGE' | 'PINO';
-    imageUrl?: string;
-    userId?: number;
-    nickname?: string;
-    sentDate?: string;
-}
+const ChatPage = () => {
+  return <ChatTemplate />;
+};
 
 interface MessageRequestDto {
     roomUserId: number;
