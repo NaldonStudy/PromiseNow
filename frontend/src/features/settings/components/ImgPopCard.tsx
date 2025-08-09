@@ -54,6 +54,7 @@ const ImgPopCard = ({ onUpload, onReset, onClose, disabled, className }: Props) 
         }}
         className="mb-1"
       />
+
       <SquareBtn
         text="이미지 업로드"
         template="filled"

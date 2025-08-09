@@ -21,6 +21,16 @@ export interface UpdateProfileRequest {
   file: File;
 }
 
+// 방 나가기
+export interface QuitRoomRequest {
+  roomId: number;
+  userId: number;
+}
+
+// 방 삭제하기
+export interface DeleteRoomRequest {
+  roomId: number;
+}
 
 // ------ Response 타입들 ------
 // 방 참가시 응답 정보

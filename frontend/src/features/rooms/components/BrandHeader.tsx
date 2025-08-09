@@ -18,7 +18,8 @@ const BrandHeader = () => {
       <SquareBtn
         text="로그아웃"
         template="filled"
-        width="15"
+        width="w-15"
+        height="h-auto"
         className="font-bold"
         onClick={handleLogout}
       />
