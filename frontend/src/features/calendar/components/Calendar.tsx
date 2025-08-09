@@ -1,6 +1,7 @@
 import { useCalendarStore } from '../calendar.store';
 import type { TotalAvailabilityResponse } from '../../../apis/availability/availability.types';
 import type { DateRangeUpdateRequest } from '../../../apis/room/room.types';
+import { useUsersInRoom } from '../../../hooks/queries/room';
 
 import DateRangeSelector from './DateRangeSelector';
 import CalendarHeader from './CalendarHeader';
@@ -8,6 +9,7 @@ import MonthlyCalendar from './MonthlyCalendar';
 import WeeklyCalendar from './WeeklyCalendar';
 import ScheduleEditBtn from './ScheduleEditBtn';
 import Card from '../../../components/ui/Card';
+import { useParams } from 'react-router-dom';
 
 interface CalendarProps {
   totalAvailabilityData?: TotalAvailabilityResponse;
@@ -23,7 +25,10 @@ const Calendar = ({
   onRefreshCalendar,
 }: CalendarProps) => {
   const { view, mode, currentDate } = useCalendarStore();
-  const totalMembers = 5; //임시
+  const { id } = useParams();
+
+  const { data: usersInRoom } = useUsersInRoom(Number(id));
+  const totalMembers = usersInRoom?.length || 0;
 
   return (
     <>
