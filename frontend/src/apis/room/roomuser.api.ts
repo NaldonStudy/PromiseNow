@@ -1,11 +1,16 @@
 import axiosInstance from '../../lib/axiosInstance';
 import handleApi from '../../lib/handleApi';
 import type {
+  AlarmSettingResponse,
   AlarmUpdateRequest,
   GetUsersInRoomResponse,
   JoinInfoResponse,
   JoinRequest,
   QuitRoomRequest,
+  UpdateNicknameRequest,
+  UpdateNicknameResponse,
+  UpdateProfileRequest,
+  UpdateProfileResponse,
 } from './roomuser.types';
 
 // 초대코드로 방 참가
@@ -24,6 +29,43 @@ export const quitRoom = async (request: QuitRoomRequest) => {
 // 방 참가자 목록 조회
 export const getUsersInRoom = async (roomId: number) => {
   const data = await handleApi<GetUsersInRoomResponse>(axiosInstance.get(`/rooms/${roomId}/users`));
+  return data;
+};
+
+// 방 닉네임 수정
+export const updateNickname = async (
+  roomId: number,
+  userId: number,
+  payload: UpdateNicknameRequest,
+) => {
+  const data = await handleApi<UpdateNicknameResponse>(
+    axiosInstance.patch(`/rooms/${roomId}/nickname/${userId}`, payload),
+  );
+  return data;
+};
+
+// 프로필 이미지 수정
+export const updateProfileImage = async (
+  roomId: number,
+  userId: number,
+  request: UpdateProfileRequest,
+) => {
+  const formData = new FormData();
+  formData.append('file', request.file);
+
+  const res = await handleApi<UpdateProfileResponse>(
+    axiosInstance.patch(`/rooms/${roomId}/profile-image/${userId}/profile`, formData, {
+      withCredentials: true,
+    }),
+  );
+  return res;
+};
+
+// 알림 상태 조회
+export const getAlarmSetting = async (roomId: number, userId: number) => {
+  const data = await handleApi<AlarmSettingResponse>(
+    axiosInstance.get(`/rooms/${roomId}/users/${userId}/alarm`),
+  );
   return data;
 };
 

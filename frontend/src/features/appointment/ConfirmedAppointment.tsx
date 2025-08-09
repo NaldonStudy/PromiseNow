@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import type { AppointmentUpdateRequest } from '../../apis/room/room.types';
 
-import Icon from '../../components/ui/Icon';
 import AppointmentInfo from '../../components/ui/AppointmentInfo';
+import Icon from '../../components/ui/Icon';
 import AppointmentEditModal from './AppointmentEditModal';
 
 interface ConfirmedAppointmentProps {
@@ -50,6 +50,7 @@ const ConfirmedAppointment = ({
           isOpen={isModalOpen}
           onClose={handleModalClose}
           onConfirm={handleAppointmentUpdate}
+          initialData={appointmentData}
         />
       )}
     </div>

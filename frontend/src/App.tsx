@@ -11,6 +11,8 @@ import RoulettePage from './pages/RoulettePage';
 import SchedulePage from './pages/SchedulePage';
 import SettingsPage from './pages/SettingsPage';
 
+import TestPage from './hooks/webrtc/TestPage';
+
 function App() {
   useKakaoLoader();
 
@@ -28,6 +30,7 @@ function App() {
               <Route path="/:id/chat" element={<ChatPage />} />
               <Route path="/:id/location" element={<LocationPage />} />
               <Route path="/:id/settings" element={<SettingsPage />} />
+              <Route path="/:id/test" element={<TestPage />} />
             </Routes>
           </BrowserRouter>
         </QueryClientProvider>

@@ -1,6 +1,8 @@
 import { useNavigate } from 'react-router-dom';
-import Icon from '../../components/ui/Icon';
 import { useUserStore } from '../../stores/user.store';
+
+import Icon from '../../components/ui/Icon';
+import PwaInstallButton from '../../components/PwaInstallButton';
 
 const RandingTemplate = () => {
   const navigate = useNavigate();
@@ -26,6 +28,7 @@ const RandingTemplate = () => {
         <Icon type="kakaotalk" size={18} color="black" />
         <span className="px-10">카카오로 시작하기</span>
       </button>
+      <PwaInstallButton />
     </div>
   );
 };

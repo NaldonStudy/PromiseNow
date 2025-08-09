@@ -5,7 +5,11 @@ import SquareBtn from '../../../components/ui/SquareBtn';
 import RoomFindModals from './RoomFindModals';
 
 interface Props {
-  onJoinRoom: (inviteCode: string, nickname: string, onSuccess: (roomId: number) => void) => void;
+  onJoinRoom: (
+    inviteCode: string,
+    nickname: string,
+    onSuccess: (roomId: number, roomUserId: number) => void,
+  ) => void;
 }
 
 const RoomFind = ({ onJoinRoom }: Props) => {

@@ -4,9 +4,11 @@ import { useCallScreenStore } from '../callScreen.store';
 
 interface Props {
   onClick: () => void;
+  onLeaveCall?: () => void;
+  isConnected?: boolean;
 }
 
-const CallControlPanel = ({ onClick }: Props) => {
+const CallControlPanel = ({ onClick, onLeaveCall, isConnected }: Props) => {
   const [micOn, setMicOn] = useState(false);
   const [videoOn, setVideoOn] = useState(false);
   const { toggleViewMode } = useCallScreenStore();
@@ -28,6 +30,14 @@ const CallControlPanel = ({ onClick }: Props) => {
       <div className="flex gap-4 items-end pointer-events-auto">
         <CircleBtn iconType="grid" color={'white'} onClick={toggleViewMode} />
         <CircleBtn iconType="chat" color="point" iconSize={39} onClick={onClick} />
+        {onLeaveCall && (
+          <CircleBtn 
+            iconType="close" 
+            color="primary" 
+            onClick={onLeaveCall}
+            disabled={!isConnected}
+          />
+        )}
       </div>
     </div>
   );

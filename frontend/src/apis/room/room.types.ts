@@ -1,5 +1,4 @@
-// 미리 room 상태 정의
-export type RoomState = 'WAITING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
+export type roomStateType = 'WAITING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
 
 // ------ Request 타입들 ------
 // 방 생성 요청
@@ -16,17 +15,17 @@ export interface TitleUpdateRequest {
 
 // 약속 가능 날짜 범위 수정
 export interface DateRangeUpdateRequest {
-  startDate: string;
-  endDate: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 // 약속 상세정보 수정
 export interface AppointmentUpdateRequest {
-  locationDate: string;
-  locationTime: string;
-  locationName: string;
-  locationLat: number;
-  locationLng: number;
+  locationDate?: string;
+  locationTime?: string;
+  locationName?: string;
+  locationLat?: number;
+  locationLng?: number;
 }
 
 // ------ Response 타입들 -----
@@ -62,11 +61,7 @@ export interface RoomListItem {
   locationTime: string | null;
   locationName: string | null;
   participantSummary: string;
-}
-
-// 방 상태 응답
-export interface StateResponse {
-  roomState: RoomState;
+  roomState?: roomStateType;
 }
 
 // 방 제목 + 초대코드
