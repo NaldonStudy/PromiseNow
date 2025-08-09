@@ -40,6 +40,19 @@ public class RoomUserResponseDto {
         private String profileImage;
     }
 
+    // 방에서 내 roomUserId, nickname GET
+    @Schema(description = "roomUserId, nickname 응답")
+    @Getter
+    @AllArgsConstructor
+    public static class RoomUserMyInfoResponseDto {
+
+        @Schema(description = "사용자 roomUserId", example = "61")
+        private Long roomUserId;
+
+        @Schema(description = "사용자 nickname", example = "손빵재")
+        private String nickname;
+    }
+
     // 프로필 이미지 수정 정보
     @Schema(description = "수정된 프로필 이미지 정보 응답")
     @Getter

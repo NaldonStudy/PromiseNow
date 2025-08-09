@@ -84,6 +84,14 @@ public class RoomUserServiceImpl implements RoomUserService {
     }
 
     @Override
+    public RoomUserMyInfoResponseDto getMyRoomUserInfo(Long roomId, Long userId) {
+        RoomUser roomUser = roomUserRepository.findByRoom_RoomIdAndUser_UserId(roomId, userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저는 방에 참가하고 있지 않습니다"));
+
+        return new RoomUserMyInfoResponseDto(roomUser.getRoomUserId(), roomUser.getNickname());
+    }
+
+    @Override
     public void updateAlarm(Long roomId, Long userId, boolean isAgreed) {
         RoomUser roomUser = roomUserRepository.findByRoom_RoomIdAndUser_UserId(roomId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자 정보를 찾을 수 없습니다."));
