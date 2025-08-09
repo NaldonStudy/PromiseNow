@@ -86,8 +86,14 @@ const DateRangeSelector = ({ onDateRangeUpdate }: DateRangeSelectorProps) => {
               className="border border-gray-dark rounded-md px-3 py-2 text-xs flex-1 min-w-0"
               type="date"
               value={tempStartDate}
-              onChange={(e) => setTempStartDate(e.target.value)}
-              max={tempEndDate || undefined}
+              onChange={(e) => {
+                const newStart = e.target.value;
+                setTempStartDate(newStart);
+                if (tempEndDate && newStart > tempEndDate) {
+                  setTempEndDate(newStart);
+                }
+              }}
+              min={formatDate(today)}
             />
             <span className="flex-shrink-0 text-xs">~</span>
             <input
