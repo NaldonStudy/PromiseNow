@@ -202,6 +202,56 @@ public class RoomController {
         }
     }
 
+    // 방에서의 roomUserId, nickname 조회
+    @GetMapping("/{roomId}/me/{userId}")
+    @Operation(
+            summary = "내 roomUserId와 닉네임 조회",
+            description = "특정 방(`roomId`)에서 사용자(`userId`)의 참가 정보(roomUserId, nickname)를 조회합니다.",
+            parameters = {
+                    @Parameter(
+                            name = "roomId",
+                            description = "조회할 방의 ID",
+                            example = "101",
+                            required = true
+                    ),
+                    @Parameter(
+                            name = "userId",
+                            description = "사용자 ID",
+                            example = "1001",
+                            required = true
+                    )
+            },
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "조회 성공",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = RoomUserMyInfoResponseDto.class),
+                                    examples = @ExampleObject(
+                                            name = "성공 응답 예시",
+                                            value = """
+                                            {
+                                                "success": true,
+                                                "data": {
+                                                    "roomUserId": 42,
+                                                    "nickname": "홍길동"
+                                                },
+                                                "message": null
+                                            }
+                                        """
+                                    )
+                            )
+                    ),
+                    @ApiResponse(responseCode = "400", description = "유효하지 않은 요청"),
+                    @ApiResponse(responseCode = "404", description = "해당 방 또는 사용자를 찾을 수 없음")
+            }
+    )
+    public ResponseEntity<?> getMyRoomUserInfo(@PathVariable Long roomId, @PathVariable Long userId) {
+        RoomUserMyInfoResponseDto response = roomUserService.getMyRoomUserInfo(roomId, userId);
+        return ApiUtils.success(response);
+    }
+
     // 방제목 방참여코드 조회하는 Api
     @GetMapping("/{roomId}/title-code")
     @Operation(
