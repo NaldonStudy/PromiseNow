@@ -23,13 +23,12 @@ const SquareBtn = ({
   height = 'h-10',
   textSize = 'text-sm',
   template = 'filled',
-  className = '',
   ...rest
 }: Props): React.ReactElement => {
   return (
     <button
       type="button"
-      className={`${width} ${height} ${textSize} ${baseStyle} ${styleMap[template]} ${className}`}
+      className={`${width} ${height} ${textSize} ${baseStyle} ${styleMap[template]}`}
       {...rest}
     >
       {text}

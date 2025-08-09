@@ -1,13 +1,24 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import UserMarker from './UserMaker';
 import useMapStore from '../map.store';
+import UserMarker from './UserMaker';
 
-const MapView = () => {
+type TargetPin = { lat: number; lng: number };
+
+interface MapViewProps {
+  /** 확정 장소 좌표 */
+  target?: TargetPin;
+}
+
+const MapView = ({ target }: MapViewProps) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
+
   const markerRef = useRef<any>(null);
+
+  const targetMarkerRef = useRef<any>(null);
+
   const isInitializedRef = useRef<boolean>(false);
   const [isLoading, setIsLoading] = useState(true);
   const { rankingHeight, setMoveToCurrentLocation } = useMapStore();
@@ -150,6 +161,35 @@ const MapView = () => {
       setMoveToCurrentLocation(null);
     };
   }, [moveToCurrentLocation, setMoveToCurrentLocation]);
+
+  // 타겟 마커 표시
+  useEffect(() => {
+    if (!isInitializedRef.current || !mapRef.current) return;
+    const kakao = window.kakao;
+    if (
+      target &&
+      typeof target.lat === 'number' &&
+      typeof target.lng === 'number' &&
+      !Number.isNaN(target.lat) &&
+      !Number.isNaN(target.lng)
+    ) {
+      const pos = new kakao.maps.LatLng(target.lat, target.lng);
+      if (!targetMarkerRef.current) {
+        targetMarkerRef.current = new kakao.maps.Marker({
+          position: pos,
+          map: mapRef.current,
+        });
+      } else {
+        targetMarkerRef.current.setPosition(pos);
+        targetMarkerRef.current.setMap(mapRef.current);
+      }
+    } else {
+      if (targetMarkerRef.current) {
+        targetMarkerRef.current.setMap(null);
+        targetMarkerRef.current = null;
+      }
+    }
+  }, [target]);
 
   return (
     <div className="h-full relative bg-gray">
