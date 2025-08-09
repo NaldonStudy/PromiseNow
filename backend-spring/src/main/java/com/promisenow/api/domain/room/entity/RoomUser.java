@@ -1,5 +1,6 @@
 package com.promisenow.api.domain.room.entity;
 
+import com.promisenow.api.domain.chat.entity.Chat;
 import com.promisenow.api.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -54,4 +55,7 @@ public class RoomUser {
     public void updateProfileImage(String profileImage) {
         this.profileImage = profileImage;
     }
+
+    @OneToMany(mappedBy = "roomUser", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Chat> chats = new ArrayList<>();
 }
