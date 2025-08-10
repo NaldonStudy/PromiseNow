@@ -21,15 +21,13 @@ public class ImageResponseDto {
     @Schema(description = "경도")
     private Double lng;
 
-    @Schema(description = "타임스탬프")
-    private LocalDateTime timestamp;
+    @Schema(description = "전송 일시")
+    private LocalDateTime sentDate;
 
-    public ImageResponseDto(String imageUrl, Double lat, Double lng, LocalDateTime timestamp) {
+    public ImageResponseDto(String imageUrl, Double lat, Double lng, LocalDateTime sentDate) {
         this.imageUrl = imageUrl;
         this.lat = lat;
         this.lng = lng;
-        this.timestamp = timestamp;
+        this.sentDate = sentDate;
     }
-
-    // getter/setter(필요시)
 }

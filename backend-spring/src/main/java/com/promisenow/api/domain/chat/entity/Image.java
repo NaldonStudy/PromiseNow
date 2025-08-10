@@ -35,8 +35,7 @@ public class Image {
     @Column(name = "location_lng")
     private Double lng;
 
-    // 시간은 DB에 맞는 타입으로 변경 (Timestamp, LocalDateTime, Long 등 선택 가능)
-    @Column(name = "location_timestamp")
-    private LocalDateTime timestamp;
+    @Column(name = "sent_date")
+    private LocalDateTime sentDate;
 
 }

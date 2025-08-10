@@ -14,9 +14,8 @@ import java.util.Objects;
 
 @Service
 public class ChatImageServiceImpl implements ChatImageService {
-
     @Override
-    public String uploadImage(MultipartFile file, Double lat, Double lng, String timestampStr) {
+    public String uploadImage(MultipartFile file, Double lat, Double lng, String sentDateStr) { // 변경!
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("파일이 비어있습니다.");
         }
@@ -33,6 +32,7 @@ public class ChatImageServiceImpl implements ChatImageService {
             Path filePath = Paths.get(uploadDir, fileName);
             Files.write(filePath, file.getBytes());
 
+
             return ServletUriComponentsBuilder.fromCurrentContextPath()
                     .path("/uploaded-images/chat/")
                     .path(fileName)
@@ -43,3 +43,4 @@ public class ChatImageServiceImpl implements ChatImageService {
         }
     }
 }
+

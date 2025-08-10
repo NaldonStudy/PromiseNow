@@ -102,7 +102,7 @@ public class ChatServiceImpl implements ChatService {
                     .imageUrl(imageUrl)
                     .lat(req.getLat())
                     .lng(req.getLng())
-                    .timestamp(now) // timestamp 타입이 LocalDateTime 일 경우
+                    .sentDate(now) // timestamp 타입이 LocalDateTime 일 경우
                     .build();
             imageRepository.save(image);
         }
