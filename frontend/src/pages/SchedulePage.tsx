@@ -14,9 +14,10 @@ import {
   useRoomDateRange,
   useUpdateAppointment,
   useUpdateRoomDateRange,
+  useRoomUserInfo,
 } from '../hooks/queries/room';
 import { useRoomStore } from '../stores/room.store';
-import { useRoomUserStore } from '../stores/roomUser.store';
+import { useUserStore } from '../stores/user.store';
 import { useTitle } from '../hooks/common/useTitle';
 
 import RequireAuth from '../components/RequireAuth';
@@ -27,7 +28,8 @@ const SchedulePage = () => {
 
   const { id } = useParams<{ id: string }>();
   const roomId = Number(id);
-  const roomUserId = useRoomUserStore((state) => state.getRoomUserId(roomId));
+  const userId = useUserStore((state) => state.userId);
+  const roomUserId = useRoomUserInfo(roomId, userId).data?.roomUserId;
 
   const { setDateRange } = useRoomStore();
   const { setUserSelections } = useCalendarStore();
@@ -129,14 +131,14 @@ const SchedulePage = () => {
 
   return (
     <RequireAuth>
-    <ScheduleTemplate
-      appointmentData={appointmentData}
-      totalAvailabilityData={totalAvailabilityData}
-      onAppointmentUpdate={handleAppointmentUpdate}
-      onDateRangeUpdate={handleDateRangeUpdate}
-      onUserSelectionsUpdate={handleUserSelectionsUpdate}
-      onRefreshCalendar={handleInvalidateRoom}
-    />
+      <ScheduleTemplate
+        appointmentData={appointmentData}
+        totalAvailabilityData={totalAvailabilityData}
+        onAppointmentUpdate={handleAppointmentUpdate}
+        onDateRangeUpdate={handleDateRangeUpdate}
+        onUserSelectionsUpdate={handleUserSelectionsUpdate}
+        onRefreshCalendar={handleInvalidateRoom}
+      />
     </RequireAuth>
   );
 };

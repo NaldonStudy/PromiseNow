@@ -1,5 +1,4 @@
 import { useJoinedRooms, useJoinRoomByInviteCode } from '../hooks/queries/room';
-import { useRoomUserStore } from '../stores/roomUser.store';
 import { useUserStore } from '../stores/user.store';
 import { useCalendarStore } from '../features/calendar/calendar.store';
 import { useTitle } from '../hooks/common/useTitle';
@@ -11,7 +10,6 @@ const HomePage = () => {
   useTitle('내 약속 목록 - PromiseNow');
 
   const { userId } = useUserStore();
-  const { setRoomUser } = useRoomUserStore();
   const { setView, setMode } = useCalendarStore();
 
   const { data: rooms } = useJoinedRooms(userId!);
@@ -34,9 +32,6 @@ const HomePage = () => {
       {
         onSuccess: (data) => {
           if (data) {
-            if (data.roomUserId) {
-              setRoomUser(data.roomId, data.roomUserId);
-            }
             onSuccess(data.roomId, data.roomUserId);
           } else {
             alert('참여 실패: 응답이 없습니다.');

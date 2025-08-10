@@ -3,16 +3,14 @@ import { useNavigate } from 'react-router-dom';
 
 import ModalConfirm from '../../../components/ui/modal/ModalConfirm';
 import ModalForm from '../../../components/ui/modal/ModalForm';
-import { useRoomUserStore } from '../../../stores/roomUser.store';
 
 interface Props {
   code: string;
   triggerKey: number;
-  // onSuccess 콜백에서 roomUserId도 받을 수 있도록 수정
   onJoinRoom: (
     inviteCode: string,
     nickname: string,
-    onSuccess: (roomId: number, roomUserId: number) => void
+    onSuccess: (roomId: number, roomUserId: number) => void,
   ) => void;
 }
 
@@ -21,7 +19,6 @@ type ModalType = 'confirm' | 'nickname' | null;
 const RoomFindModals = ({ code, triggerKey, onJoinRoom }: Props) => {
   const [modalType, setModalType] = useState<ModalType>(null);
   const navigate = useNavigate();
-  const { setRoomUser } = useRoomUserStore();
 
   useEffect(() => {
     if (!triggerKey) return;
@@ -39,9 +36,7 @@ const RoomFindModals = ({ code, triggerKey, onJoinRoom }: Props) => {
   };
 
   const handleNicknameSubmit = (nickname: string) => {
-    onJoinRoom(code, nickname, (roomId, roomUserId) => {
-      // 참여 성공 시 roomUserId 저장
-      setRoomUser(roomId, roomUserId);
+    onJoinRoom(code, nickname, (roomId) => {
       navigate(`/${roomId}/schedule`);
     });
     setModalType(null);

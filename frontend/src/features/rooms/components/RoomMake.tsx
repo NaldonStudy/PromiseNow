@@ -6,7 +6,6 @@ import ModalForm from '../../../components/ui/modal/ModalForm';
 
 import { useCreateRoom } from '../../../hooks/queries/room';
 import { useRoomStore } from '../../../stores/room.store';
-import { useRoomUserStore } from '../../../stores/roomUser.store';
 import { useUserStore } from '../../../stores/user.store';
 
 type ModalType = 'room' | 'name';
@@ -15,7 +14,6 @@ const RoomMake = () => {
   const navigate = useNavigate();
   const { userId } = useUserStore();
   const { setNickname } = useRoomStore();
-  const { setRoomUser } = useRoomUserStore();
   const createRoomMutation = useCreateRoom(userId!);
 
   const [isOpen, setIsOpen] = useState(false);
@@ -48,8 +46,6 @@ const RoomMake = () => {
         {
           onSuccess: (data) => {
             if (data) {
-              // 생성 시 roomUserId 저장
-              setRoomUser(data.roomId, data.roomUserId);
               setIsOpen(false);
               navigate(`/${data.roomId}/schedule`);
             } else {

@@ -6,8 +6,8 @@ import Input from '../../../components/ui/Input';
 import CameraPopCard from './CameraPopCard';
 
 import { useUploadChatImage } from '../../../hooks/chat';
-import { useRoomUserStore } from '../../../stores/roomUser.store';
 import { useUserStore } from '../../../stores/user.store';
+import { useRoomUserInfo } from '../../../hooks/queries/room';
 
 type Props = {
   roomId: number;
@@ -21,9 +21,7 @@ const Transmits = ({ roomId, isConnected, sendMessage }: Props) => {
   const [openPicker, setOpenPicker] = useState(false);
 
   const { userId } = useUserStore();
-  const roomUserId = useRoomUserStore((s) =>
-    roomId != null ? s.getRoomUserId(roomId) : undefined,
-  );
+  const roomUserId = useRoomUserInfo(roomId, userId).data?.roomUserId;
 
   const { mutateAsync: uploadImage } = useUploadChatImage();
 

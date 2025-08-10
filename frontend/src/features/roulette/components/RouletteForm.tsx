@@ -7,20 +7,21 @@ import SquareBtn from '../../../components/ui/SquareBtn';
 
 import { useCreateRoulette, useDeleteRoulette } from '../../../hooks/queries/roulette';
 import { useRouletteList } from '../../../hooks/queries/roulette/queries';
-import { useRoomUserStore } from '../../../stores/roomUser.store';
 import { useRouletteSpinStore } from '../../../stores/roulette.store';
+import { useRoomUserInfo } from '../../../hooks/queries/room';
+import { useUserStore } from '../../../stores/user.store';
 
 const RouletteForm = () => {
   const { id } = useParams<{ id: string }>();
   const roomId = Number(id);
+  const userId = useUserStore((state) => state.userId);
+  const roomUserId = useRoomUserInfo(roomId, userId).data?.roomUserId;
 
   const [inputValue, setInputValue] = useState('');
 
   const { data: rouletteList } = useRouletteList(roomId);
   const createMutate = useCreateRoulette(roomId);
   const deleteMutate = useDeleteRoulette(roomId);
-
-  const myRoomUserId = useRoomUserStore((s) => s.getRoomUserId(roomId));
 
   const { mustStartSpinning, startSpinning } = useRouletteSpinStore();
 
@@ -35,12 +36,12 @@ const RouletteForm = () => {
   );
 
   const alreadyMyOption = useMemo(
-    () => (rouletteList ?? []).some((it) => it.roomUserId === myRoomUserId),
-    [rouletteList, myRoomUserId],
+    () => (rouletteList ?? []).some((it) => it.roomUserId === roomUserId),
+    [rouletteList, roomUserId],
   );
 
   const handleAddOption = () => {
-    if (!myRoomUserId) {
+    if (!roomUserId) {
       alert('참여자 정보를 불러올 수 없습니다.');
       return;
     }
@@ -51,17 +52,17 @@ const RouletteForm = () => {
     const content = inputValue.trim();
     if (!content) return;
 
-    createMutate.mutate({ roomId, roomUserId: myRoomUserId, content });
+    createMutate.mutate({ roomId, roomUserId: roomUserId, content });
     setInputValue('');
   };
 
   const handleRemoveOption = (rouletteId: number, ownerRoomUserId: number) => {
-    if (!myRoomUserId) return;
-    if (myRoomUserId !== ownerRoomUserId) return;
+    if (!roomUserId) return;
+    if (roomUserId !== ownerRoomUserId) return;
 
     deleteMutate.mutate({
       rouletteId,
-      payload: { roomId, roomUserId: myRoomUserId },
+      payload: { roomId, roomUserId: roomUserId },
     });
   };
 
@@ -85,7 +86,7 @@ const RouletteForm = () => {
           width="w-13"
           template="outlined"
           onClick={handleAddOption}
-          disabled={!inputValue.trim() || !myRoomUserId}
+          disabled={!inputValue.trim() || !roomUserId}
         />
       </div>
 
@@ -96,7 +97,7 @@ const RouletteForm = () => {
           </Card>
         ) : (
           viewItems.map((item, idx) => {
-            const isMine = myRoomUserId === item.roomUserId;
+            const isMine = roomUserId === item.roomUserId;
             return (
               <Card
                 key={item.rouletteId ?? idx}
