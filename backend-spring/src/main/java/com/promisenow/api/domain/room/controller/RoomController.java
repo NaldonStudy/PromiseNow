@@ -1,6 +1,7 @@
 package com.promisenow.api.domain.room.controller;
 
 import com.promisenow.api.common.ApiUtils;
+import com.promisenow.api.infrastructure.file.dto.FileUploadResponse;
 import com.promisenow.api.domain.room.entity.Room;
 import com.promisenow.api.domain.room.dto.RoomRequestDto.*;
 import com.promisenow.api.domain.room.dto.RoomResponseDto.*;
@@ -1168,17 +1169,13 @@ public class RoomController {
                     @ApiResponse(responseCode = "500", description = "서버 오류")
             }
     )
-    public ResponseEntity<ApiUtils.ApiResponse<ImageUploadResponse>> updateProfileImage(
+    public ResponseEntity<ApiUtils.ApiResponse<FileUploadResponse>> updateProfileImage(
             @PathVariable Long roomId,
             @PathVariable Long userId,
             @RequestParam("file") MultipartFile file
     ) {
-        if (file == null || file.isEmpty()) {
-            throw new IllegalArgumentException("파일이 null이거나 비어 있습니다. form-data의 key가 'file'인지 확인하세요.");
-        }
-
         String imageUrl = roomUserService.updateProfileImage(roomId, userId, file);
-        return ApiUtils.success(new ImageUploadResponse(imageUrl));
+        return ApiUtils.success(new FileUploadResponse(imageUrl));
     }
 
 

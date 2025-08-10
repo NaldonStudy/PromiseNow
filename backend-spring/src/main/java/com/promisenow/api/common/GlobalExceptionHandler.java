@@ -1,7 +1,8 @@
 package com.promisenow.api.common;
 
+import com.promisenow.api.infrastructure.file.exception.FileUploadException;
 import com.promisenow.api.domain.chat.exception.FileStorageException;
-import com.promisenow.api.infrastructure.WebhookService;
+import com.promisenow.api.infrastructure.webhook.WebhookService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -145,6 +146,19 @@ public class GlobalExceptionHandler {
         }
         
         return ApiUtils.error(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다.");
+    }
+    
+    /**
+     * 파일 업로드 오류
+     */
+    @ExceptionHandler(FileUploadException.class)
+    public ResponseEntity<ApiUtils.ApiResponse<Void>> handleFileUploadException(FileUploadException ex) {
+        log.warn("File upload error: {}", ex.getMessage());
+        
+        // 핸들링된 예외 웹훅 전송
+        sendHandledExceptionWebhook("FileUploadException", ex.getMessage());
+        
+        return ApiUtils.error(HttpStatus.valueOf(ex.getStatusCode()), ex.getMessage());
     }
     
     /**

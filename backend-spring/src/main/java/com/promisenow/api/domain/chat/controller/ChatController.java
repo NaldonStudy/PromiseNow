@@ -1,10 +1,11 @@
 package com.promisenow.api.domain.chat.controller;
 
 import com.promisenow.api.common.ApiUtils;
+import com.promisenow.api.infrastructure.file.dto.FileUploadRequest;
+import com.promisenow.api.infrastructure.file.dto.FileUploadResponse;
 import com.promisenow.api.domain.chat.dto.ImageResponseDto;
 import com.promisenow.api.domain.chat.dto.MessageResponseDto;
 import com.promisenow.api.domain.chat.entity.Image;
-import com.promisenow.api.domain.chat.exception.FileStorageException;
 import com.promisenow.api.domain.chat.repository.ImageRepository;
 import com.promisenow.api.domain.chat.service.ChatImageService;
 import com.promisenow.api.domain.chat.service.ChatService;
@@ -36,9 +37,8 @@ import java.util.List;
 public class ChatController {
 
     private final ChatService chatService;
-    private final String uploadDir = "./uploaded-images/";
     private final ChatImageService chatImageService;
-    private final ImageRepository imageRepository;  // 추가
+    private final ImageRepository imageRepository; 
 
     @Operation(
             summary = "채팅 메시지 조회",
@@ -75,7 +75,7 @@ public class ChatController {
                     @ApiResponse(responseCode = "500", description = "서버 오류")
             }
     )
-    public ResponseEntity<ApiUtils.ApiResponse<ImageUploadResponse>> uploadImage(
+    public ResponseEntity<ApiUtils.ApiResponse<FileUploadResponse>> uploadImage(
             @Parameter(
                     description = "업로드할 이미지 파일",
                     required = true,
@@ -87,22 +87,10 @@ public class ChatController {
             @RequestParam(value = "sentDate", required = false) String sentDateStr) {
 
         String fileDownloadUri = chatImageService.uploadImage(file, lat, lng, sentDateStr);
-        return ApiUtils.success(new ImageUploadResponse(fileDownloadUri));
+        return ApiUtils.success(new FileUploadResponse(fileDownloadUri));
     }
 
-    @Schema(description = "이미지 업로드 응답 DTO")
-    public static class ImageUploadResponse {
-        @Schema(description = "업로드된 이미지 URL", example = "http://localhost:8080/uploaded-images/chat/1690859341256_image.png")
-        private String imageUrl;
 
-        public ImageUploadResponse(String imageUrl) {
-            this.imageUrl = imageUrl;
-        }
-
-        public String getImageUrl() {
-            return imageUrl;
-        }
-    }
     @Operation(
             summary = "채팅방 내 이미지 목록 조회",
             description = "특정 채팅방(roomId)에 업로드된 이미지들을 반환합니다.",
