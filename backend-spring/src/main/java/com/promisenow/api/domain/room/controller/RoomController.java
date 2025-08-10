@@ -1171,7 +1171,7 @@ public class RoomController {
     public ResponseEntity<ApiUtils.ApiResponse<ImageUploadResponse>> updateProfileImage(
             @PathVariable Long roomId,
             @PathVariable Long userId,
-            @RequestPart("file") MultipartFile file
+            @RequestParam("file") MultipartFile file
     ) {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("파일이 null이거나 비어 있습니다. form-data의 key가 'file'인지 확인하세요.");
