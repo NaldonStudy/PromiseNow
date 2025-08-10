@@ -5,8 +5,8 @@ export type MessageType = 'TEXT' | 'IMAGE' | 'PINO';
 
 // 채팅방 이미지 저장 요청
 export interface UploadImageRequest {
-  latitude: number | null;
-  longitude: number | null;
+  lat: number;
+  lng: number;
   sentDate: string;
   file: File;
 }
@@ -25,5 +25,8 @@ export interface ChatMessageResponse {
 
 // 이미지 경로 받기
 export interface UploadImageResponse {
-  imageUrl: string;
+  fileUrl: string;
+  fileName?: string;
+  fileSize?: number;
+  fileType?: string;
 }

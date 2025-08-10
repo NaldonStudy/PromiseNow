@@ -27,6 +27,11 @@ export interface QuitRoomRequest {
   userId: number;
 }
 
+// 방 삭제하기
+export interface DeleteRoomRequest {
+  roomId: number;
+}
+
 // ------ Response 타입들 ------
 // 방 참가시 응답 정보
 export interface JoinInfoResponse {
@@ -57,5 +62,8 @@ export interface UpdateNicknameResponse {
 
 // 프로필 이미지 수정 응답
 export interface UpdateProfileResponse {
-  imageUrl: string;
+  fileUrl: string;
+  fileName?: string;
+  fileSize?: number;
+  fileType?: string;
 }

@@ -32,9 +32,9 @@ const ImgEdit = () => {
     try {
       setUploading(true);
       const response = await updateImage({ roomId, userId, file });
-      if (response && response.imageUrl) {
-        setProfileImageUrl(response.imageUrl); // 스토어 갱신
-        invalidateRoom({ roomId, userId }); // 관련 쿼리 무효화
+      if (response?.fileUrl) {
+        setProfileImageUrl(response.fileUrl);
+        invalidateRoom({ roomId, userId });
       } else {
         alert('이미지 업로드 응답에 imageUrl이 없습니다.');
       }

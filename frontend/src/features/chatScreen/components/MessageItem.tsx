@@ -43,7 +43,11 @@ const MessageItem: FC<Props> = ({ message, showMeta }) => {
         {/* 텍스트 영역 */}
         <div className={`w-fit whitespace-pre-line ${showMeta ? 'pl-10' : 'pl-10'}`}>
           {type === 'IMAGE' && imageUrl ? (
-            <img src={imageUrl} alt="chat" className="w-60 rounded-md" />
+            <img
+              src={imageUrl}
+              alt="chat"
+              className="w-60 rounded-md max-w-[150px] max-h-[200px]"
+            />
           ) : isFromPino ? (
             <div className="text-sm text-blue-400">{content}</div>
           ) : (
