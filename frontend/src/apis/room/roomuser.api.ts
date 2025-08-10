@@ -8,6 +8,7 @@ import type {
   JoinInfoResponse,
   JoinRequest,
   QuitRoomRequest,
+  RoomUserInfoResponse,
   UpdateNicknameRequest,
   UpdateNicknameResponse,
   UpdateProfileRequest,
@@ -23,6 +24,14 @@ export const joinRoomByInviteCode = async (request: JoinRequest) => {
 // 방 참가자 목록 조회
 export const getUsersInRoom = async (roomId: number) => {
   const data = await handleApi<GetUsersInRoomResponse>(axiosInstance.get(`/rooms/${roomId}/users`));
+  return data;
+};
+
+/// 방 사용자 정보 조회
+export const getRoomUserInfo = async (roomId: number, userId: number) => {
+  const data = await handleApi<RoomUserInfoResponse>(
+    axiosInstance.get(`/rooms/${roomId}/me/${userId}`),
+  );
   return data;
 };
 

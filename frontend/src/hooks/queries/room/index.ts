@@ -8,6 +8,7 @@ export {
   useRoomDateRange,
   useRoomTitleCode,
   useUsersInRoom,
+  useRoomUserInfo,
 } from './queries';
 
 // Mutation Hooks

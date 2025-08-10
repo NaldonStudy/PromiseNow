@@ -11,6 +11,12 @@ export interface JoinRequest {
   nickname: string;
 }
 
+// 방 사용자 정보 조회 응답
+export interface RoomUserInfoResponse {
+  roomUserId: number;
+  nickname: string;
+}
+
 //방 참가자 닉네임 수정
 export interface UpdateNicknameRequest {
   nickname: string;
