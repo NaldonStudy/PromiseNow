@@ -19,6 +19,7 @@ import { useRoomStore } from '../stores/room.store';
 import { useRoomUserStore } from '../stores/roomUser.store';
 import { useTitle } from '../hooks/common/useTitle';
 
+import RequireAuth from '../components/RequireAuth';
 import ScheduleTemplate from './templates/ScheduleTemplate';
 
 const SchedulePage = () => {
@@ -127,6 +128,7 @@ const SchedulePage = () => {
   };
 
   return (
+    <RequireAuth>
     <ScheduleTemplate
       appointmentData={appointmentData}
       totalAvailabilityData={totalAvailabilityData}
@@ -135,6 +137,7 @@ const SchedulePage = () => {
       onUserSelectionsUpdate={handleUserSelectionsUpdate}
       onRefreshCalendar={handleInvalidateRoom}
     />
+    </RequireAuth>
   );
 };
 

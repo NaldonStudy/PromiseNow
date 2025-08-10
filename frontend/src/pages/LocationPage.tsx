@@ -2,6 +2,8 @@ import { useParams } from 'react-router-dom';
 import { useTitle } from '../hooks/common/useTitle';
 
 import { useAppointment } from '../hooks/queries/room';
+
+import RequireAuth from '../components/RequireAuth';
 import LocationTemplate from './templates/LocationTemplate';
 
 const LocationPage = () => {
@@ -20,7 +22,11 @@ const LocationPage = () => {
   const target =
     hasLat && hasLng ? { lat: appointment!.locationLat, lng: appointment!.locationLng } : undefined;
 
-  return <LocationTemplate appointmentTarget={target}/>;
+  return (
+    <RequireAuth>
+      <LocationTemplate appointmentTarget={target} />
+    </RequireAuth>
+  );
 };
 
 export default LocationPage;

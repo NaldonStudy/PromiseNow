@@ -1,29 +1,21 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useJoinedRooms, useJoinRoomByInviteCode } from '../hooks/queries/room';
 import { useRoomUserStore } from '../stores/roomUser.store';
 import { useUserStore } from '../stores/user.store';
 import { useCalendarStore } from '../features/calendar/calendar.store';
 import { useTitle } from '../hooks/common/useTitle';
 
+import RequireAuth from '../components/RequireAuth';
 import HomeTemplate from './templates/HomeTemplate';
 
 const HomePage = () => {
   useTitle('내 약속 목록 - PromiseNow');
 
-  const navigate = useNavigate();
-  const { userId, isAuthenticated } = useUserStore();
+  const { userId } = useUserStore();
   const { setRoomUser } = useRoomUserStore();
   const { setView, setMode } = useCalendarStore();
 
   const { data: rooms } = useJoinedRooms(userId!);
   const joinRoomMutation = useJoinRoomByInviteCode(userId!);
-
-  useEffect(() => {
-    if (!isAuthenticated || !userId) {
-      navigate('/');
-    }
-  }, [isAuthenticated, userId, navigate]);
 
   // 방 입장 시 초기화해야 하는 것들
   const resetRoomState = () => {
@@ -58,12 +50,14 @@ const HomePage = () => {
     resetRoomState();
   };
 
-  if (!isAuthenticated || !userId) {
-    return <div>로딩 중...</div>;
-  }
-
   return (
-    <HomeTemplate rooms={rooms ?? []} onJoinRoom={handleJoinRoom} resetRoomState={resetRoomState} />
+    <RequireAuth>
+      <HomeTemplate
+        rooms={rooms ?? []}
+        onJoinRoom={handleJoinRoom}
+        resetRoomState={resetRoomState}
+      />
+    </RequireAuth>
   );
 };
 

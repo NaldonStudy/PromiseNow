@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 interface UserStore {
-  userId: number | null;
+  userId: number;
   isAuthenticated: boolean;
 
   setUser: (userId: number) => void;
@@ -12,11 +12,11 @@ interface UserStore {
 export const useUserStore = create<UserStore>()(
   persist(
     (set) => ({
-      userId: null,
+      userId: -1,
       isAuthenticated: false,
 
       setUser: (userId) => set({ userId, isAuthenticated: true }),
-      logout: () => set({ userId: null, isAuthenticated: false }),
+      logout: () => set({ userId: -1, isAuthenticated: false }),
     }),
     {
       name: 'user-store',
