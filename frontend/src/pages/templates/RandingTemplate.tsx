@@ -6,14 +6,12 @@ import PwaInstallButton from '../../components/PwaInstallButton';
 import Kakao from '../../features/login/components/Kakao';
 import ManagerBtn from './../../features/login/components/ManagerBtn';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
-
 const RandingTemplate = () => {
   const navigate = useNavigate();
   const { setUser } = useUserStore();
 
   const handleKakaoLogin = () => {
-    window.location.href = `${API_BASE}/oauth2/authorization/kakao`;
+    window.location.href = `https://api.promisenow.store/oauth2/authorization/kakao`;
   };
 
   const handleKakaoLogin_1 = () => {
