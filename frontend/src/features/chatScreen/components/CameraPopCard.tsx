@@ -38,7 +38,9 @@ const CameraPopCard = ({ onSelect, onClose, disabled, className }: Props) => {
     <>
       <div
         ref={rootRef}
-        className={`absolute bottom-full mb-2 left-0 z-50 w-44 rounded-2xl shadow-md border bg-white p-2 ${className ?? ''}`}
+        className={`absolute bottom-full mb-2 left-0 z-50 w-44 rounded-2xl border border-gray-dark bg-white p-2 ${
+          className ?? ''
+        }`}
         role="dialog"
         onClick={(e) => e.stopPropagation()}
       >
