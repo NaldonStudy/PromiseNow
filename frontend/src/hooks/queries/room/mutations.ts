@@ -25,6 +25,7 @@ import type {
   JoinRequest,
   QuitRoomRequest,
   UpdateNicknameRequest,
+  UpdateProfileResponse
 } from '../../../apis/room/roomuser.types';
 import { useInvalidateRoomQueries } from './keys';
 
@@ -151,7 +152,7 @@ export const useUpdateNickname = (userId: number | null, roomId?: number) => {
 
 // 프로필 이미지 수정
 export const useUpdateProfileImage = () =>
-  useMutation({
-    mutationFn: ({ roomId, userId, file }: { roomId: number; userId: number; file: File }) =>
+  useMutation<UpdateProfileResponse | null, Error, { roomId: number; userId: number; file: File }>({
+    mutationFn: ({ roomId, userId, file }) =>
       updateProfileImage(roomId, userId, { file }),
   });

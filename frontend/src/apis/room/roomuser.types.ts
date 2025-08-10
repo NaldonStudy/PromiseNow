@@ -62,5 +62,8 @@ export interface UpdateNicknameResponse {
 
 // 프로필 이미지 수정 응답
 export interface UpdateProfileResponse {
-  imageUrl: string;
+  fileUrl: string;
+  fileName?: string;
+  fileSize?: number;
+  fileType?: string;
 }

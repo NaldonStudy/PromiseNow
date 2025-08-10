@@ -3,6 +3,7 @@ import handleApi from '../../lib/handleApi';
 import type {
   AlarmSettingResponse,
   AlarmUpdateRequest,
+  DeleteRoomRequest,
   GetUsersInRoomResponse,
   JoinInfoResponse,
   JoinRequest,
@@ -11,7 +12,6 @@ import type {
   UpdateNicknameResponse,
   UpdateProfileRequest,
   UpdateProfileResponse,
-  DeleteRoomRequest
 } from './roomuser.types';
 
 // 초대코드로 방 참가
@@ -19,7 +19,6 @@ export const joinRoomByInviteCode = async (request: JoinRequest) => {
   const data = await handleApi<JoinInfoResponse>(axiosInstance.post(`/rooms/join`, request));
   return data;
 };
-
 
 // 방 참가자 목록 조회
 export const getUsersInRoom = async (roomId: number) => {
@@ -45,15 +44,13 @@ export const updateProfileImage = async (
   userId: number,
   request: UpdateProfileRequest,
 ) => {
-  const formData = new FormData();
-  formData.append('file', request.file);
-  
-  const res = await handleApi<UpdateProfileResponse>(
-    axiosInstance.patch(`/rooms/${roomId}/profile-image/${userId}/profile`, formData, {
-      withCredentials: true,
-    }),
+  const formdata = new FormData();
+  formdata.append('file', request.file);
+
+  const data = await handleApi<UpdateProfileResponse>(
+    axiosInstance.patch(`/rooms/${roomId}/profile-image/${userId}`, formdata),
   );
-  return res;
+  return data; // { fileUrl, ... } | null
 };
 
 // 방 나가기
@@ -63,10 +60,10 @@ export const quitRoom = async ({ roomId, userId }: QuitRoomRequest) => {
 };
 
 // 방 삭제하기
-export const deleteRoom = async ({roomId}: DeleteRoomRequest ) => {
+export const deleteRoom = async ({ roomId }: DeleteRoomRequest) => {
   const data = await handleApi<void>(axiosInstance.delete(`/rooms/${roomId}`));
   return data;
-}
+};
 
 // 알림 상태 조회
 export const getAlarmSetting = async (roomId: number, userId: number) => {
