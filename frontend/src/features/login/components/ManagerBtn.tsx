@@ -1,5 +1,3 @@
-import React from 'react'
-
 interface Props {
     onLogin1: () => void;
     onLogin2: () => void;

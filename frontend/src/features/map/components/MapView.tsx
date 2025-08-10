@@ -1,29 +1,42 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { useParams } from 'react-router-dom';
 import useMapStore from '../map.store';
 import UserMarker from './UserMaker';
+
+// 약속 상세 훅/타입 import
+import type { AppointmentResponse } from '../../../apis/room/room.types';
+import { useAppointment } from '../../../hooks/queries/room';
 
 type TargetPin = { lat: number; lng: number };
 
 interface MapViewProps {
-  /** 확정 장소 좌표 */
+  /** 상위에서 내려주는 확정 장소 좌표 (없어도 됨). 약속 데이터가 있으면 그걸 우선 사용 */
   target?: TargetPin;
 }
 
 const MapView = ({ target }: MapViewProps) => {
+  const { id } = useParams();
+  const roomId = Number(id);
+
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
 
+  // 내 위치(커스텀 오버레이)
   const markerRef = useRef<any>(null);
-
+  // 확정 장소(커스텀 오버레이로 동일하게)
   const targetMarkerRef = useRef<any>(null);
 
   const isInitializedRef = useRef<boolean>(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [mapReady, setMapReady] = useState(false); // [ADD] 지도 준비 플래그
   const { rankingHeight, setMoveToCurrentLocation } = useMapStore();
 
-  // Kakao Maps API가 로드될 때까지 대기하는 함수
+  // 약속 상세 불러오기
+  const { data: appointment } = useAppointment(roomId);
+
+  // Kakao Maps API 로드 대기
   const waitForKakaoMaps = useCallback(() => {
     return new Promise<void>((resolve) => {
       const checkKakao = () => {
@@ -37,18 +50,16 @@ const MapView = ({ target }: MapViewProps) => {
     });
   }, []);
 
-  // 커스텀 마커 생성 함수
+  // 커스텀 마커 생성 함수(현재 위치/확정 위치 동일 사용)
   const createCustomMarker = (position: any, imgUrl?: string) => {
     const kakao = window.kakao;
 
-    // React 컴포넌트를 DOM에 렌더링
     const markerContainer = document.createElement('div');
     const root = createRoot(markerContainer);
     root.render(<UserMarker imgUrl={imgUrl} />);
 
-    // 커스텀 오버레이 생성
     const customOverlay = new kakao.maps.CustomOverlay({
-      position: position,
+      position,
       content: markerContainer,
       yAnchor: 1,
     });
@@ -56,7 +67,7 @@ const MapView = ({ target }: MapViewProps) => {
     return customOverlay;
   };
 
-  // 현재 위치로 이동하는 함수
+  // 현재 위치로 이동
   const moveToCurrentLocation = useCallback(() => {
     if (!mapRef.current || !isInitializedRef.current) return;
 
@@ -68,10 +79,8 @@ const MapView = ({ target }: MapViewProps) => {
           const kakao = window.kakao;
           const newCenter = new kakao.maps.LatLng(lat, lng);
 
-          // 지도 중심을 현재 위치로 이동
           mapRef.current.setCenter(newCenter);
 
-          // 마커도 현재 위치로 이동
           if (markerRef.current) {
             markerRef.current.setPosition(newCenter);
           }
@@ -86,8 +95,8 @@ const MapView = ({ target }: MapViewProps) => {
     }
   }, []);
 
+  // 지도 초기화
   const initMap = useCallback((lat: number, lng: number) => {
-    // 이미 초기화되었다면 중복 실행 방지
     if (isInitializedRef.current) return;
     if (!mapContainerRef.current) return;
 
@@ -99,13 +108,16 @@ const MapView = ({ target }: MapViewProps) => {
       level: 3,
     });
 
-    // 커스텀 마커 생성 및 표시
+    // 내 위치 마커(커스텀 오버레이)
     markerRef.current = createCustomMarker(center);
     markerRef.current.setMap(mapRef.current);
 
-    // 초기화 완료 플래그
+    // [REMOVED] 타겟 마커를 초기화 시점에 임의의 위치로 만들지 않음
+    // targetMarkerRef.current = createCustomMarker(center);
+
     isInitializedRef.current = true;
     setIsLoading(false);
+    setMapReady(true); // [ADD]
   }, []);
 
   // rankingHeight 변경 시 지도 크기 재조정
@@ -117,20 +129,20 @@ const MapView = ({ target }: MapViewProps) => {
     }
   }, [rankingHeight]);
 
+  // 지도 세팅
   useEffect(() => {
-    // 이미 초기화되었다면 실행하지 않음
     if (isInitializedRef.current) return;
 
     const setupMap = async () => {
       try {
-        // useKakaoLoader로 이미 로드되었거나 로드 중이므로 대기만 하면 됨
         await waitForKakaoMaps();
 
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition((position) => {
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
-            initMap(lat, lng);
+            initMap(position.coords.latitude, position.coords.longitude);
+          }, () => {
+            // [SAFE] 위치 실패 시 기본 좌표로라도 지도 생성
+            initMap(37.5665, 126.978);
           });
         } else {
           initMap(37.5665, 126.978);
@@ -148,48 +160,73 @@ const MapView = ({ target }: MapViewProps) => {
         markerRef.current.setMap(null);
         markerRef.current = null;
       }
-      // cleanup 시 store에서 함수 제거
+      if (targetMarkerRef.current) {
+        targetMarkerRef.current.setMap(null);
+        targetMarkerRef.current = null;
+      }
       setMoveToCurrentLocation(null);
     };
   }, [initMap, setMoveToCurrentLocation, waitForKakaoMaps]);
 
-  // moveToCurrentLocation 함수를 store에 등록
+  // store에 현재 위치 이동 함수 등록
   useEffect(() => {
     setMoveToCurrentLocation(moveToCurrentLocation);
-
     return () => {
       setMoveToCurrentLocation(null);
     };
   }, [moveToCurrentLocation, setMoveToCurrentLocation]);
 
-  // 타겟 마커 표시
+  // 확정 장소 마커(현재 위치와 같은 커스텀 오버레이로) 표시
   useEffect(() => {
-    if (!isInitializedRef.current || !mapRef.current) return;
+    if (!mapReady || !mapRef.current) return; // [CHANGED] 지도 준비 후에만 수행
+
     const kakao = window.kakao;
-    if (
-      target &&
-      typeof target.lat === 'number' &&
-      typeof target.lng === 'number' &&
-      !Number.isNaN(target.lat) &&
-      !Number.isNaN(target.lng)
-    ) {
-      const pos = new kakao.maps.LatLng(target.lat, target.lng);
+
+    const latFromAppt = (appointment as AppointmentResponse | undefined)?.locationLat as
+      | number
+      | null
+      | undefined;
+    const lngFromAppt = (appointment as AppointmentResponse | undefined)?.locationLng as
+      | number
+      | null
+      | undefined;
+
+    // 숫자 보정
+    const finalLat =
+      typeof latFromAppt === 'number' && Number.isFinite(latFromAppt)
+        ? latFromAppt
+        : typeof target?.lat === 'number' && Number.isFinite(target.lat)
+        ? target.lat
+        : undefined;
+
+    const finalLng =
+      typeof lngFromAppt === 'number' && Number.isFinite(lngFromAppt)
+        ? lngFromAppt
+        : typeof target?.lng === 'number' && Number.isFinite(target.lng)
+        ? target.lng
+        : undefined;
+
+    if (typeof finalLat === 'number' && typeof finalLng === 'number') {
+      const pos = new kakao.maps.LatLng(finalLat, finalLng);
+
       if (!targetMarkerRef.current) {
-        targetMarkerRef.current = new kakao.maps.Marker({
-          position: pos,
-          map: mapRef.current,
-        });
+        targetMarkerRef.current = createCustomMarker(pos);
+        targetMarkerRef.current.setMap(mapRef.current);
       } else {
         targetMarkerRef.current.setPosition(pos);
         targetMarkerRef.current.setMap(mapRef.current);
       }
+
+      // 필요하면 타겟으로 이동:
+      // mapRef.current.panTo(pos);
     } else {
+      // 정말로 "없다"로 확정될 때만 제거 (초기 로딩 중 null/undefined로 오는 경우엔 자연스레 다음 렌더에서 찍힘)
       if (targetMarkerRef.current) {
         targetMarkerRef.current.setMap(null);
         targetMarkerRef.current = null;
       }
     }
-  }, [target]);
+  }, [mapReady, appointment, target?.lat, target?.lng]);
 
   return (
     <div className="h-full relative bg-gray">
