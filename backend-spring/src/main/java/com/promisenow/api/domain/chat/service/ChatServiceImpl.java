@@ -121,8 +121,6 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public List<MessageResponseDto> getMessages(Long roomId) {
         List<Chat> chats = chatRepository.findByRoomUser_Room_RoomIdOrderBySentDateAsc(roomId);
-//        System.out.println("roomId = " + roomId + ", chats size = " + chats.size());
-//        chats.forEach(chat -> System.out.println("ChatId: " + chat.getMessageId() + ", content: " + chat.getContent()));
         return chats.stream().map(
                 chat -> {
                     String imageUrl = null;

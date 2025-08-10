@@ -41,7 +41,7 @@ public class RoomUser {
     @Column(name = "is_agreed", nullable = false)
     private Boolean isAgreed;
     
-    @Column(name = "sort_order", nullable = true)
+    @Column(name = "sort_order", nullable = false)
     private int sortOrder;
 
     public void updateAlarm(boolean isAgreed) {

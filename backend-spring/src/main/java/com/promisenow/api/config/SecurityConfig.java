@@ -61,12 +61,14 @@ public class SecurityConfig {
                 .requestMatchers("/api/chatting/**").permitAll()          // 메시지 조회, 이미지 업로드 허용
                 .requestMatchers("/uploaded-images/**").permitAll()  // ← 여기가 중요!
                 .requestMatchers("/ws-chat/**").permitAll() // 웹소켓 경로
+                .requestMatchers("/ws-leaderboard/**").permitAll() // 리더보드 웹소켓 경로
                 .requestMatchers("/api/upload/**").permitAll()
+                .requestMatchers("/api/leaderboard/**").permitAll() // 리더보드 API 경로
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // OPTIONS 요청 허용
                 .requestMatchers("/actuator/**").permitAll()
-                .requestMatchers("/api/**").permitAll()
                 .requestMatchers("/swagger-ui/**").permitAll()
                 .requestMatchers("/v3/api-docs/**").permitAll()
+                .requestMatchers("/api/**").permitAll() // 일반 API 경로는 마지막에
                 .anyRequest().permitAll()
             )
             .oauth2Login(oauth2 -> oauth2
