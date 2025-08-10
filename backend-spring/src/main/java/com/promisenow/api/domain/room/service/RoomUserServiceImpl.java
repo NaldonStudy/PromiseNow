@@ -11,14 +11,19 @@ import com.promisenow.api.domain.room.repository.RoomRepository;
 import com.promisenow.api.domain.room.repository.RoomUserRepository;
 import com.promisenow.api.domain.user.entity.User;
 import com.promisenow.api.domain.user.repository.UserRepository;
+import com.promisenow.api.domain.leaderboard.repository.LeaderboardRepository;
+import com.promisenow.api.domain.leaderboard.service.LeaderboardService;
+import com.promisenow.api.domain.leaderboard.dto.PositionResponseDto;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -28,6 +33,9 @@ public class RoomUserServiceImpl implements RoomUserService {
     private final RoomUserRepository roomUserRepository;
     private final UserRepository userRepository;
     private final FileUploadService fileUploadService;
+    private final LeaderboardRepository leaderboardRepository;
+    private final LeaderboardService leaderboardService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     // 방에 초대코드로 참가
     @Override
@@ -50,6 +58,31 @@ public class RoomUserServiceImpl implements RoomUserService {
                 .build();
 
         roomUserRepository.save(roomUser);
+
+        // 방 참가 시 리더보드에 초기 점수로 추가 (매우 높은 점수로 설정하여 하위권에 배치)
+        String leaderboardKey = "room:" + room.getRoomId() + ":leaderboard";
+        leaderboardRepository.addToLeaderboard(leaderboardKey, String.valueOf(roomUser.getRoomUserId()), 999999.0);
+
+        // 새로운 사용자 참가 시 기존 사용자들에게 실시간 알림
+        try {
+            if (room.getLocationLat() != null && room.getLocationLng() != null) {
+                // 현재 리더보드 상태를 조회하여 모든 사용자에게 브로드캐스트
+                List<PositionResponseDto> currentLeaderboard = leaderboardService.getLeaderboard(
+                        room.getRoomId(),
+                        room.getLocationLat(),
+                        room.getLocationLng(),
+                        100 // 충분히 큰 수로 설정
+                );
+                
+                // WebSocket으로 기존 사용자들에게 새로운 리더보드 상태 전송
+                messagingTemplate.convertAndSend("/topic/leaderboard/" + room.getRoomId(), currentLeaderboard);
+                
+                log.info("새로운 사용자 참가 알림 전송: roomId={}, roomUserId={}, nickname={}",
+                        room.getRoomId(), roomUser.getRoomUserId(), dto.getNickname());
+            }
+        } catch (Exception e) {
+            log.error("❌ 새로운 사용자 참가 알림 전송 실패", e);
+        }
 
         return new JoinInfoResponse(
                 room.getRoomId(),
