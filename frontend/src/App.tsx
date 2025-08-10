@@ -10,6 +10,7 @@ import RandingPage from './pages/RandingPage';
 import RoulettePage from './pages/RoulettePage';
 import SchedulePage from './pages/SchedulePage';
 import SettingsPage from './pages/SettingsPage';
+import NotFoundPage from './pages/NotFoundPage';
 
 import TestPage from './hooks/webrtc/TestPage';
 
@@ -31,6 +32,7 @@ function App() {
               <Route path="/:id/location" element={<LocationPage />} />
               <Route path="/:id/settings" element={<SettingsPage />} />
               <Route path="/:id/test" element={<TestPage />} />
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </BrowserRouter>
         </QueryClientProvider>
