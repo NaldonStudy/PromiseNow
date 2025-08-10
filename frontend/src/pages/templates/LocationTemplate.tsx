@@ -3,11 +3,17 @@ import ArrivalRanking from '../../features/arrivalRanking/components/ArrivalRank
 import MapControls from '../../features/map/components/MapControls';
 import MapView from '../../features/map/components/MapView';
 
-const LocationTemplate = () => {
+type TargetPin = { lat: number; lng: number };
+
+interface Props {
+  appointmentTarget?: TargetPin;
+}
+
+const LocationTemplate = ({ appointmentTarget }: Props) => {
   return (
     <RoomLayout>
       <div className="h-full relative overflow-hidden">
-        <MapView />
+        <MapView target={appointmentTarget} />
         <MapControls />
         <div className="absolute bottom-0 w-full">
           <ArrivalRanking />

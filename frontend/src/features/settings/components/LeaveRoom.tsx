@@ -1,64 +1,60 @@
-import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { deleteRoom } from './../../../apis/room/room.api';
-import { getUsersInRoom, quitRoom } from './../../../apis/room/roomuser.api';
-import SquareBtn from './../../../components/ui/SquareBtn';
-import ModalConfirm from './../../../components/ui/modal/ModalConfirm';
-import { useRoomStore } from './../../../stores/room.store';
-import { useUserStore } from './../../../stores/user.store';
+import { useNavigate, useParams } from 'react-router-dom';
+
+import SquareBtn from '../../../components/ui/SquareBtn';
+import ModalConfirm from '../../../components/ui/modal/ModalConfirm';
+
+import { getUsersInRoom } from '../../../apis/room/roomuser.api';
+import { useDeleteRoom, useQuitRoom } from '../../../hooks/queries/room';
+import { useRoomStore } from '../../../stores/room.store';
+import { useUserStore } from '../../../stores/user.store';
 
 const LeaveRoom = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isDeletingRoom, setIsDeletingRoom] = useState(false); // ✅ 삭제 여부 상태
+  const [open, setOpen] = useState(false);
+  const [willDelete, setWillDelete] = useState(false);
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const { currentRoomId, setCurrentRoomId } = useRoomStore();
+
+  const { id } = useParams();
+  const roomId = Number(id);
+
+  const { setCurrentRoomId } = useRoomStore();
   const { userId } = useUserStore();
 
-  // ✅ 모달 열기 전에 참여자 수 확인
-  const openModal = async () => {
-    if (!currentRoomId) return;
+  const quitMut = useQuitRoom(roomId, userId!);
+  const delMut = useDeleteRoom(roomId, userId!);
 
+  const handleOpen = async () => {
     try {
-      const participants = await getUsersInRoom(currentRoomId);
-
-      if (!participants || participants.length === 0) {
-        return;
-      }
-
-      setIsDeletingRoom(participants.length === 1); // 마지막 1인 → 방 삭제
-      setIsModalOpen(true);
-    } catch (error) {
-      console.error('참여자 조회 실패:', error);
-      alert('참여자 정보를 불러올 수 없습니다.');
+      const users = await getUsersInRoom(roomId);
+      const count = users ? users.length : 0;
+      setWillDelete(count === 1);
+      setOpen(true);
+    } catch (e) {
+      console.error('참여자 조회 실패', e);
+      setWillDelete(false);
+      setOpen(true);
     }
   };
 
-  const handleLeaveRoom = async () => {
-    if (!currentRoomId || userId === null) {
-      alert('방 정보가 없거나 로그인 정보가 없습니다.');
+  const handleConfirm = async () => {
+    if (userId == null) {
+      alert('사용자 정보를 확인할 수 없습니다.');
       return;
     }
 
     try {
-      if (isDeletingRoom) {
-        await deleteRoom(currentRoomId);
-      } else {
-        await quitRoom({ roomId: currentRoomId, userId });
+      await quitMut.mutateAsync({ roomId, userId });
+      if (willDelete) {
+        await delMut.mutateAsync();
       }
 
       setCurrentRoomId(null);
-
-      // ✅ 방 목록 캐시 무효화
-      queryClient.invalidateQueries({ queryKey: ['joinedRooms', userId] });
-
       navigate('/home');
-    } catch (error) {
-      console.error('방 나가기 또는 삭제 실패:', error);
-      alert('방 나가기에 실패했습니다.');
+    } catch (e) {
+      console.error('방 나가기/삭제 실패', e);
+      alert('방 나가기/삭제에 실패했습니다.');
     } finally {
-      setIsModalOpen(false);
+      setOpen(false);
     }
   };
 
@@ -70,19 +66,19 @@ const LeaveRoom = () => {
           template="filled"
           width="w-full"
           textSize="text-md"
-          onClick={openModal} // ✅ 참여자 확인 후 모달 오픈
+          onClick={handleOpen}
         />
       </div>
 
       <ModalConfirm
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={open}
+        onClose={() => setOpen(false)}
         title={
-          isDeletingRoom
-            ? '방 전체가 삭제됩니다.\n정말 나가시겠습니까?'
-            : '정보가 모두 사라집니다.\n방을 나가시겠습니까?'
+          willDelete
+            ? '현재 방에 1명만 있습니다.\n나가면 방이 삭제됩니다. 진행할까요?'
+            : '방을 나가면 방 정보가 삭제됩니다. 진행할까요?'
         }
-        onConfirm={handleLeaveRoom}
+        onConfirm={handleConfirm}
       />
     </>
   );

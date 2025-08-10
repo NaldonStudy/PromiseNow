@@ -18,12 +18,6 @@ export const createRoom = async (request: CreateRoomRequest) => {
   return data;
 };
 
-// 방 삭제
-export const deleteRoom = async (roomId: number) => {
-  const data = await handleApi<void>(axiosInstance.delete(`/rooms/${roomId}`));
-  return data;
-};
-
 // 방 제목 + 초대코드 조회
 export const getRoomTitleAndCode = async (roomId: number) => {
   const data = await handleApi<TitleCodeResponse>(axiosInstance.get(`/rooms/${roomId}/title-code`));

@@ -1,11 +1,26 @@
+import { useParams } from 'react-router-dom';
 import { useTitle } from '../hooks/common/useTitle';
 
+import { useAppointment } from '../hooks/queries/room';
 import LocationTemplate from './templates/LocationTemplate';
 
 const LocationPage = () => {
   useTitle('위치 - PromiseNow');
+  const { id } = useParams();
+  const roomId = Number(id);
 
-  return <LocationTemplate />;
+  const { data: appointment } = useAppointment(roomId);
+
+  const hasLat =
+    typeof appointment?.locationLat === 'number' && Number.isFinite(appointment.locationLat);
+
+  const hasLng =
+    typeof appointment?.locationLng === 'number' && Number.isFinite(appointment.locationLng);
+
+  const target =
+    hasLat && hasLng ? { lat: appointment!.locationLat, lng: appointment!.locationLng } : undefined;
+
+  return <LocationTemplate appointmentTarget={target}/>;
 };
 
 export default LocationPage;

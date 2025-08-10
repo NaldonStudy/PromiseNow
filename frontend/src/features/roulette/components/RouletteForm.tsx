@@ -10,21 +10,13 @@ import { useRouletteList } from '../../../hooks/queries/roulette/queries';
 import { useRoomUserStore } from '../../../stores/roomUser.store';
 import { useRouletteSpinStore } from '../../../stores/roulette.store';
 
-const PALETTE = [
-  { bg: 'bg-[var(--color-gray)]', text: 'text-black' },
-  { bg: 'bg-[var(--color-primary)]', text: 'text-white' },
-  { bg: 'bg-[var(--color-secondary)]', text: 'text-white' },
-  { bg: 'bg-[var(--color-point)]', text: 'text-white' },
-  { bg: 'bg-[var(--color-gray-input)]', text: 'text-black' },
-];
-
 const RouletteForm = () => {
   const { id } = useParams<{ id: string }>();
   const roomId = Number(id);
 
   const [inputValue, setInputValue] = useState('');
 
-  const { data: rouletteList } = useRouletteList(roomId); // 서버 진실 소스
+  const { data: rouletteList } = useRouletteList(roomId);
   const createMutate = useCreateRoulette(roomId);
   const deleteMutate = useDeleteRoulette(roomId);
 
@@ -32,19 +24,16 @@ const RouletteForm = () => {
 
   const { mustStartSpinning, startSpinning } = useRouletteSpinStore();
 
-  // 뷰 전용 데이터 (색상만 인덱스 기반으로 부여)
   const viewItems = useMemo(
     () =>
-      (rouletteList ?? []).map((it, i) => ({
+      (rouletteList ?? []).map((it) => ({
         rouletteId: it.rouletteId,
         content: it.content,
         roomUserId: it.roomUserId,
-        color: PALETTE[i % PALETTE.length],
       })),
     [rouletteList],
   );
 
-  // 내가 이미 하나 추가했는지
   const alreadyMyOption = useMemo(
     () => (rouletteList ?? []).some((it) => it.roomUserId === myRoomUserId),
     [rouletteList, myRoomUserId],
@@ -68,7 +57,7 @@ const RouletteForm = () => {
 
   const handleRemoveOption = (rouletteId: number, ownerRoomUserId: number) => {
     if (!myRoomUserId) return;
-    if (myRoomUserId !== ownerRoomUserId) return; // 안전장치: 본인만 삭제
+    if (myRoomUserId !== ownerRoomUserId) return;
 
     deleteMutate.mutate({
       rouletteId,
@@ -80,12 +69,10 @@ const RouletteForm = () => {
     startSpinning(viewItems.length);
   };
 
-  // 서버에서 아직 아무것도 없을 때
   const isEmpty = (rouletteList?.length ?? 0) === 0;
 
   return (
     <div className="p-4">
-      {/* 입력 + 추가 */}
       <div className="flex items-center gap-2 mb-4">
         <Input
           placeholder="룰렛 선택지를 추가해보세요!"
@@ -94,7 +81,7 @@ const RouletteForm = () => {
         />
         <SquareBtn
           text="+"
-          textSize="text-[25px]"
+          textSize="text-2xl"
           width="w-13"
           template="outlined"
           onClick={handleAddOption}
@@ -102,7 +89,6 @@ const RouletteForm = () => {
         />
       </div>
 
-      {/* 목록 */}
       <div className="my-4 flex flex-col gap-2">
         {isEmpty ? (
           <Card className="px-5 py-3 text-sm text-gray-500 text-center">
@@ -114,13 +100,13 @@ const RouletteForm = () => {
             return (
               <Card
                 key={item.rouletteId ?? idx}
-                className={`px-5 py-3 text-sm flex justify-between items-center border border-gray-dark ${item.color.bg} ${item.color.text}`}
+                className="px-5 py-3 text-sm flex justify-between items-center border border-gray-dark bg-white"
               >
-                <span className="flex-1">{item.content}</span>
+                <span className="flex-1 text-black">{item.content}</span>
                 {isMine && (
                   <button
                     onClick={() => handleRemoveOption(item.rouletteId!, item.roomUserId)}
-                    className="text-text-dark ml-2 font-bold"
+                    className="text-black ml-2 font-bold"
                     disabled={mustStartSpinning}
                     aria-label="delete my roulette item"
                   >
@@ -133,7 +119,6 @@ const RouletteForm = () => {
         )}
       </div>
 
-      {/* 돌리기 */}
       <SquareBtn
         text={mustStartSpinning ? '룰렛 돌리는 중...' : '룰렛 돌리기'}
         width="w-full"

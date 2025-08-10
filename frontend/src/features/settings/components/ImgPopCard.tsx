@@ -35,7 +35,7 @@ const ImgPopCard = ({ onUpload, onReset, onClose, disabled, className }: Props) 
   return (
     <div
       ref={rootRef}
-      className={`absolute mb-2 left-5 z-50 w-48 rounded-2xl border border-gray-400 bg-white p-2 ${
+      className={`absolute mb-2 left-5 z-50 w-48 rounded-2xl border border-gray-dark bg-white p-2 ${
         className ?? ''
       }`}
       role="dialog"
@@ -54,6 +54,7 @@ const ImgPopCard = ({ onUpload, onReset, onClose, disabled, className }: Props) 
         }}
         className="mb-1"
       />
+
       <SquareBtn
         text="이미지 업로드"
         template="filled"

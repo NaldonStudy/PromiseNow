@@ -20,7 +20,7 @@ const Transmits = ({ roomId, isConnected, sendMessage }: Props) => {
   const [sending, setSending] = useState(false);
   const [openPicker, setOpenPicker] = useState(false);
 
-  const { userId } = useUserStore(); // ✅ DTO 요구 필드
+  const { userId } = useUserStore();
   const roomUserId = useRoomUserStore((s) =>
     roomId != null ? s.getRoomUserId(roomId) : undefined,
   );
@@ -40,7 +40,6 @@ const Transmits = ({ roomId, isConnected, sendMessage }: Props) => {
     try {
       setSending(true);
 
-      // 위치 정보 (옵션)
       const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
         navigator.geolocation.getCurrentPosition(resolve, reject, {
           enableHighAccuracy: true,
@@ -54,24 +53,23 @@ const Transmits = ({ roomId, isConnected, sendMessage }: Props) => {
 
       const uploadResult = await uploadImage({
         file,
-        latitude,
-        longitude,
+        lat: latitude,
+        lng: longitude,
         sentDate,
       });
 
-      if (!uploadResult?.imageUrl) {
+      if (!uploadResult.fileUrl) {
         throw new Error('이미지 업로드 결과가 올바르지 않습니다.');
       }
 
       if (isConnected) {
-        // ✅ 서버 MessageRequestDto 스펙에 맞춰 전송
         sendMessage({
           roomId,
           roomUserId,
-          userId, // ← 누락되기 쉬움
+          userId,
           type: 'IMAGE',
           content: '이미지',
-          imageUrl: uploadResult.imageUrl,
+          imageUrl: uploadResult.fileUrl,
           lat: latitude,
           lng: longitude,
           sentDate,
@@ -91,11 +89,10 @@ const Transmits = ({ roomId, isConnected, sendMessage }: Props) => {
     const sentDate = new Date().toISOString();
 
     if (isConnected) {
-      // ✅ TEXT 전송도 DTO 스펙에 맞춰
       sendMessage({
         roomId,
         roomUserId,
-        userId, // ← 추가
+        userId,
         type: 'TEXT',
         content: message.trim(),
         imageUrl: null,

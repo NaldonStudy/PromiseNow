@@ -1,16 +1,26 @@
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '../../stores/user.store';
 
-import Icon from '../../components/ui/Icon';
+import landingImg from '../../assets/images/landing.jpg';
 import PwaInstallButton from '../../components/PwaInstallButton';
+import Kakao from '../../features/login/components/Kakao';
+import ManagerBtn from './../../features/login/components/ManagerBtn';
 
 const RandingTemplate = () => {
   const navigate = useNavigate();
   const { setUser } = useUserStore();
 
-  // 임시 로그인
   const handleKakaoLogin = () => {
+    window.location.href = `https://api.promisenow.store/oauth2/authorization/kakao`;
+  };
+
+  const handleKakaoLogin_1 = () => {
     setUser(1);
+    navigate('/home');
+  };
+
+  const handleKakaoLogin_2 = () => {
+    setUser(2);
     navigate('/home');
   };
 
@@ -21,13 +31,9 @@ const RandingTemplate = () => {
         약속부터 만남까지 한 화면에서 {<br />} 함께하는 즐거움
       </span>
       <span className="text-sm text-primary">지금 PromissNow를 시작해보세요!</span>
-      <button
-        className="flex flex-row bg-yellow-300 font-semibold px-5 py-2 text-sm hover:bg-yellow-400 focus:outline-none"
-        onClick={handleKakaoLogin}
-      >
-        <Icon type="kakaotalk" size={18} color="black" />
-        <span className="px-10">카카오로 시작하기</span>
-      </button>
+      <img src={landingImg} alt="landing img" className="max-w-full w-64 h-auto" />
+      <Kakao onLogin={handleKakaoLogin} />
+      <ManagerBtn onLogin1={handleKakaoLogin_1} onLogin2={handleKakaoLogin_2} />
       <PwaInstallButton />
     </div>
   );
