@@ -70,9 +70,7 @@ public class ChatController {
             summary = "이미지 업로드",
             description = "이미지 파일을 업로드하고, 접근 가능한 URL을 반환합니다.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "업로드 성공",
-                            content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = ImageUploadResponse.class))),
+                    @ApiResponse(responseCode = "200", description = "업로드 성공"),
                     @ApiResponse(responseCode = "400", description = "잘못된 요청"),
                     @ApiResponse(responseCode = "500", description = "서버 오류")
             }
@@ -86,32 +84,10 @@ public class ChatController {
             @RequestPart("file") MultipartFile file,
             @RequestParam("lat") Double lat,
             @RequestParam("lng") Double lng,
-            @RequestParam(value = "timestamp", required = false) String timestampStr) {
+            @RequestParam(value = "sentDate", required = false) String sentDateStr) {
 
-
-        try {
-            File uploadPath = new File(uploadDir);
-            if (!uploadPath.exists()) {
-                uploadPath.mkdirs();
-            }
-
-            String originalFilename = StringUtils.cleanPath(file.getOriginalFilename());
-            String fileName = System.currentTimeMillis() + "_" + originalFilename;
-
-            Path filePath = Paths.get(uploadDir, fileName);
-            Files.write(filePath, file.getBytes());
-
-            String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                    .path("/uploaded-images/")
-                    .path(fileName)
-                    .toUriString();
-
-            return ApiUtils.success(new ImageUploadResponse(fileDownloadUri));
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new FileStorageException("파일 저장 중 오류가 발생했습니다.");
-        }
+        String fileDownloadUri = chatImageService.uploadImage(file, lat, lng, sentDateStr);
+        return ApiUtils.success(new ImageUploadResponse(fileDownloadUri));
     }
 
     @Schema(description = "이미지 업로드 응답 DTO")
@@ -151,7 +127,7 @@ public class ChatController {
                         img.getImageUrl(),
                         img.getLat(),
                         img.getLng(),
-                        img.getTimestamp()
+                        img.getSentDate()
                 ))
                 .toList();
 
