@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -49,10 +50,17 @@ public class RoomServiceImpl implements RoomService {
 
         String roomCode = generateRandomCode(6);
 
+        // 오늘 날짜가 기본으로 시작날짜
+        LocalDate startDate = LocalDate.now();
+        // 1주일 동안을 기본으로 설정
+        LocalDate endDate = startDate.plusWeeks(1);
+
         Room room = Room.builder()
                 .roomTitle(roomTitle)
                 .inviteCode(roomCode)
                 .roomState(Room.RoomState.WAITING)
+                .startDate(startDate)
+                .endDate(endDate)
                 .build();
 
         roomRepository.save(room);
