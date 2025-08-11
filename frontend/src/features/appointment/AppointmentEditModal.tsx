@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import type { AppointmentUpdateRequest } from '../../apis/room/room.types';
+import type { AppointmentUpdateRequest, DateRangeResponse } from '../../apis/room/room.types';
+
 import SquareBtn from '../../components/ui/SquareBtn';
 import ConfirmHeader from './components/ConfirmHeader';
 import DateSelector from './components/DateSelector';
@@ -7,13 +8,14 @@ import LocationInput from './components/LocationInput';
 import TimeSelector from './components/TimeSelector';
 
 interface Props {
+  dateRange?: DateRangeResponse;
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (appointmentData: AppointmentUpdateRequest) => void;
   initialData?: AppointmentUpdateRequest;
 }
 
-const AppointmentEditModal = ({ isOpen, onClose, onConfirm, initialData }: Props) => {
+const AppointmentEditModal = ({ isOpen, onClose, onConfirm, initialData, dateRange }: Props) => {
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [locationSearch, setLocationSearch] = useState('');
@@ -68,7 +70,7 @@ const AppointmentEditModal = ({ isOpen, onClose, onConfirm, initialData }: Props
         <ConfirmHeader onClose={onClose} />
 
         <div className="flex flex-col gap-3 my-4">
-          <DateSelector value={selectedDate} onChange={setSelectedDate} />
+          <DateSelector value={selectedDate} onChange={setSelectedDate} dateRange={dateRange} />
           <TimeSelector value={selectedTime} onChange={setSelectedTime} />
           <LocationInput
             value={locationSearch}

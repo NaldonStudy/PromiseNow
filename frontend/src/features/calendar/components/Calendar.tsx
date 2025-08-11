@@ -1,6 +1,6 @@
 import { useCalendarStore } from '../calendar.store';
 import type { TotalAvailabilityResponse } from '../../../apis/availability/availability.types';
-import type { DateRangeUpdateRequest } from '../../../apis/room/room.types';
+import type { DateRangeResponse, DateRangeUpdateRequest } from '../../../apis/room/room.types';
 import { useUsersInRoom } from '../../../hooks/queries/room';
 
 import DateRangeSelector from './DateRangeSelector';
@@ -12,6 +12,7 @@ import Card from '../../../components/ui/Card';
 import { useParams } from 'react-router-dom';
 
 interface CalendarProps {
+  dateRangeData?: DateRangeResponse;
   totalAvailabilityData?: TotalAvailabilityResponse;
   onDateRangeUpdate: (dateRangeData: DateRangeUpdateRequest) => void;
   onUserSelectionsUpdate: (userSelections: Record<string, boolean[]>) => void;
@@ -19,6 +20,7 @@ interface CalendarProps {
 }
 
 const Calendar = ({
+  dateRangeData,
   totalAvailabilityData,
   onDateRangeUpdate,
   onUserSelectionsUpdate,
@@ -33,7 +35,7 @@ const Calendar = ({
   return (
     <>
       <div className="mb-5">
-        <DateRangeSelector onDateRangeUpdate={onDateRangeUpdate} />
+        <DateRangeSelector dateRange={dateRangeData} onDateRangeUpdate={onDateRangeUpdate} />
       </div>
 
       <Card className="flex flex-col gap-5 p-5">
@@ -41,6 +43,7 @@ const Calendar = ({
 
         {view === 'month' ? (
           <MonthlyCalendar
+            dateRange={dateRangeData}
             totalDatas={totalAvailabilityData}
             currentDate={currentDate}
             totalMembers={totalMembers}
@@ -48,6 +51,7 @@ const Calendar = ({
           />
         ) : (
           <WeeklyCalendar
+            dateRange={dateRangeData}
             currentDate={currentDate}
             totalDatas={totalAvailabilityData}
             totalMembers={totalMembers}

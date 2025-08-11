@@ -1,24 +1,17 @@
-import { useRoomStore } from '../../../stores/room.store';
+import type { DateRangeResponse } from '../../../apis/room/room.types';
 
 interface DateSelectorProps {
   value: string;
   onChange: (value: string) => void;
+  dateRange?: DateRangeResponse;
 }
 
-const DateSelector = ({ value, onChange }: DateSelectorProps) => {
-  const { dateRange } = useRoomStore();
-
-  // dateRange가 있으면 해당 범위로 min, max 설정
+const DateSelector = ({ value, onChange, dateRange }: DateSelectorProps) => {
   const getDateLimits = () => {
     if (!dateRange) return {};
-
-    const formatDate = (date: Date) => {
-      return date.toISOString().split('T')[0]; // YYYY-MM-DD 형식
-    };
-
     return {
-      min: formatDate(dateRange.start),
-      max: formatDate(dateRange.end),
+      min: dateRange?.startDate,
+      max: dateRange?.endDate,
     };
   };
 

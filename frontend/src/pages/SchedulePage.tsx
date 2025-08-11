@@ -16,7 +16,6 @@ import {
   useUpdateRoomDateRange,
   useRoomUserInfo,
 } from '../hooks/queries/room';
-import { useRoomStore } from '../stores/room.store';
 import { useUserStore } from '../stores/user.store';
 import { useTitle } from '../hooks/common/useTitle';
 
@@ -31,7 +30,6 @@ const SchedulePage = () => {
   const userId = useUserStore((state) => state.userId);
   const roomUserId = useRoomUserInfo(roomId, userId).data?.roomUserId;
 
-  const { setDateRange } = useRoomStore();
   const { setUserSelections } = useCalendarStore();
 
   const { invalidateRoom } = useInvalidateAvailabilityQueries();
@@ -43,26 +41,6 @@ const SchedulePage = () => {
   const updateAppointmentMutation = useUpdateAppointment(roomId);
   const updateRoomDateRangeMutation = useUpdateRoomDateRange(roomId);
   const updateUserSelectionsMutation = useUpdateAvailability(roomId);
-
-  useEffect(() => {
-    if (!roomDateRangeData) return;
-
-    const rawStart = roomDateRangeData.startDate;
-    const rawEnd = roomDateRangeData.endDate;
-
-    const isValidDateStr = (d: unknown) => typeof d === 'string' && d !== '' && d !== '1970-01-01';
-
-    const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
-
-    const safeStartStr = isValidDateStr(rawStart) ? rawStart : todayStr;
-    const safeEndStr = isValidDateStr(rawEnd) ? rawEnd : todayStr;
-
-    const start = new Date(safeStartStr);
-    const end = new Date(safeEndStr);
-
-    setDateRange({ start, end });
-  }, [roomDateRangeData, setDateRange]);
 
   // userSelections 조회
   const convertMyAvailabilityToUserSelections = (myAvailabilityData: MyAvailabilityResponse) => {
@@ -133,6 +111,7 @@ const SchedulePage = () => {
     <RequireAuth>
       <ScheduleTemplate
         appointmentData={appointmentData}
+        dateRangeData={roomDateRangeData}
         totalAvailabilityData={totalAvailabilityData}
         onAppointmentUpdate={handleAppointmentUpdate}
         onDateRangeUpdate={handleDateRangeUpdate}

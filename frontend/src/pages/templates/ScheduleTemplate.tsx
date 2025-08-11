@@ -3,10 +3,15 @@ import ConfirmedAppointment from '../../features/appointment/ConfirmedAppointmen
 import Calendar from '../../features/calendar/components/Calendar';
 import ScheduleRecommendation from '../../features/scheduleRecommendation/components/ScheduleRecommendation';
 import type { TotalAvailabilityResponse } from '../../apis/availability/availability.types';
-import type { AppointmentUpdateRequest, DateRangeUpdateRequest } from '../../apis/room/room.types';
+import type {
+  AppointmentUpdateRequest,
+  DateRangeResponse,
+  DateRangeUpdateRequest,
+} from '../../apis/room/room.types';
 
 interface ScheduleTemplateProps {
   appointmentData?: AppointmentUpdateRequest;
+  dateRangeData?: DateRangeResponse;
   totalAvailabilityData?: TotalAvailabilityResponse;
   onAppointmentUpdate: (appointmentData: AppointmentUpdateRequest) => void;
   onDateRangeUpdate: (dateRangeData: DateRangeUpdateRequest) => void;
@@ -16,6 +21,7 @@ interface ScheduleTemplateProps {
 
 const ScheduleTemplate = ({
   appointmentData,
+  dateRangeData,
   totalAvailabilityData,
   onAppointmentUpdate,
   onDateRangeUpdate,
@@ -26,10 +32,12 @@ const ScheduleTemplate = ({
     <RoomLayout>
       <div className="p-5">
         <ConfirmedAppointment
+          dateRangeData={dateRangeData}
           appointmentData={appointmentData}
           onAppointmentUpdate={onAppointmentUpdate}
         />
         <Calendar
+          dateRangeData={dateRangeData}
           totalAvailabilityData={totalAvailabilityData}
           onDateRangeUpdate={onDateRangeUpdate}
           onUserSelectionsUpdate={onUserSelectionsUpdate}

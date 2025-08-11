@@ -3,18 +3,18 @@ import { getOpacityForWeek } from '../calendar.util';
 import { format, addDays, startOfWeek, startOfDay, isBefore, isAfter } from 'date-fns';
 import { useCalendarStore } from '../calendar.store';
 import type { TotalAvailabilityResponse } from '../../../apis/availability/availability.types';
-import { useRoomStore } from '../../../stores/room.store';
+import type { DateRangeResponse } from '../../../apis/room/room.types';
 
 interface Props {
   mode: 'view' | 'edit';
+  dateRange?: DateRangeResponse;
   currentDate: Date;
   totalDatas?: TotalAvailabilityResponse;
   totalMembers: number;
 }
 
-const WeeklyCalendar = ({ mode, currentDate, totalDatas, totalMembers }: Props) => {
+const WeeklyCalendar = ({ mode, currentDate, totalDatas, totalMembers, dateRange }: Props) => {
   const { userSelections, setUserSelections } = useCalendarStore();
-  const { dateRange } = useRoomStore();
   const containerRef = useRef<HTMLDivElement>(null);
 
   const days = useMemo(() => {
@@ -86,11 +86,11 @@ const WeeklyCalendar = ({ mode, currentDate, totalDatas, totalMembers }: Props) 
   // 날짜 범위 검증 함수 개선
   const isDateInRange = useCallback(
     (dateString: string) => {
-      if (!dateRange?.start || !dateRange?.end) return false;
+      if (!dateRange?.startDate || !dateRange?.endDate) return false;
 
       const date = startOfDay(new Date(dateString));
-      const start = startOfDay(new Date(dateRange.start));
-      const end = startOfDay(new Date(dateRange.end));
+      const start = startOfDay(new Date(dateRange.startDate));
+      const end = startOfDay(new Date(dateRange.endDate));
 
       return !isBefore(date, start) && !isAfter(date, end);
     },

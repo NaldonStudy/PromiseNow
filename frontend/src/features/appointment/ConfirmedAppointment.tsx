@@ -1,17 +1,19 @@
 import { useState } from 'react';
-import type { AppointmentUpdateRequest } from '../../apis/room/room.types';
+import type { AppointmentUpdateRequest, DateRangeResponse } from '../../apis/room/room.types';
 
 import AppointmentInfo from '../../components/ui/AppointmentInfo';
 import Icon from '../../components/ui/Icon';
 import AppointmentEditModal from './AppointmentEditModal';
 
 interface ConfirmedAppointmentProps {
+  dateRangeData?: DateRangeResponse;
   appointmentData?: AppointmentUpdateRequest;
   onAppointmentUpdate: (appointmentData: AppointmentUpdateRequest) => void;
 }
 
 const ConfirmedAppointment = ({
   appointmentData,
+  dateRangeData,
   onAppointmentUpdate,
 }: ConfirmedAppointmentProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -47,6 +49,7 @@ const ConfirmedAppointment = ({
 
       {isModalOpen && (
         <AppointmentEditModal
+          dateRange={dateRangeData}
           isOpen={isModalOpen}
           onClose={handleModalClose}
           onConfirm={handleAppointmentUpdate}
