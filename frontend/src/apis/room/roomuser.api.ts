@@ -12,6 +12,7 @@ import type {
   UpdateNicknameResponse,
   UpdateProfileRequest,
   UpdateProfileResponse,
+  RoomUserMyInfoResponse,
 } from './roomuser.types';
 
 // 초대코드로 방 참가
@@ -23,6 +24,12 @@ export const joinRoomByInviteCode = async (request: JoinRequest) => {
 // 방 참가자 목록 조회
 export const getUsersInRoom = async (roomId: number) => {
   const data = await handleApi<GetUsersInRoomResponse>(axiosInstance.get(`/rooms/${roomId}/users`));
+  return data;
+};
+
+// 내 roomUserId 조회
+export const getMyRoomUserInfo = async (roomId: number, userId: number) => {
+  const data = await handleApi<RoomUserMyInfoResponse>(axiosInstance.get(`/rooms/${roomId}/me/${userId}`));
   return data;
 };
 

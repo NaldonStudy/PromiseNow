@@ -10,10 +10,10 @@ const ArrivalInfo = ({ eta, speed }: Props) => {
     <>
       <div className="text-[0.7rem] text-text-dark flex gap-2">
         <div className="flex items-center gap-1">
-          <FaRegClock size={10} /> {eta} 도착
+          <FaRegClock size={10} /> {eta}
         </div>
         <div className="flex items-center gap-1">
-          <FaRunning size={10} /> {speed} mph
+          <FaRunning size={10} /> {speed} km/h
         </div>
       </div>
     </>

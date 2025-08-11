@@ -3,10 +3,10 @@ import ConfirmedAppointment from '../../features/appointment/ConfirmedAppointmen
 import Calendar from '../../features/calendar/components/Calendar';
 import ScheduleRecommendation from '../../features/scheduleRecommendation/components/ScheduleRecommendation';
 import type { TotalAvailabilityResponse } from '../../apis/availability/availability.types';
-import type { AppointmentUpdateRequest, DateRangeUpdateRequest } from '../../apis/room/room.types';
+import type { AppointmentResponse, AppointmentUpdateRequest, DateRangeUpdateRequest } from '../../apis/room/room.types';
 
 interface ScheduleTemplateProps {
-  appointmentData?: AppointmentUpdateRequest;
+  appointmentData?: AppointmentResponse;
   totalAvailabilityData?: TotalAvailabilityResponse;
   onAppointmentUpdate: (appointmentData: AppointmentUpdateRequest) => void;
   onDateRangeUpdate: (dateRangeData: DateRangeUpdateRequest) => void;
