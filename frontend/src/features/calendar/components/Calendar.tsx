@@ -13,12 +13,14 @@ interface CalendarProps {
   totalAvailabilityData?: TotalAvailabilityResponse;
   onDateRangeUpdate: (dateRangeData: DateRangeUpdateRequest) => void;
   onUserSelectionsUpdate: (userSelections: Record<string, boolean[]>) => void;
+  onRefreshCalendar: () => void;
 }
 
 const Calendar = ({
   totalAvailabilityData,
   onDateRangeUpdate,
   onUserSelectionsUpdate,
+  onRefreshCalendar,
 }: CalendarProps) => {
   const { view, mode, currentDate } = useCalendarStore();
   const totalMembers = 5; //임시
@@ -30,7 +32,7 @@ const Calendar = ({
       </div>
 
       <Card className="flex flex-col gap-5 p-5">
-        <CalendarHeader />
+        <CalendarHeader onRefreshCalendar={onRefreshCalendar} />
 
         {view === 'month' ? (
           <MonthlyCalendar

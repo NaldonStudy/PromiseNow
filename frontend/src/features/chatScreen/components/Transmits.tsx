@@ -1,127 +1,147 @@
-import { Client } from '@stomp/stompjs';
-import { useRef, useState } from 'react';
-import CircleBtn from './../../../components/ui/CircleBtn';
-import Input from './../../../components/ui/Input';
+// src/features/chat/components/Transmits.tsx
+import { useState } from 'react';
 
-interface Props {
+import CircleBtn from '../../../components/ui/CircleBtn';
+import Input from '../../../components/ui/Input';
+import CameraPopCard from './CameraPopCard';
+
+import { useUploadChatImage } from '../../../hooks/chat';
+import { useRoomUserStore } from '../../../stores/roomUser.store';
+import { useUserStore } from '../../../stores/user.store';
+
+type Props = {
   roomId: number;
-  stompClient: Client | null;
-}
+  isConnected: boolean;
+  sendMessage: (body: Record<string, unknown>) => void;
+};
 
-const Transmits = ({ roomId, stompClient }: Props) => {
+const Transmits = ({ roomId, isConnected, sendMessage }: Props) => {
   const [message, setMessage] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [sending, setSending] = useState(false);
+  const [openPicker, setOpenPicker] = useState(false);
 
-  // 임시 사용자 정보 (나중에 로그인 유저에서 가져올 것)
-  const userId = 7;
-  const roomUserId = 101;
+  const { userId } = useUserStore();
+  const roomUserId = useRoomUserStore((s) =>
+    roomId != null ? s.getRoomUserId(roomId) : undefined,
+  );
 
-  const sendTextMessage = () => {
-    if (!message.trim() || !stompClient?.connected) return;
+  const { mutateAsync: uploadImage } = useUploadChatImage();
 
-    const body = {
-      roomUserId,
-      roomId,
-      userId,
-      content: message,
-      type: 'TEXT',
-      sendDate: new Date().toISOString(),
-    };
+  const disabledByContext = roomId == null || roomUserId == null || userId == null;
 
-    stompClient.publish({
-      destination: `app/chat/${roomId}`,
-      body: JSON.stringify(body),
-    });
+  const handlePickFile = () => setOpenPicker((v) => !v);
 
-    setMessage('');
-  };
-
-  const handleImageUpload = async (file: File) => {
-    if (!navigator.geolocation) {
-      alert('이 브라우저는 위치 정보를 지원하지 않습니다.');
+  const handleFileSelected = async (file: File) => {
+    if (disabledByContext) {
+      alert('방/사용자 정보가 없습니다. 다시 입장해 주세요.');
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(async (pos) => {
-      const { latitude, longitude } = pos.coords;
+    try {
+      setSending(true);
 
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('lat', latitude.toString());
-      formData.append('lng', longitude.toString());
-      formData.append('timestamp', new Date().toString());
+      const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 8000,
+        }),
+      );
 
-      try {
-        const res = await fetch('http://localhost:8080/api/chatting/upload/image', {
-          method: 'POST',
-          body: formData,
-        });
+      const latitude = pos.coords.latitude;
+      const longitude = pos.coords.longitude;
+      const sentDate = new Date().toISOString();
 
-        if (!res.ok) throw new Error('이미지 업로드 실패');
+      const uploadResult = await uploadImage({
+        file,
+        lat: latitude,
+        lng: longitude,
+        sentDate,
+      });
 
-        const { imageUrl } = await res.json();
+      if (!uploadResult.fileUrl) {
+        throw new Error('이미지 업로드 결과가 올바르지 않습니다.');
+      }
 
-        const body = {
-          roomUserId,
+      if (isConnected) {
+        sendMessage({
           roomId,
+          roomUserId,
           userId,
-          content: '이미지',
           type: 'IMAGE',
-          imageUrl,
+          content: '이미지',
+          imageUrl: uploadResult.fileUrl,
           lat: latitude,
           lng: longitude,
-          sendDate: new Date().toISOString(),
-          timestamp: new Date().toISOString(),
-        };
-
-        stompClient?.publish({
-          destination: `/app/chat/${roomId}`,
-          body: JSON.stringify(body),
+          sentDate,
         });
-      } catch {
-        alert('이미지 업로드 실패');
       }
-    });
+    } catch (err) {
+      console.error(err);
+      alert('이미지 업로드 실패 또는 위치 권한이 필요합니다.');
+    } finally {
+      setSending(false);
+      setOpenPicker(false);
+    }
   };
 
-  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') sendTextMessage();
+  const handleSendText = () => {
+    if (!message.trim() || disabledByContext) return;
+    const sentDate = new Date().toISOString();
+
+    if (isConnected) {
+      sendMessage({
+        roomId,
+        roomUserId,
+        userId,
+        type: 'TEXT',
+        content: message.trim(),
+        imageUrl: null,
+        lat: null,
+        lng: null,
+        sentDate,
+      });
+      setMessage('');
+    }
   };
 
   return (
-    <div className="flex items-center gap-5 px-1 bg-white rounded-xl">
-      {/* 이미지 전송 버튼 */}
-      <CircleBtn
-        iconType="camera"
-        color="white"
-        onClick={() => fileInputRef.current?.click()}
-        className="shrink-0"
-      />
-      <input
-        type="file"
-        accept="image/*"
-        className="hidden"
-        ref={fileInputRef}
-        onChange={(e) => {
-          if (e.target.files?.[0]) {
-            handleImageUpload(e.target.files[0]);
-            e.target.value = ''; // 같은 파일 다시 선택 가능
-          }
+    <div className="flex items-center gap-5 px-1 bg-white rounded-xl relative">
+      <div className="relative">
+        <CircleBtn
+          iconType="camera"
+          color="white"
+          onClick={handlePickFile}
+          className="shrink-0"
+          disabled={sending || disabledByContext || !isConnected}
+        />
+        {openPicker && (
+          <CameraPopCard
+            onSelect={handleFileSelected}
+            onClose={() => setOpenPicker(false)}
+            disabled={sending || disabledByContext || !isConnected}
+          />
+        )}
+      </div>
+
+      <Input
+        placeholder={disabledByContext ? '방/사용자 정보가 없어요' : '메시지를 입력하세요'}
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        className="bg-white flex-1"
+        textSize="text-sm"
+        disabled={disabledByContext || sending || !isConnected}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') handleSendText();
         }}
       />
 
-      {/* 텍스트 입력창 */}
-      <Input
-        placeholder="메세지를 작성하세요"
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        onKeyDown={onKeyDown}
-        className="bg-white flex-1"
-        textSize="text-sm"
+      <CircleBtn
+        iconType="send"
+        color="primary"
+        onClick={handleSendText}
+        className="shrink-0"
+        disabled={disabledByContext || !message.trim() || sending || !isConnected}
       />
-
-      {/* 전송 버튼 */}
-      <CircleBtn iconType="send" color="primary" onClick={sendTextMessage} className="shrink-0" />
     </div>
   );
 };

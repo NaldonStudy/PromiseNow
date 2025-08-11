@@ -4,9 +4,10 @@ import RoomCard from './RoomCard';
 
 interface Props {
   rooms: RoomListItem[];
+  resetRoomState: () => void;
 }
 
-const RoomList = ({ rooms }: Props): React.ReactElement => {
+const RoomList = ({ rooms, resetRoomState }: Props): React.ReactElement => {
   return (
     <div className="flex flex-col ">
       {rooms.length === 0 ? (
@@ -21,6 +22,7 @@ const RoomList = ({ rooms }: Props): React.ReactElement => {
             locationDate={room.locationDate}
             locationTime={room.locationTime}
             locationName={room.locationName}
+            resetRoomState={resetRoomState}
           />
         ))
       )}

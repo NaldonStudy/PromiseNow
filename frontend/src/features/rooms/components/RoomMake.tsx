@@ -5,8 +5,9 @@ import CircleBtn from '../../../components/ui/CircleBtn';
 import ModalForm from '../../../components/ui/modal/ModalForm';
 
 import { useCreateRoom } from '../../../hooks/queries/room';
+import { useRoomStore } from '../../../stores/room.store';
+import { useRoomUserStore } from '../../../stores/roomUser.store';
 import { useUserStore } from '../../../stores/user.store';
-import { useRoomStore } from './../../../stores/room.store';
 
 type ModalType = 'room' | 'name';
 
@@ -14,6 +15,7 @@ const RoomMake = () => {
   const navigate = useNavigate();
   const { userId } = useUserStore();
   const { setNickname } = useRoomStore();
+  const { setRoomUser } = useRoomUserStore();
   const createRoomMutation = useCreateRoom(userId!);
 
   const [isOpen, setIsOpen] = useState(false);
@@ -46,6 +48,8 @@ const RoomMake = () => {
         {
           onSuccess: (data) => {
             if (data) {
+              // 생성 시 roomUserId 저장
+              setRoomUser(data.roomId, data.roomUserId);
               setIsOpen(false);
               navigate(`/${data.roomId}/schedule`);
             } else {
@@ -70,8 +74,9 @@ const RoomMake = () => {
     },
   };
 
+  // RoomMake.tsx
   return (
-    <div>
+    <>
       <ModalForm
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
@@ -81,18 +86,22 @@ const RoomMake = () => {
         onSubmit={handleSubmit}
       />
 
-      <div className="absolute bottom-6 right-6 z-50">
-        <CircleBtn
-          iconType="plus"
-          color="primary"
-          iconSize={30}
-          onClick={() => {
-            setModalType('room');
-            setIsOpen(true);
-          }}
-        />
+      <div className="fixed inset-x-0 bottom-6 z-50 pointer-events-none">
+        <div className="relative mx-auto w-full max-w-mobile px-4 pointer-events-auto">
+          <div className="absolute bottom-5 right-10">
+            <CircleBtn
+              iconType="plus"
+              color="primary"
+              iconSize={30}
+              onClick={() => {
+                setModalType('room');
+                setIsOpen(true);
+              }}
+            />
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

@@ -3,18 +3,16 @@ import {
   getAppointment,
   getJoinedRoom,
   getRoomDateRange,
-  getRoomStatus,
   getRoomTitleAndCode,
 } from '../../../apis/room/room.api';
-import { getUsersInRoom } from '../../../apis/room/roomuser.api';
+import { getUsersInRoom, getMyRoomUserInfo } from '../../../apis/room/roomuser.api';
 import type {
   AppointmentResponse,
   DateRangeResponse,
   RoomListItem,
-  StateResponse,
   TitleCodeResponse,
 } from '../../../apis/room/room.types';
-import type { GetUsersInRoomResponse } from '../../../apis/room/roomuser.types';
+import type { GetUsersInRoomResponse, RoomUserMyInfoResponse } from '../../../apis/room/roomuser.types';
 import { roomKeys } from './keys';
 
 // 내가 참가한 방 목록
@@ -43,18 +41,7 @@ export const useRoomTitleCode = (roomId: number) => {
   });
 };
 
-// 방 상태 조회
-export const useRoomStatus = (roomId: number) => {
-  return useQuery<StateResponse>({
-    queryKey: roomKeys.status(roomId),
-    queryFn: async () => {
-      const result = await getRoomStatus(roomId);
-      if (result === null) throw new Error('방 상태 조회 실패');
-      return result;
-    },
-    enabled: !!roomId,
-  });
-};
+
 
 // 약속 가능 기간 조회
 export const useRoomDateRange = (roomId: number) => {
@@ -92,5 +79,18 @@ export const useUsersInRoom = (roomId: number) => {
       return result;
     },
     enabled: !!roomId,
+  });
+};
+
+// 내 roomUserId 조회
+export const useMyRoomUserInfo = (roomId: number, userId: number) => {
+  return useQuery<RoomUserMyInfoResponse>({
+    queryKey: roomKeys.myInfo(roomId, userId),
+    queryFn: async () => {
+      const result = await getMyRoomUserInfo(roomId, userId);
+      if (result === null) throw new Error('내 roomUserId 조회 실패');
+      return result;
+    },
+    enabled: !!roomId && !!userId,
   });
 };

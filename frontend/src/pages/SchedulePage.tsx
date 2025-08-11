@@ -1,9 +1,13 @@
 import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import type { MyAvailabilityResponse } from '../apis/availability/availability.types';
+import type { AppointmentUpdateRequest, DateRangeUpdateRequest } from '../apis/room/room.types';
+import { useCalendarStore } from '../features/calendar/calendar.store';
 import {
   useMyAvailability,
   useTotalAvailability,
   useUpdateAvailability,
+  useInvalidateAvailabilityQueries,
 } from '../hooks/queries/availability';
 import {
   useAppointment,
@@ -12,17 +16,22 @@ import {
   useUpdateRoomDateRange,
 } from '../hooks/queries/room';
 import { useRoomStore } from '../stores/room.store';
-import { useCalendarStore } from '../features/calendar/calendar.store';
-import type { AppointmentUpdateRequest, DateRangeUpdateRequest } from '../apis/room/room.types';
-import type { MyAvailabilityResponse } from '../apis/availability/availability.types';
+import { useRoomUserStore } from '../stores/roomUser.store';
+import { useTitle } from '../hooks/common/useTitle';
 
 import ScheduleTemplate from './templates/ScheduleTemplate';
 
 const SchedulePage = () => {
+  useTitle('일정 - PromiseNow');
+
   const { id } = useParams<{ id: string }>();
   const roomId = Number(id);
+  const roomUserId = useRoomUserStore((state) => state.getRoomUserId(roomId));
+
   const { setDateRange } = useRoomStore();
   const { setUserSelections } = useCalendarStore();
+
+  const { invalidateRoom } = useInvalidateAvailabilityQueries();
 
   const { data: totalAvailabilityData } = useTotalAvailability(roomId);
   const { data: roomDateRangeData } = useRoomDateRange(roomId);
@@ -32,14 +41,24 @@ const SchedulePage = () => {
   const updateRoomDateRangeMutation = useUpdateRoomDateRange(roomId);
   const updateUserSelectionsMutation = useUpdateAvailability(roomId);
 
-  // dateRange 조회
   useEffect(() => {
-    if (roomDateRangeData) {
-      setDateRange({
-        start: new Date(roomDateRangeData.startDate),
-        end: new Date(roomDateRangeData.endDate),
-      });
-    }
+    if (!roomDateRangeData) return;
+
+    const rawStart = roomDateRangeData.startDate;
+    const rawEnd = roomDateRangeData.endDate;
+
+    const isValidDateStr = (d: unknown) => typeof d === 'string' && d !== '' && d !== '1970-01-01';
+
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+
+    const safeStartStr = isValidDateStr(rawStart) ? rawStart : todayStr;
+    const safeEndStr = isValidDateStr(rawEnd) ? rawEnd : todayStr;
+
+    const start = new Date(safeStartStr);
+    const end = new Date(safeEndStr);
+
+    setDateRange({ start, end });
   }, [roomDateRangeData, setDateRange]);
 
   // userSelections 조회
@@ -82,13 +101,14 @@ const SchedulePage = () => {
   };
 
   const handleUserSelectionsUpdate = (userSelections: Record<string, boolean[]>) => {
-    const roomUserId = 1;
+    if (roomUserId === undefined) return;
+
     const updatedDataList = Object.entries(userSelections).map(([date, timeArray]) => ({
       date,
       timeData: timeArray.map((selected) => (selected ? '1' : '0')).join(''),
     }));
     const updateData = {
-      roomUserId,
+      roomUserId: roomUserId,
       updatedDataList,
     };
     updateUserSelectionsMutation.mutate(updateData, {
@@ -101,6 +121,11 @@ const SchedulePage = () => {
     });
   };
 
+  const handleInvalidateRoom = () => {
+    if (roomUserId === undefined) return;
+    invalidateRoom(roomId, roomUserId);
+  };
+
   return (
     <ScheduleTemplate
       appointmentData={appointmentData}
@@ -108,6 +133,7 @@ const SchedulePage = () => {
       onAppointmentUpdate={handleAppointmentUpdate}
       onDateRangeUpdate={handleDateRangeUpdate}
       onUserSelectionsUpdate={handleUserSelectionsUpdate}
+      onRefreshCalendar={handleInvalidateRoom}
     />
   );
 };
