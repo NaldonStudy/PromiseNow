@@ -67,7 +67,7 @@ export const useWebRTCConnection = ({ roomId, onPeerJoined, onPeerLeft }: UseWeb
       // Protoo 연결
       const transport = new protooClient.WebSocketTransport(url);
       _protoo.current = new protooClient.Peer(transport);
-      
+
       // 연결 완료를 기다리는 Promise
       const connectionPromise = new Promise<void>((resolve, reject) => {
         const timeout = setTimeout(() => {
@@ -108,7 +108,7 @@ export const useWebRTCConnection = ({ roomId, onPeerJoined, onPeerLeft }: UseWeb
 
       // 송출용 Transport 생성
       console.log('송출용 Transport 생성 중...');
-      const { id: sendTransportId, iceParameters, iceCandidates, dtlsParameters } = 
+      const { id: sendTransportId, iceParameters, iceCandidates, dtlsParameters } =
         await _protoo.current.request('createWebRtcTransport', {
           forceTcp: false,
           producing: true,
@@ -159,7 +159,7 @@ export const useWebRTCConnection = ({ roomId, onPeerJoined, onPeerLeft }: UseWeb
 
       // 수신용 Transport 생성
       console.log('수신용 Transport 생성 중...');
-      const { id: recvTransportId, iceParameters: recvIceParameters, iceCandidates: recvIceCandidates, dtlsParameters: recvDtlsParameters } = 
+      const { id: recvTransportId, iceParameters: recvIceParameters, iceCandidates: recvIceCandidates, dtlsParameters: recvDtlsParameters } =
         await _protoo.current.request('createWebRtcTransport', {
           forceTcp: false,
           producing: false,
@@ -201,22 +201,22 @@ export const useWebRTCConnection = ({ roomId, onPeerJoined, onPeerLeft }: UseWeb
       // 알림 핸들러 설정
       _protoo.current.on('notification', (notification) => {
         console.log('Protoo 알림 수신:', notification);
-        
+
         switch (notification.method) {
           case 'newPeer':
             console.log('새로운 참가자 입장:', notification.data);
             onPeerJoined?.(notification.data.id);
             break;
-            
+
           case 'peerClosed':
             console.log('참가자 퇴장:', notification.data);
             onPeerLeft?.(notification.data.peerId);
             break;
-            
+
           case 'newConsumer':
             handleNewConsumer(notification.data as ConsumerData);
             break;
-            
+
           case 'consumerClosed':
             handleConsumerClosed(notification.data as ConsumerClosedData);
             break;
@@ -236,12 +236,12 @@ export const useWebRTCConnection = ({ roomId, onPeerJoined, onPeerLeft }: UseWeb
 
   const handleNewConsumer = async (data: ConsumerData) => {
     console.log('newConsumer 알림 수신:', data);
-    
+
     try {
       const { peerId, producerId, id, kind, rtpParameters, type, appData } = data;
-      
+
       console.log('새로운 Consumer 요청:', { peerId, producerId, id, kind, type });
-      
+
       const consumer = await _recvTransport.current!.consume({
         id,
         producerId,
@@ -288,7 +288,7 @@ export const useWebRTCConnection = ({ roomId, onPeerJoined, onPeerLeft }: UseWeb
   const handleConsumerClosed = (data: ConsumerClosedData) => {
     console.log('Consumer 종료:', data);
     const { consumerId } = data;
-    
+
     const consumer = _consumers.current.get(consumerId);
     if (consumer) {
       consumer.close();

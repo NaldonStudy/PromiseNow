@@ -1,30 +1,53 @@
-import { useState } from 'react';
 import CircleBtn from '../../../components/ui/CircleBtn';
 import { useCallScreenStore } from '../callScreen.store';
 
 interface Props {
   onClick: () => void;
   onLeaveCall?: () => void;
+  onToggleMic?: () => void;
+  onToggleVideo?: () => void;
   isConnected?: boolean;
+  isMicMuted?: boolean;
+  isVideoMuted?: boolean;
 }
 
-const CallControlPanel = ({ onClick, onLeaveCall, isConnected }: Props) => {
-  const [micOn, setMicOn] = useState(false);
-  const [videoOn, setVideoOn] = useState(false);
+const CallControlPanel = ({ 
+  onClick, 
+  onLeaveCall, 
+  onToggleMic, 
+  onToggleVideo,
+  isConnected, 
+  isMicMuted = false,
+  isVideoMuted = false 
+}: Props) => {
   const { toggleViewMode } = useCallScreenStore();
+
+  const handleMicToggle = () => {
+    if (onToggleMic) {
+      onToggleMic();
+    }
+  };
+
+  const handleVideoToggle = () => {
+    if (onToggleVideo) {
+      onToggleVideo();
+    }
+  };
 
   return (
     <div className="absolute bottom-7 left-0 w-full px-7 flex justify-between items-end pointer-events-none">
       <div className="flex gap-4 items-end pointer-events-auto">
         <CircleBtn
-          iconType={micOn ? 'mic' : 'micOff'}
-          color={micOn ? 'primary' : 'white'}
-          onClick={() => setMicOn((prev) => !prev)}
+          iconType={isMicMuted ? 'micOff' : 'mic'}
+          color={isMicMuted ? 'white' : 'primary'}
+          onClick={handleMicToggle}
+          disabled={!isConnected}
         />
         <CircleBtn
-          iconType={videoOn ? 'video' : 'videoOff'}
-          color={videoOn ? 'primary' : 'white'}
-          onClick={() => setVideoOn((prev) => !prev)}
+          iconType={isVideoMuted ? 'videoOff' : 'video'}
+          color={isVideoMuted ? 'white' : 'primary'}
+          onClick={handleVideoToggle}
+          disabled={!isConnected}
         />
       </div>
       <div className="flex gap-4 items-end pointer-events-auto">
