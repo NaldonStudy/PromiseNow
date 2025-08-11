@@ -22,7 +22,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         
         registry.addEndpoint("/ws-leaderboard-native")
                 .setAllowedOriginPatterns("*")
-                .withSockJS();
     }
 
     @Override
