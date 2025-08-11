@@ -15,6 +15,10 @@ public interface RoomUserRepository extends JpaRepository<RoomUser, Long> {
     // 방에 참가
     boolean existsByRoom_RoomIdAndUser_UserId(Long roomId, Long userId);
 
+    // 방에 참가한 사람들 숫자 카운트. 피노(챗봇)제외
+    @Query("SELECT COUNT(ru) FROM RoomUser ru WHERE ru.room.roomId = :roomId AND ru.user.userId != -1")
+    int countActiveUsersExcludingBot(@Param("roomId") Long roomId);
+
     // 방에 참가한 사람들 목록 확인
     List<RoomUser> findByRoom_RoomId(Long roomId);
 

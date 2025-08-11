@@ -16,6 +16,8 @@ public enum ErrorCode {
     ROOM_NOT_FOUND("해당 방이 존재하지 않습니다", HttpStatus.NOT_FOUND),
     ROOM_DELETE_NOT_ALLOWED("방에 1명만 남았을 때 방을 삭제할 수 있습니다", HttpStatus.BAD_REQUEST),
     INVITECODE_NOT_ALLOWED("유효하지 않은 초대코드 입니다.", HttpStatus.BAD_REQUEST),
+    ROOM_CAPACITY_EXCEEDED("방 정원이 초과되었습니다. (최대 9명)", HttpStatus.BAD_REQUEST),
+
 
     // User와 RoomUser 관련 Error 메시지
     USER_NOT_FOUND("해당 사용자가 존재하지 않습니다.", HttpStatus.NOT_FOUND),
