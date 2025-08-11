@@ -3,8 +3,8 @@
 import type { IMessage } from '@stomp/stompjs';
 import { Client } from '@stomp/stompjs';
 import { useEffect, useRef } from 'react';
-import SockJS from 'sockjs-client';
-import type { ChatMessage } from '../../apis/chat/chat.type';
+import createWebSocketConnection from '../../lib/websocketInstance';
+import type { ChatMessageResponse as ChatMessage } from '../../apis/chat/chat.types';
 
 export const useChatSocket = (
   roomId: number,
@@ -15,12 +15,12 @@ export const useChatSocket = (
   useEffect(() => {
     if (isNaN(roomId)) return;
 
-    const socket = new SockJS('http://localhost:8080/ws-chat');
+    const socket = createWebSocketConnection('/ws-chat');
     const client = new Client({
       webSocketFactory: () => socket,
       reconnectDelay: 5000,
       onConnect: () => {
-        console.log('🟢 WebSocket 연결 성공');
+        console.log('🟢 Chat WebSocket 연결 성공');
 
         client.subscribe(`/topic/chat/${roomId}`, (message: IMessage) => {
           const payload: ChatMessage = JSON.parse(message.body);
@@ -28,7 +28,7 @@ export const useChatSocket = (
         });
       },
       onStompError: (frame) => {
-        console.error('❌ STOMP 에러:', frame);
+        console.error('❌ Chat STOMP 에러:', frame);
       },
     });
 
@@ -36,7 +36,7 @@ export const useChatSocket = (
     clientRef.current = client;
 
     return () => {
-      console.log('🔴 WebSocket 연결 해제');
+      console.log('🔴 Chat WebSocket 연결 해제');
       client.deactivate();
     };
   }, [roomId, onMessage]);

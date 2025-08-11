@@ -11,6 +11,7 @@ interface Props {
   locationDate: string | null;
   locationTime: string | null;
   locationName: string | null;
+  resetRoomState: () => void;
 }
 
 const RoomCard = ({
@@ -20,6 +21,7 @@ const RoomCard = ({
   locationDate,
   locationTime,
   locationName,
+  resetRoomState,
 }: Props): React.ReactElement => {
   const { setCurrentRoomId } = useRoomStore();
 
@@ -42,6 +44,7 @@ const RoomCard = ({
 
   const handleRoomClick = () => {
     setCurrentRoomId(id);
+    resetRoomState();
   };
 
   return (

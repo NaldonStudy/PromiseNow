@@ -1,22 +1,18 @@
-import CircleBtn from '../../../components/ui/CircleBtn';
+import { FaLocationArrow } from 'react-icons/fa';
 import useMapStore from '../map.store';
 
 const MapControls = () => {
-  const { rankingHeight, moveToCurrentLocation } = useMapStore();
-
-  const handleMyLocationClick = () => {
-    if (moveToCurrentLocation) {
-      moveToCurrentLocation();
-    }
-  };
+  const { moveToCurrentLocation } = useMapStore();
 
   return (
-    <div
-      className="absolute left-0 right-0 flex justify-between px-6 z-50"
-      style={{ bottom: `${rankingHeight + 20}px` }}
-    >
-      <CircleBtn iconType={'camera'} color={'white'} />
-      <CircleBtn iconType={'myLocation'} color={'white'} onClick={handleMyLocationClick} />
+    <div className="absolute top-4 right-4 flex flex-col gap-2">
+      <button
+        onClick={() => moveToCurrentLocation?.()}
+        className="w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors"
+        title="현재 위치로 이동"
+      >
+        <FaLocationArrow className="text-gray-600" />
+      </button>
     </div>
   );
 };

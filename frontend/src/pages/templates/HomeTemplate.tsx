@@ -6,18 +6,23 @@ import type { RoomResponse } from '../../features/rooms/dummy';
 
 interface Props {
   rooms: RoomResponse[];
-  onJoinRoom: (inviteCode: string, nickname: string, onSuccess: (roomId: number) => void) => void;
+  onJoinRoom: (
+    inviteCode: string,
+    nickname: string,
+    onSuccess: (roomId: number, roomUserId: number) => void,
+  ) => void;
+  resetRoomState: () => void;
 }
 
-const HomeTemplate = ({ rooms, onJoinRoom }: Props) => {
+const HomeTemplate = ({ rooms, onJoinRoom, resetRoomState }: Props) => {
   return (
     <div className="relative w-full h-full mx-auto bg-white overflow-y-auto">
       <BrandHeader />
       <div className="flex flex-col gap-3 px-8 pt-10">
         <RoomFind onJoinRoom={onJoinRoom} />
-        <RoomList rooms={rooms} />
-        <RoomMake />
+        <RoomList rooms={rooms} resetRoomState={resetRoomState} />
       </div>
+        <RoomMake />
     </div>
   );
 };

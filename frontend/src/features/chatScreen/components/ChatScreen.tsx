@@ -3,10 +3,10 @@ import { useParams } from 'react-router-dom';
 
 import type { IMessage } from '@stomp/stompjs';
 import { Client } from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
 
-import type { ChatMessage } from '../../../apis/chat/chat.type';
+import type { ChatMessageResponse as ChatMessage } from '../../../apis/chat/chat.types';
 import { getChatMessages } from './../../../apis/chat/chat.api';
+import createWebSocketConnection from '../../../lib/websocketInstance';
 
 // import { dummyMessages } from '../dummy';
 import MessageList from './MessageList';
@@ -43,12 +43,12 @@ const ChatScreen = () => {
   useEffect(() => {
     if (isNaN(parsedRoomId)) return;
 
-    const socket = new SockJS('http://localhost:8080/ws-chat'); // ✅ 백엔드 설정: WebSocketConfig
+    const socket = createWebSocketConnection('/ws-chat'); // ✅ 새로운 WebSocket 인스턴스 사용
     const client = new Client({
       webSocketFactory: () => socket,
       reconnectDelay: 5000,
       onConnect: () => {
-        console.log('🟢 WebSocket 연결 성공');
+        console.log('🟢 Chat WebSocket 연결 성공');
 
         // ✅ 구독: /topic/chat/{id}
         client.subscribe(`/topic/chat/${parsedRoomId}`, (message: IMessage) => {
@@ -57,7 +57,7 @@ const ChatScreen = () => {
         });
       },
       onStompError: (frame) => {
-        console.error('❌ STOMP 에러:', frame);
+        console.error('❌ Chat STOMP 에러:', frame);
       },
     });
 
@@ -66,7 +66,7 @@ const ChatScreen = () => {
 
     // 언마운트 시 연결 해제
     return () => {
-      console.log('🔴 WebSocket 연결 해제');
+      console.log('🔴 Chat WebSocket 연결 해제');
       client.deactivate();
     };
   }, [parsedRoomId]);
@@ -75,13 +75,24 @@ const ChatScreen = () => {
     <div className="relative h-full">
       {/* 메시지 표시 영역 */}
       <div className="overflow-y-auto h-full pb-[180px] px-4 pt-2">
-        <MessageList messages={messages} myUserId={9007199254740991} />
+        <MessageList messages={messages} />
       </div>
 
       {/* 메시지 전송 영역 */}
       <div className="fixed bottom-[80px] left-1/2 -translate-x-1/2 w-full max-w-mobile px-4">
         <div className="flex flex-col gap-2">
-          <Transmits roomId={parsedRoomId} stompClient={clientRef.current} />
+          <Transmits 
+            roomId={parsedRoomId} 
+            isConnected={!!clientRef.current?.connected}
+            sendMessage={(body) => {
+              if (clientRef.current?.connected) {
+                clientRef.current.publish({
+                  destination: '/app/chat/message',
+                  body: JSON.stringify(body),
+                });
+              }
+            }}
+          />
           <PinoExample />
         </div>
       </div>
