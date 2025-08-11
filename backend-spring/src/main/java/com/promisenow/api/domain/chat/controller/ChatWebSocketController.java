@@ -8,6 +8,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Controller
@@ -23,6 +24,9 @@ public class ChatWebSocketController {
     @MessageMapping("/chat")
     public void sendChatMessage(MessageRequestDto request) {
         List<MessageResponseDto> messages = chatService.saveMessagePair(request);
+
+        messages.sort(Comparator.comparing(MessageResponseDto::getSentDate));
+
         Long roomId=request.getRoomId();
 
         for (MessageResponseDto dto : messages) {
