@@ -6,7 +6,7 @@ import CallPage from './pages/CallPage';
 import ChatPage from './pages/ChatPage';
 import HomePage from './pages/HomePage';
 import LocationPage from './pages/LocationPage';
-import RandingPage from './pages/RandingPage';
+import LandingPage from './pages/LandingPage';
 import RoulettePage from './pages/RoulettePage';
 import SchedulePage from './pages/SchedulePage';
 import SettingsPage from './pages/SettingsPage';
@@ -23,7 +23,7 @@ function App() {
         <QueryClientProvider client={new QueryClient()}>
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<RandingPage />} />
+              <Route path="/" element={<LandingPage />} />
               <Route path="/home" element={<HomePage />} />
               <Route path="/:id/roulette" element={<RoulettePage />} />
               <Route path="/:id/schedule" element={<SchedulePage />} />
