@@ -3,6 +3,7 @@ package com.promisenow.api.domain.availability.controller;
 import com.promisenow.api.common.ApiUtils;
 import com.promisenow.api.domain.availability.dto.AvailabilityRequestDto;
 import com.promisenow.api.domain.availability.dto.AvailabilityResponseDto;
+import com.promisenow.api.domain.availability.dto.RecommendationTimeResponseDto;
 import com.promisenow.api.domain.availability.entity.Availability;
 import com.promisenow.api.domain.availability.processor.AvailabilityProcessor;
 import com.promisenow.api.domain.availability.service.AvailabilityService;
@@ -290,4 +291,21 @@ public class AvailabilityController {
         availabilityService.batchUpdateAvailability(request);
         return ApiUtils.success();
     }
+
+    @Operation(summary = "추천 시간 구간 조회",
+            description = "roomId로 전체 누적 데이터를 계산하여 동일 인원 연속 구간을 병합 후 인기 순으로 반환")
+    @GetMapping("/recommend-time")
+    public ResponseEntity<ApiUtils.ApiResponse<RecommendationTimeResponseDto>> getRecommendationTime(
+            @RequestParam Long roomId) {
+
+        List<RecommendationTimeResponseDto.RecommendationData> recommendationData = availabilityService.getRecommendationTime(roomId);
+
+        RecommendationTimeResponseDto responseDto = RecommendationTimeResponseDto.builder()
+                .times(recommendationData)
+                .build();
+
+        return ApiUtils.success(responseDto);
+    }
+
+
 } 
