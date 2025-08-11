@@ -33,6 +33,17 @@ import java.util.Set;
 public class GlobalExceptionHandler {
     
     private final WebhookService webhookService;
+
+    // AppException을 동작시킬 예외 처리
+    @ExceptionHandler(AppException.class)
+    public ResponseEntity<ApiUtils.ApiResponse<Void>> handleAppException(AppException ex) {
+        log.warn("AppException [{}]: {}", ex.getErrorCode().name(), ex.getMessage());
+
+        // 기존 코드에 있는 핸들링된 예외 웹훅 전송 헬퍼 메서드 활용
+        sendHandledExceptionWebhook("AppException(" + ex.getErrorCode().name() + ")", ex.getMessage());
+
+        return ApiUtils.error(ex.getErrorCode().getStatus(), ex.getMessage());
+    }
     
     /**
      * @Valid 어노테이션으로 검증된 객체의 예외 처리
