@@ -3,7 +3,7 @@ import { useState } from 'react';
 import Icon from '../../components/ui/Icon';
 import { useUserStore } from '../../stores/user.store';
 
-const RandingTemplate = () => {
+const LandingTemplate = () => {
   const navigate = useNavigate();
   const { setUser } = useUserStore();
   const [inputUserId, setInputUserId] = useState('1');
@@ -25,8 +25,6 @@ const RandingTemplate = () => {
     setUser(hardcodedUserId);
     navigate('/home');
   };
-
-
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen gap-5">
@@ -63,12 +61,16 @@ const RandingTemplate = () => {
           </button>
         </div>
         <div className="text-xs text-gray-600">
-          <div>현재 전역 설정: <span className="font-bold text-blue-600">{hardcodedUserId}</span></div>
-          <div>입력값: <span className="font-bold">{inputUserId}</span></div>
+          <div>
+            현재 전역 설정: <span className="font-bold text-blue-600">{hardcodedUserId}</span>
+          </div>
+          <div>
+            입력값: <span className="font-bold">{inputUserId}</span>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default RandingTemplate;
+export default LandingTemplate;
