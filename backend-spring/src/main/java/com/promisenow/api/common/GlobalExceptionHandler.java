@@ -268,7 +268,7 @@ public class GlobalExceptionHandler {
         StackTraceElement[] stackTrace = ex.getStackTrace();
         StringBuilder sb = new StringBuilder();
         
-        int maxLines = Math.min(50, stackTrace.length);
+        int maxLines = Math.min(200, stackTrace.length);
         for (int i = 0; i < maxLines; i++) {
             sb.append(stackTrace[i].toString()).append("\n");
         }
