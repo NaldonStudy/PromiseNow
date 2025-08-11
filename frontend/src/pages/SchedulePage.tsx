@@ -40,7 +40,7 @@ const SchedulePage = () => {
   const { data: myAvailabilityData } = useMyAvailability(roomId);
   const updateAppointmentMutation = useUpdateAppointment(roomId);
   const updateRoomDateRangeMutation = useUpdateRoomDateRange(roomId);
-  const updateUserSelectionsMutation = useUpdateAvailability(roomId);
+  const updateUserSelectionsMutation = useUpdateAvailability(roomId, roomUserId ?? -1);
 
   // userSelections 조회
   const convertMyAvailabilityToUserSelections = (myAvailabilityData: MyAvailabilityResponse) => {
