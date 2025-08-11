@@ -15,6 +15,7 @@ export interface JoinRequest {
 export interface RoomUserInfoResponse {
   roomUserId: number;
   nickname: string;
+  profileImage: string | null;
 }
 
 //방 참가자 닉네임 수정
