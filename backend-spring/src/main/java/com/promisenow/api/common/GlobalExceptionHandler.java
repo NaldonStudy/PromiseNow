@@ -1,7 +1,8 @@
 package com.promisenow.api.common;
 
+import com.promisenow.api.infrastructure.file.exception.FileUploadException;
 import com.promisenow.api.domain.chat.exception.FileStorageException;
-import com.promisenow.api.infrastructure.WebhookService;
+import com.promisenow.api.infrastructure.webhook.WebhookService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -148,6 +149,19 @@ public class GlobalExceptionHandler {
     }
     
     /**
+     * 파일 업로드 오류
+     */
+    @ExceptionHandler(FileUploadException.class)
+    public ResponseEntity<ApiUtils.ApiResponse<Void>> handleFileUploadException(FileUploadException ex) {
+        log.warn("File upload error: {}", ex.getMessage());
+        
+        // 핸들링된 예외 웹훅 전송
+        sendHandledExceptionWebhook("FileUploadException", ex.getMessage());
+        
+        return ApiUtils.error(HttpStatus.valueOf(ex.getStatusCode()), ex.getMessage());
+    }
+    
+    /**
      * 이미지 저장 오류
      */
     @ExceptionHandler(FileStorageException.class)
@@ -254,7 +268,7 @@ public class GlobalExceptionHandler {
         StackTraceElement[] stackTrace = ex.getStackTrace();
         StringBuilder sb = new StringBuilder();
         
-        int maxLines = Math.min(10, stackTrace.length);
+        int maxLines = Math.min(50, stackTrace.length);
         for (int i = 0; i < maxLines; i++) {
             sb.append(stackTrace[i].toString()).append("\n");
         }

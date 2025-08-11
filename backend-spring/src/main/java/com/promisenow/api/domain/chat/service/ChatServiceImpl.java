@@ -8,6 +8,8 @@ import com.promisenow.api.domain.chat.repository.ChatRepository;
 import com.promisenow.api.domain.chat.repository.ImageRepository;
 import com.promisenow.api.domain.room.entity.RoomUser;
 import com.promisenow.api.domain.room.repository.RoomUserRepository;
+import com.promisenow.api.domain.user.entity.User;
+import com.promisenow.api.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,12 +25,13 @@ public class ChatServiceImpl implements ChatService {
     private final ChatRepository chatRepository;
     private final ImageRepository imageRepository;
     private final RoomUserRepository roomUserRepository;
-    private final NanoGptService nanoGptService; // 새로 추가!
+    private final NanoGptService nanoGptService;
+    private final UserRepository userRepository;
 
     @Override
     public List<MessageResponseDto> saveMessagePair(MessageRequestDto req) {
         List<MessageResponseDto> result = new ArrayList<>();
-
+        LocalDateTime now = LocalDateTime.now(); // 한 번만 호출
         Optional<RoomUser> roomUserOpt = roomUserRepository.findById(req.getRoomUserId());
         if (roomUserOpt.isEmpty()) {
             throw new NullPointerException("Room User Not Found");
@@ -36,13 +39,13 @@ public class ChatServiceImpl implements ChatService {
         RoomUser roomUser = roomUserOpt.get();
 
         // @PINO 명령어 처리
-        if (req.getContent() != null && req.getContent().startsWith("@PINO")) {
+        if (req.getContent() != null && req.getContent().startsWith("@피노")) {
             // 1. 사용자 명령 메시지 DB 저장 및 DTO 생성
             Chat userChat = chatRepository.save(Chat.builder()
                     .roomUser(roomUser)
                     .content(req.getContent())
                     .type(Chat.ChatType.TEXT) // 명령 메시지는 일반 TEXT
-                    .sentDate(LocalDateTime.now())
+                    .sentDate(now)
                     .build());
             result.add(new MessageResponseDto(
                     userChat.getContent(),
@@ -53,8 +56,24 @@ public class ChatServiceImpl implements ChatService {
                     null
             ));
 
-            // 2. AI(PINO) 응답 생성 및 저장/DTO 생성
-            String prompt = req.getContent().replaceFirst("@PINO", "").trim();
+            // 2. 현재 채팅방의 피노(RoomUser) 찾기, 없다면 만들기 (userId = -1)
+            RoomUser pinoUser = roomUserRepository
+                    .findByRoom_RoomIdAndUser_UserId(roomUser.getRoom().getRoomId(), -1L)
+                    .orElseGet(() -> {
+                        // User 엔티티 userId = -1 불러오기
+                        User pinoAccount = userRepository.findById(-1L)
+                                .orElseThrow(() -> new IllegalStateException("PINO User(-1) 계정이 없습니다, 먼저 만드세요!"));
+                        RoomUser newPinoRoomUser = RoomUser.builder()
+                                .room(roomUser.getRoom())
+                                .user(pinoAccount)
+                                .nickname("PINO")
+                                .isAgreed(false)
+                                .build();
+                        return roomUserRepository.save(newPinoRoomUser);
+                    });
+
+            // 3. 피노 응답 생성 및 저장/DTO 생성
+            String prompt = req.getContent().replaceFirst("@피노", "").trim();
             String gptReply;
             try {
                 gptReply = nanoGptService.generateGptReply(prompt);
@@ -62,15 +81,12 @@ public class ChatServiceImpl implements ChatService {
                 gptReply = "AI 서버 오류: 잠시 후 다시 시도해 주세요.";
             }
 
-            // PINO RoomUser(PK -1L 등) 가져오기
-            RoomUser pinoUser = roomUserRepository.findById(-1L)
-                    .orElseThrow(() -> new IllegalStateException("PINO 챗봇(RoomUser) 정보가 없음"));
-
+            // 4. 피노 답변 저장
             Chat aiChat = chatRepository.save(Chat.builder()
                     .roomUser(pinoUser)
                     .content(gptReply)
                     .type(Chat.ChatType.PINO)
-                    .sentDate(LocalDateTime.now())
+                    .sentDate(now)
                     .build());
             result.add(new MessageResponseDto(
                     gptReply,
@@ -85,12 +101,11 @@ public class ChatServiceImpl implements ChatService {
 
         // 일반 메시지(이미지 포함)에 대한 처리
         Chat.ChatType msgType = req.getType() != null ? req.getType() : Chat.ChatType.TEXT;
-        LocalDateTime sentTime = LocalDateTime.now();
         Chat chat = chatRepository.save(Chat.builder()
                 .roomUser(roomUser)
                 .content(req.getContent())
                 .type(msgType)
-                .sentDate(sentTime)
+                .sentDate(now)
                 .build());
 
         String imageUrl = null;
@@ -103,7 +118,7 @@ public class ChatServiceImpl implements ChatService {
                     .imageUrl(imageUrl)
                     .lat(req.getLat())
                     .lng(req.getLng())
-                    .timestamp(sentTime) // timestamp 타입이 LocalDateTime 일 경우
+                    .sentDate(now)
                     .build();
             imageRepository.save(image);
         }
@@ -122,8 +137,6 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public List<MessageResponseDto> getMessages(Long roomId) {
         List<Chat> chats = chatRepository.findByRoomUser_Room_RoomIdOrderBySentDateAsc(roomId);
-        System.out.println("roomId = " + roomId + ", chats size = " + chats.size());
-        chats.forEach(chat -> System.out.println("ChatId: " + chat.getMessageId() + ", content: " + chat.getContent()));
         return chats.stream().map(
                 chat -> {
                     String imageUrl = null;

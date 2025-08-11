@@ -77,7 +77,7 @@ public class Room {
         this.locationTime = locationTime;
         this.locationName = locationName;
         this.locationLat = locationLat;
-        this.locationLng = locationLat;
+        this.locationLng = locationLng;
     }
 
     // 방 상태변경을 위한

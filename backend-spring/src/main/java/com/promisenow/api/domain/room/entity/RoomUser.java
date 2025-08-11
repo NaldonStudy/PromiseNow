@@ -1,5 +1,6 @@
 package com.promisenow.api.domain.room.entity;
 
+import com.promisenow.api.domain.chat.entity.Chat;
 import com.promisenow.api.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -40,10 +41,21 @@ public class RoomUser {
     @Column(name = "is_agreed", nullable = false)
     private Boolean isAgreed;
     
-    @Column(name = "sort_order", nullable = true)
+    @Column(name = "sort_order", nullable = false)
     private int sortOrder;
 
     public void updateAlarm(boolean isAgreed) {
         this.isAgreed = isAgreed;
     }
+
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public void updateProfileImage(String profileImage) {
+        this.profileImage = profileImage;
+    }
+
+    @OneToMany(mappedBy = "roomUser", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Chat> chats = new ArrayList<>();
 }

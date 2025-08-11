@@ -38,6 +38,16 @@ public class RoomUserRequestDto {
         private String nickname;
     }
 
+    // 닉네임 변경
+    @Schema(description = "닉네임 변경")
+    @Getter
+    @NoArgsConstructor
+    public static class UpdateNicknameRequest {
+
+        @Schema(description = "변경할 닉네임", example = "새로운닉네임")
+        private String nickname;
+    }
+
 
 
 }

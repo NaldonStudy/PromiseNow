@@ -16,4 +16,5 @@ public class PositionResponseDto {
     private double distance;
     private double progress;
     private boolean arrived;
+    private Integer estimatedArrivalMinutes; // 예상 도착 시간 (분)
 }

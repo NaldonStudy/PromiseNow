@@ -30,6 +30,7 @@ public class ApiUtils {
         return ResponseEntity.status(status).body(new ApiResponse<>(false, null, message));
     }
 
+
     /**
      * API 응답 DTO
      */
