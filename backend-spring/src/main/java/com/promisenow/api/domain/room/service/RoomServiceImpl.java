@@ -159,7 +159,11 @@ public class RoomServiceImpl implements RoomService {
         List<RoomListItem> roomList = joinedRoomUsers.stream()
                 .map(myRoomUser -> {
                     Room room = myRoomUser.getRoom();
-                    List<RoomUser> participants = participantsByRoom.getOrDefault(room.getRoomId(), Collections.emptyList());
+                    List<RoomUser> participants = participantsByRoom
+                            .getOrDefault(room.getRoomId(), Collections.emptyList())
+                            .stream()
+                            .filter(p -> !Objects.equals(p.getUser().getUserId(), -1L))
+                            .toList();
 
                     int total = participants.size();
                     String myNickname = myRoomUser.getNickname();
