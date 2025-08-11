@@ -2,7 +2,9 @@ package com.promisenow.api.domain.availability.service;
 
 import com.promisenow.api.domain.availability.dto.AvailabilityRequestDto;
 import com.promisenow.api.domain.availability.dto.AvailabilityResponseDto;
+import com.promisenow.api.domain.availability.dto.RecommendationTimeResponseDto;
 import com.promisenow.api.domain.availability.entity.Availability;
+import com.promisenow.api.domain.availability.processor.AvailabilityProcessor;
 import com.promisenow.api.domain.availability.repository.AvailabilityRepository;
 import com.promisenow.api.domain.room.entity.RoomUser;
 import com.promisenow.api.domain.room.repository.RoomUserRepository;
@@ -11,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -21,7 +25,9 @@ public class AvailabilityServiceImpl implements AvailabilityService {
     
     private final AvailabilityRepository availabilityRepository;
     private final RoomUserRepository roomUserRepository;
-    
+    private final AvailabilityProcessor availabilityProcessor;
+    private static final int START_HOUR = 8;
+
     @Override
     public List<Availability> getMyAvailability(Long roomUserId) {
         // 해당 사용자의 모든 일정 데이터 조회
@@ -124,5 +130,71 @@ public class AvailabilityServiceImpl implements AvailabilityService {
         
         // 배치 저장
         availabilityRepository.saveAll(availabilitiesToSave);
+    }
+
+    @Override
+    public List<RecommendationTimeResponseDto.RecommendationData> getRecommendationTime(Long roomId) {
+
+        List<Availability> all = getTotalAvailability(roomId);
+
+        AvailabilityResponseDto.TotalAvailabilityResponse totalResponse =
+                availabilityProcessor.processTotalAvailability(all);
+
+        List<RecommendationTimeResponseDto.RecommendationData> result = new ArrayList<>();
+
+
+        for (AvailabilityResponseDto.TotalAvailabilityResponse.DateTotalData data : totalResponse.getTotalDatas()) {
+
+            int[] counts = data.getTimeData()
+                    .chars()
+                    .map(c -> c - '0')
+                    .toArray();
+
+            result.addAll(mergeContinuous(data.getDate(), counts));
+        }
+
+        result.sort(Comparator
+                .comparingInt(RecommendationTimeResponseDto.RecommendationData::getCount).reversed()
+                .thenComparing(RecommendationTimeResponseDto.RecommendationData::getDate)
+                .thenComparing(RecommendationTimeResponseDto.RecommendationData::getTimeStart));
+
+        return result;
+    }
+
+    private List<RecommendationTimeResponseDto.RecommendationData> mergeContinuous(LocalDate date, int[] counts) {
+        List<RecommendationTimeResponseDto.RecommendationData> merged = new ArrayList<>();
+        int start = -1;
+        int currentCount = -1;
+
+        for (int slot = 0; slot <= counts.length; slot++) {
+            if (slot < counts.length && counts[slot] > 0) {
+                if (start == -1) {
+                    start = slot;
+                    currentCount = counts[slot];
+                } else if (counts[slot] != currentCount) {
+                    merged.add(buildSlot(date, start, slot, currentCount));
+                    start = slot;
+                    currentCount = counts[slot];
+                }
+            } else {
+                if (start != -1) {
+                    merged.add(buildSlot(date, start, slot, currentCount));
+                    start = -1;
+                }
+            }
+        }
+        return merged;
+    }
+
+    private RecommendationTimeResponseDto.RecommendationData buildSlot(LocalDate date, int startSlot, int endSlot, int count) {
+        String timeStart = String.format("%02d:%02d", START_HOUR + (startSlot / 2), (startSlot % 2) * 30);
+        String timeEnd = String.format("%02d:%02d", START_HOUR + (endSlot / 2), (endSlot % 2) * 30);
+
+        return RecommendationTimeResponseDto.RecommendationData.builder()
+                .date(date)
+                .timeStart(timeStart)
+                .timeEnd(timeEnd)
+                .count(count)
+                .build();
     }
 } 

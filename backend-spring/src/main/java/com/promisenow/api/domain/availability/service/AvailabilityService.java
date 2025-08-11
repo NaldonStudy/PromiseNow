@@ -2,6 +2,7 @@ package com.promisenow.api.domain.availability.service;
 
 import com.promisenow.api.domain.availability.dto.AvailabilityRequestDto;
 import com.promisenow.api.domain.availability.dto.AvailabilityResponseDto;
+import com.promisenow.api.domain.availability.dto.RecommendationTimeResponseDto;
 import com.promisenow.api.domain.availability.entity.Availability;
 
 import java.time.LocalDate;
@@ -26,4 +27,7 @@ public interface AvailabilityService {
     
     // 사용자 정보 DTO
     record UserInfo(String nickname, String profileImage) {}
+
+    // 추천 날짜 조회
+    List<RecommendationTimeResponseDto.RecommendationData> getRecommendationTime(Long roomId);
 } 
