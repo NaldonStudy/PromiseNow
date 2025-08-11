@@ -19,7 +19,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint("/ws-leaderboard")
                 .setAllowedOriginPatterns("*")
                 .withSockJS();
-        //테스트용
+        
         registry.addEndpoint("/ws-leaderboard-native")
                 .setAllowedOriginPatterns("*");
     }

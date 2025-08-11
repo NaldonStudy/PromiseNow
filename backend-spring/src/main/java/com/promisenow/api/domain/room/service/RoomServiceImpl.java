@@ -38,6 +38,11 @@ public class RoomServiceImpl implements RoomService {
                 .orElseThrow(() -> new IllegalArgumentException(ErrorMessage.USER_NOT_FOUND));
     }
 
+    // 방이 대기이거나 활성화 인지 확인하는 메서드
+    private boolean isWaitingOrActive(Room.RoomState state) {
+        return state == Room.RoomState.WAITING || state == Room.RoomState.ACTIVE;
+    }
+
     // 방 만드는 서비스
     @Override
     public CreateResponse createRoomWithUser(String roomTitle, Long userId, String nickname) {
@@ -125,25 +130,21 @@ public class RoomServiceImpl implements RoomService {
     }
 
     // 내가 참가되어있는 방 정보들 확인
-    @Override
     public List<RoomListItem> getRoomsByUserId(Long userId) {
         List<RoomUser> joinedRoomUsers = roomUserRepository.findByUserId(userId);
 
-        return joinedRoomUsers.stream()
+        List<RoomListItem> roomList = joinedRoomUsers.stream()
                 .map(myRoomUser -> {
                     Room room = myRoomUser.getRoom();
-
                     List<RoomUser> participants = roomUserRepository.findByRoom_RoomId(room.getRoomId());
 
                     int total = participants.size();
-
                     String myNickname = myRoomUser.getNickname();
-
                     String firstNickname = participants.stream()
                             .filter(p -> !p.getUser().getUserId().equals(userId))
                             .map(RoomUser::getNickname)
                             .findFirst()
-                            .orElse(myNickname);   // 나 혼자일 때에는 "나"
+                            .orElse(myNickname);
 
                     String summary = (total == 1) ? myNickname : firstNickname + " 외 " + (total - 1) + "명";
 
@@ -153,10 +154,48 @@ public class RoomServiceImpl implements RoomService {
                             room.getLocationDate(),
                             room.getLocationTime(),
                             room.getLocationName(),
-                            summary
+                            summary,
+                            room.getRoomState()
                     );
                 })
                 .collect(Collectors.toList());
+
+        // WAITING, ACTIVE 상태중에 먼저 시간은 정해진 애들끼리 담아두기
+        List<RoomListItem> upcomingWithDate = roomList.stream()
+                .filter(r -> isWaitingOrActive(r.getRoomState()))
+                .filter(r -> r.getLocationDate() != null && r.getLocationTime() != null)
+                .sorted(Comparator
+                        .comparing(RoomListItem::getLocationDate)
+                        .thenComparing(RoomListItem::getLocationTime))
+                .collect(Collectors.toList());
+
+        // WAITING, ACTIVE 중 날짜아니면 시간이 null이면 아래로
+        List<RoomListItem> upcomingWithoutDate = roomList.stream()
+                .filter(r -> isWaitingOrActive(r.getRoomState()))
+                .filter(r -> r.getLocationDate() == null || r.getLocationTime() == null)
+                .collect(Collectors.toList());
+
+        // COMPLETED일땐 날짜,시간 기준 내림차순. 이때는 시간은 정해져있으니깐 null생각은 안해도된다 !
+        List<RoomListItem> completedRooms = roomList.stream()
+                .filter(r -> r.getRoomState() == Room.RoomState.COMPLETED)
+                .sorted(Comparator
+                        .comparing(RoomListItem::getLocationDate, Comparator.nullsLast(Comparator.reverseOrder()))
+                        .thenComparing(RoomListItem::getLocationTime, Comparator.nullsLast(Comparator.reverseOrder())))
+                .collect(Collectors.toList());
+
+        // 그 외 상태 CANCELLED는 그냥 하자
+        List<RoomListItem> otherRooms = roomList.stream()
+                .filter(r -> !isWaitingOrActive(r.getRoomState()) && r.getRoomState() != Room.RoomState.COMPLETED)
+                .collect(Collectors.toList());
+
+        // 합치기
+        List<RoomListItem> result = new ArrayList<>();
+        result.addAll(upcomingWithDate);
+        result.addAll(upcomingWithoutDate);
+        result.addAll(completedRooms);
+        result.addAll(otherRooms);
+
+        return result;
     }
 
     @Override

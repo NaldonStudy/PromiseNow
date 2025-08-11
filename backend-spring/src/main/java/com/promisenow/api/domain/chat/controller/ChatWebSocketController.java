@@ -29,5 +29,4 @@ public class ChatWebSocketController {
             messagingTemplate.convertAndSend("/topic/chat/"+roomId, dto);
         }
     }
-
 }
