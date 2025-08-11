@@ -74,8 +74,3 @@ export interface UpdateProfileResponse {
   fileSize?: number;
   fileType?: string;
 }
-// 내 roomUserId 조회 응답
-export interface RoomUserMyInfoResponse {
-  roomUserId: number;
-  nickname: string;
-}
