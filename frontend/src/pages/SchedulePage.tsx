@@ -37,7 +37,7 @@ const SchedulePage = () => {
   const { data: totalAvailabilityData } = useTotalAvailability(roomId);
   const { data: roomDateRangeData } = useRoomDateRange(roomId);
   const { data: appointmentData } = useAppointment(roomId);
-  const { data: myAvailabilityData } = useMyAvailability(roomId);
+  const { data: myAvailabilityData } = useMyAvailability(roomUserId ?? -1);
   const updateAppointmentMutation = useUpdateAppointment(roomId);
   const updateRoomDateRangeMutation = useUpdateRoomDateRange(roomId);
   const updateUserSelectionsMutation = useUpdateAvailability(roomId, roomUserId ?? -1);
