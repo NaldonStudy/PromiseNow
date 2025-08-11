@@ -1,15 +1,14 @@
-import { useNavigate } from 'react-router-dom';
+import { useUserStore } from '../../../stores/user.store';
 import SquareBtn from './../../../components/ui/SquareBtn';
-// 상태관리 초기화 필요 (뭐뭐 해야하는지 몰라서 일단 둠)
 
 const BrandHeader = () => {
-  const navigate = useNavigate();
+  const { logout } = useUserStore();
 
   const handleLogout = () => {
     localStorage.clear();
     sessionStorage.clear();
-
-    navigate('/');
+    logout();
+    window.location.replace('/');
   };
 
   return (
