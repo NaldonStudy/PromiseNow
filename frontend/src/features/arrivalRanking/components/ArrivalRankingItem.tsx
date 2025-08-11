@@ -10,9 +10,10 @@ interface Props {
   progress: number;
   eta: string;
   speed: number;
+  online?: boolean;
 }
 
-const ArrivalRankingItem = ({ rank, imgUrl, name, progress, eta, speed }: Props) => {
+const ArrivalRankingItem = ({ rank, imgUrl, name, progress, eta, speed, online }: Props) => {
   return (
     <div className="rounded-lg px-5 py-3 bg-gray">
       <div className="flex justify-between items-center px-2">
@@ -24,8 +25,17 @@ const ArrivalRankingItem = ({ rank, imgUrl, name, progress, eta, speed }: Props)
             <ArrivalInfo eta={eta} speed={speed} />
           </div>
         </div>
-        <div className="text-secondary">
-          <FaRunning size={30} />
+        <div className="flex items-center gap-2">
+          {/* 온라인 상태 표시 */}
+          {online && (
+            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+          )}
+          {!online && (
+            <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+          )}
+          <div className="text-secondary">
+            <FaRunning size={30} />
+          </div>
         </div>
       </div>
       <ArrivalProgressBar progress={progress} />

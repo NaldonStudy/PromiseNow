@@ -4,14 +4,15 @@ import Calendar from '../../features/calendar/components/Calendar';
 import ScheduleRecommendation from '../../features/scheduleRecommendation/components/ScheduleRecommendation';
 import type { TotalAvailabilityResponse } from '../../apis/availability/availability.types';
 import type {
+  AppointmentResponse,
   AppointmentUpdateRequest,
   DateRangeResponse,
   DateRangeUpdateRequest,
 } from '../../apis/room/room.types';
 
 interface ScheduleTemplateProps {
-  appointmentData?: AppointmentUpdateRequest;
   dateRangeData?: DateRangeResponse;
+  appointmentData?: AppointmentResponse;
   totalAvailabilityData?: TotalAvailabilityResponse;
   onAppointmentUpdate: (appointmentData: AppointmentUpdateRequest) => void;
   onDateRangeUpdate: (dateRangeData: DateRangeUpdateRequest) => void;
