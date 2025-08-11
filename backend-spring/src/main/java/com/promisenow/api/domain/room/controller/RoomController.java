@@ -2,7 +2,6 @@ package com.promisenow.api.domain.room.controller;
 
 import com.promisenow.api.common.ApiUtils;
 import com.promisenow.api.infrastructure.file.dto.FileUploadResponse;
-import com.promisenow.api.domain.room.entity.Room;
 import com.promisenow.api.domain.room.dto.RoomRequestDto.*;
 import com.promisenow.api.domain.room.dto.RoomResponseDto.*;
 import com.promisenow.api.domain.room.dto.RoomUserRequestDto.*;
@@ -86,16 +85,8 @@ public class RoomController {
             }
     )
     public ResponseEntity<?> createRoom(@RequestBody CreateRequest request) {
-        try {
-            CreateResponse response = roomService.createRoomWithUser(
-                    request.getRoomTitle(),
-                    request.getUserId(),
-                    request.getNickname()
-            );
-            return ApiUtils.success(response);
-        } catch (Exception e) {
-            return ApiUtils.error("방 생성 실패: " + e.getMessage());
-        }
+        CreateResponse response = roomService.createRoomWithUser(request);
+        return ApiUtils.success(response);
     }
 
 
@@ -135,12 +126,8 @@ public class RoomController {
             }
     )
     public ResponseEntity<?> deleteRoom(@PathVariable Long roomId) {
-        try {
-            roomService.deleteRoom(roomId);
-            return ApiUtils.success();
-        } catch (IllegalArgumentException e) {
-            return ApiUtils.error(e.getMessage());
-        }
+        roomService.deleteRoom(roomId);
+        return ApiUtils.success();
     }
 
 
@@ -195,12 +182,8 @@ public class RoomController {
             }
     )
     public ResponseEntity<?> joinRoomByInviteCode(@RequestBody JoinRequest request) {
-        try {
-            JoinInfoResponse response = roomUserService.joinRoomByInviteCode(request);
-            return ApiUtils.success(response);
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            return ApiUtils.error(e.getMessage());
-        }
+        JoinInfoResponse response = roomUserService.joinRoomByInviteCode(request);
+        return ApiUtils.success(response);
     }
 
     // 방에서의 roomUserId, nickname, profileImage 조회
@@ -294,12 +277,8 @@ public class RoomController {
             }
     )
     public ResponseEntity<?> getRoomTitleAndCode(@PathVariable Long roomId) {
-        try {
-            TitleCodeResponse response = roomService.getRoomTitleAndCode(roomId);
-            return ApiUtils.success(response);
-        } catch (IllegalArgumentException e) {
-            return ApiUtils.error(e.getMessage());
-        }
+        TitleCodeResponse response = roomService.getRoomTitleAndCode(roomId);
+        return ApiUtils.success(response);
     }
 
 
@@ -342,12 +321,8 @@ public class RoomController {
             }
     )
     public ResponseEntity<?> getRoomStatus(@PathVariable Long roomId) {
-        try {
-            StateResponse response = roomService.getRoomStatus(roomId);
-            return ApiUtils.success(response);
-        } catch (IllegalArgumentException e) {
-            return ApiUtils.error(e.getMessage());
-        }
+        StateResponse response = roomService.getRoomStatus(roomId);
+        return ApiUtils.success(response);
     }
 
 
@@ -444,12 +419,8 @@ public class RoomController {
             }
     )
     public ResponseEntity<?> getAppointment(@PathVariable Long roomId) {
-        try {
-            AppointmentResponse response = roomService.getRoomAppointment(roomId);
-            return ApiUtils.success(response);
-        } catch (IllegalArgumentException e) {
-            return ApiUtils.error(e.getMessage());
-        }
+        AppointmentResponse response = roomService.getRoomAppointment(roomId);
+        return ApiUtils.success(response);
     }
 
 
@@ -509,12 +480,8 @@ public class RoomController {
             }
     )
     public ResponseEntity<?> getJoinedRooms(@PathVariable Long userId) {
-        try {
-            List<RoomListItem> rooms = roomService.getRoomsByUserId(userId);
-            return ApiUtils.success(rooms);
-        } catch (Exception e) {
-            return ApiUtils.error("방 목록 조회 실패: " + e.getMessage());
-        }
+        List<RoomListItem> rooms = roomService.getRoomsByUserId(userId);
+        return ApiUtils.success(rooms);
     }
 
 
@@ -564,12 +531,8 @@ public class RoomController {
             }
     )
     public ResponseEntity<?> getUsersInRoom(@PathVariable Long roomId) {
-        try {
-            List<SimpleInfoResponse> userList = roomUserService.getRoomUsers(roomId);
-            return ApiUtils.success(userList);
-        } catch (Exception e) {
-            return ApiUtils.error("방 참가자 조회 실패: " + e.getMessage());
-        }
+        List<SimpleInfoResponse> userList = roomUserService.getRoomUsers(roomId);
+        return ApiUtils.success(userList);
     }
 
 
@@ -615,14 +578,8 @@ public class RoomController {
             }
     )
     public ResponseEntity<?> quitRoom(@PathVariable Long roomId, @PathVariable Long userId) {
-        try {
-            roomUserService.quitRoom(roomId, userId);
-            return ApiUtils.success();
-        } catch (IllegalArgumentException e) {
-            return ApiUtils.error(e.getMessage());
-        } catch (Exception e) {
-            return ApiUtils.error("방 나가기 중 오류 발생: " + e.getMessage());
-        }
+        roomUserService.quitRoom(roomId, userId);
+        return ApiUtils.success();
     }
 
 
@@ -677,12 +634,8 @@ public class RoomController {
             }
     )
     public ResponseEntity<?> updateRoomTitle(@PathVariable Long roomId, @RequestBody TitleUpdateRequest request) {
-        try {
-            roomService.updateRoomTitle(roomId, request.getRoomTitle());
-            return ApiUtils.success();
-        } catch (Exception e) {
-            return ApiUtils.error("방 제목 변경 실패: " + e.getMessage());
-        }
+        roomService.updateRoomTitle(roomId, request.getRoomTitle());
+        return ApiUtils.success();
     }
 
 
@@ -738,14 +691,8 @@ public class RoomController {
             }
     )
     public ResponseEntity<?> updateRoomDateRange(@PathVariable Long roomId, @RequestBody DateRangeUpdateRequest request) {
-        try {
-            roomService.updateRoomDateRange(roomId, request);
-            return ApiUtils.success();
-        } catch (IllegalArgumentException e) {
-            return ApiUtils.error(e.getMessage());
-        } catch (Exception e) {
-            return ApiUtils.error("약속 가능 기간 설정 실패: " + e.getMessage());
-        }
+        roomService.updateRoomDateRange(roomId, request);
+        return ApiUtils.success();
     }
 
 
@@ -804,171 +751,7 @@ public class RoomController {
             }
     )
     public ResponseEntity<?> updateAppointment (@PathVariable Long roomId, @RequestBody AppointmentUpdateRequest request) {
-        try {
-            roomService.updateRoomAppointment(roomId, request);
-            return ApiUtils.success();
-        } catch (IllegalArgumentException e) {
-            return ApiUtils.error(e.getMessage());
-        } catch (Exception e) {
-            return ApiUtils.error("디테일 약속 설정 실패: " + e.getMessage());
-        }
-    }
-
-
-
-    // 방 상태변경하는거 4가지
-    @PatchMapping("/{roomId}/state/waiting")
-    @Operation(
-            summary = "방 상태를 WAITING으로 변경",
-            description = "방 ID를 통해 해당 방의 상태를 'WAITING' (대기 중) 상태로 설정합니다.",
-            parameters = {
-                    @Parameter(
-                            name = "roomId",
-                            description = "상태를 변경할 방 ID",
-                            required = true,
-                            example = "123"
-                    )
-            },
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "방 상태 변경 성공",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    examples = @ExampleObject(
-                                            name = "성공 응답 예시",
-                                            value = """
-                        {
-                            "success": true,
-                            "data": null,
-                            "message": null
-                        }
-                        """
-                                    )
-                            )
-                    ),
-                    @ApiResponse(responseCode = "404", description = "해당 방을 찾을 수 없음")
-            }
-    )
-    public ResponseEntity<?> setRoomStateToWaiting(@PathVariable Long roomId) {
-        roomService.updateRoomState(roomId, Room.RoomState.WAITING);
-        return ApiUtils.success();
-    }
-
-
-    @PatchMapping("/{roomId}/state/active")
-    @Operation(
-            summary = "방 상태를 ACTIVE로 변경",
-            description = "방 ID를 통해 상태를 'ACTIVE'(진행 중)으로 변경하여 세션을 시작합니다.",
-            parameters = {
-                    @Parameter(
-                            name = "roomId",
-                            description = "상태를 변경할 방 ID",
-                            required = true,
-                            example = "123"
-                    )
-            },
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "상태 변경 성공",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    examples = @ExampleObject(
-                                            name = "성공 응답 예시",
-                                            value = """
-                        {
-                            "success": true,
-                            "data": null,
-                            "message": null
-                        }
-                        """
-                                    )
-                            )
-                    ),
-                    @ApiResponse(responseCode = "404", description = "해당 방을 찾을 수 없음")
-            }
-    )
-    public ResponseEntity<?> setRoomStateToActive(@PathVariable Long roomId) {
-        roomService.updateRoomState(roomId, Room.RoomState.ACTIVE);
-        return ApiUtils.success();
-    }
-
-
-    @PatchMapping("/{roomId}/state/completed")
-    @Operation(
-            summary = "방 상태를 COMPLETED로 변경",
-            description = "방 ID를 통해 상태를 'COMPLETED'(완료됨) 상태로 변경하여 세션을 종료합니다.",
-            parameters = {
-                    @Parameter(
-                            name = "roomId",
-                            description = "상태를 변경할 방 ID",
-                            required = true,
-                            example = "123"
-                    )
-            },
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "상태 변경 성공",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    examples = @ExampleObject(
-                                            name = "성공 응답 예시",
-                                            value = """
-                        {
-                            "success": true,
-                            "data": null,
-                            "message": null
-                        }
-                        """
-                                    )
-                            )
-                    ),
-                    @ApiResponse(responseCode = "404", description = "해당 방을 찾을 수 없음")
-            }
-    )
-    public ResponseEntity<?> setRoomStateToCompleted(@PathVariable Long roomId) {
-        roomService.updateRoomState(roomId, Room.RoomState.COMPLETED);
-        return ApiUtils.success();
-    }
-
-
-    @PatchMapping("/{roomId}/state/cancelled")
-    @Operation(
-            summary = "방 상태를 CANCELLED로 변경",
-            description = "방 ID를 통해 상태를 'CANCELLED'(취소됨)으로 변경하여 세션을 비활성화합니다.",
-            parameters = {
-                    @Parameter(
-                            name = "roomId",
-                            description = "상태를 변경할 방 ID",
-                            required = true,
-                            example = "123"
-                    )
-            },
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "상태 변경 성공",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    examples = @ExampleObject(
-                                            name = "성공 응답 예시",
-                                            value = """
-                        {
-                            "success": true,
-                            "data": null,
-                            "message": null
-                        }
-                        """
-                                    )
-                            )
-                    ),
-                    @ApiResponse(responseCode = "404", description = "해당 방을 찾을 수 없음")
-            }
-    )
-    public ResponseEntity<?> setRoomStateToCancelled(@PathVariable Long roomId) {
-        roomService.updateRoomState(roomId, Room.RoomState.CANCELLED);
+        roomService.updateRoomAppointment(roomId, request);
         return ApiUtils.success();
     }
 
@@ -1144,7 +927,6 @@ public class RoomController {
             }
     )
     public ResponseEntity<?> updateNickname (@PathVariable Long roomId, @PathVariable Long userId, @RequestBody UpdateNicknameRequest request) {
-
         roomUserService.updateNickname(roomId, userId, request.getNickname());
         return ApiUtils.success();
     }
