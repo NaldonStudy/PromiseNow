@@ -10,27 +10,27 @@ import type {
 import { useInvalidateAvailabilityQueries } from './keys';
 
 // 전체 시간대 업데이트
-export const useUpdateAvailability = (roomId: number) => {
+export const useUpdateAvailability = (roomId: number, roomUserId: number) => {
   const { invalidateRoom } = useInvalidateAvailabilityQueries();
 
   return useMutation({
     mutationFn: (request: UpdateAvailabilityRequest) => updateAvailability(request),
 
-    onSuccess: (_, variables) => {
-      invalidateRoom(roomId, variables.roomUserId);
+    onSuccess: () => {
+      invalidateRoom(roomId, roomUserId);
     },
   });
 };
 
 // 하나 시간대 업데이트
-export const useUpdateOneAvailability = (roomId: number) => {
+export const useUpdateOneAvailability = (roomId: number, roomUserId: number) => {
   const { invalidateRoom } = useInvalidateAvailabilityQueries();
 
   return useMutation({
     mutationFn: (request: UpdateOneAvailabilityRequest) => updateOneAvailability(request),
 
-    onSuccess: (_, variables) => {
-      invalidateRoom(roomId, variables.roomUserId);
+    onSuccess: () => {
+      invalidateRoom(roomId, roomUserId);
     },
   });
 };

@@ -39,6 +39,7 @@ export const useInvalidateRoomQueries = () => {
 
     if (roomId !== undefined && userId !== undefined) {
       queryClient.invalidateQueries({ queryKey: roomKeys.myInfo(roomId, userId) });
+      console.log(`Invalidated queries for roomId: ${roomId}, userId: ${userId}`);
     }
   };
 

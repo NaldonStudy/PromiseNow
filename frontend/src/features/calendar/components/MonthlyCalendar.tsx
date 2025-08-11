@@ -66,7 +66,7 @@ const MonthlyCalendar = ({ mode, totalDatas, currentDate, totalMembers, dateRang
           const key = format(day, 'yyyy-MM-dd');
           const dateData = getDateData(key);
           const count = dateData?.timeData
-            ? [...dateData.timeData].reduce((acc, v) => acc + Number(v), 0)
+            ? Math.max(...dateData.timeData.split('').map(Number))
             : 0;
 
           const isOutOfRange = isDisabled(day);
