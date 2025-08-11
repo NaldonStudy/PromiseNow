@@ -6,12 +6,24 @@ import ProfileEdit from '../../features/settings/components/ProfileEdit';
 interface Props {
   nicknameData?: string;
   onNicknameUpdate: (nickname: string) => void;
+  profileImageUrl?: string | null;
+  onProfileImageUpdate: (file: File) => void;
 }
 
-const SettingTemplate = ({ nicknameData, onNicknameUpdate }: Props) => {
+const SettingTemplate = ({
+  nicknameData,
+  onNicknameUpdate,
+  profileImageUrl,
+  onProfileImageUpdate,
+}: Props) => {
   return (
     <RoomLayout>
-      <ProfileEdit nickname={nicknameData} onNicknameUpdate={onNicknameUpdate} />
+      <ProfileEdit
+        nickname={nicknameData}
+        onNicknameUpdate={onNicknameUpdate}
+        profileImageUrl={profileImageUrl}
+        onProfileImageUpdate={onProfileImageUpdate}
+      />
       <Notification />
       <LeaveRoom />
     </RoomLayout>

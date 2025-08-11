@@ -59,7 +59,7 @@ export const updateProfileImage = async (
   const data = await handleApi<UpdateProfileResponse>(
     axiosInstance.patch(`/rooms/${roomId}/profile-image/${userId}`, formdata),
   );
-  return data; // { fileUrl, ... } | null
+  return data;
 };
 
 // 방 나가기

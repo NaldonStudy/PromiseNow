@@ -25,7 +25,7 @@ import type {
   JoinRequest,
   QuitRoomRequest,
   UpdateNicknameRequest,
-  UpdateProfileResponse,
+  UpdateProfileRequest,
 } from '../../../apis/room/roomuser.types';
 import { useInvalidateRoomQueries } from './keys';
 
@@ -151,7 +151,20 @@ export const useUpdateNickname = (userId: number, roomId: number) => {
 };
 
 // 프로필 이미지 수정
-export const useUpdateProfileImage = () =>
-  useMutation<UpdateProfileResponse | null, Error, { roomId: number; userId: number; file: File }>({
-    mutationFn: ({ roomId, userId, file }) => updateProfileImage(roomId, userId, { file }),
+export const useUpdateProfileImage = (userId: number, roomId: number) => {
+  const { invalidateRoom } = useInvalidateRoomQueries();
+
+  return useMutation({
+    mutationFn: async (request: UpdateProfileRequest) => {
+      if (userId === null || roomId === undefined) {
+        throw new Error('userId 또는 roomId가 유효하지 않음');
+      }
+      return updateProfileImage(roomId, userId, request);
+    },
+    onSuccess: () => {
+      if (userId !== null && roomId !== undefined) {
+        invalidateRoom({ userId, roomId });
+      }
+    },
   });
+};

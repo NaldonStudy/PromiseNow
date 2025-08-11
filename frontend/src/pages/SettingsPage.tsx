@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { useTitle } from '../hooks/common/useTitle';
-import { useRoomUserInfo, useUpdateNickname } from '../hooks/queries/room';
+import { useRoomUserInfo, useUpdateNickname, useUpdateProfileImage } from '../hooks/queries/room';
 import { useUserStore } from '../stores/user.store';
 
 import RequireAuth from '../components/RequireAuth';
@@ -13,8 +13,11 @@ const SettingsPage = () => {
   const roomId = Number(id);
   const userId = useUserStore((state) => state.userId);
 
-  const nicknameData = useRoomUserInfo(roomId, userId).data?.nickname;
+  const { data: roomUserInfo } = useRoomUserInfo(roomId, userId);
+  const nicknameData = roomUserInfo?.nickname;
+  const profileImageUrl = roomUserInfo?.profileImage;
   const updateNicknameMutation = useUpdateNickname(userId, roomId);
+  const updateProfileImageMutation = useUpdateProfileImage(userId, roomId);
 
   const handleNicknameUpdate = (nickname: string) => {
     updateNicknameMutation.mutate({
@@ -22,9 +25,20 @@ const SettingsPage = () => {
     });
   };
 
+  const handleProfileImageUpdate = async (file: File) => {
+    updateProfileImageMutation.mutate({
+      file,
+    });
+  };
+
   return (
     <RequireAuth>
-      <SettingTemplate nicknameData={nicknameData} onNicknameUpdate={handleNicknameUpdate} />
+      <SettingTemplate
+        nicknameData={nicknameData}
+        onNicknameUpdate={handleNicknameUpdate}
+        profileImageUrl={profileImageUrl}
+        onProfileImageUpdate={handleProfileImageUpdate}
+      />
     </RequireAuth>
   );
 };
