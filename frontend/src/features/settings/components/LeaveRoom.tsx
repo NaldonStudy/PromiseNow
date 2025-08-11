@@ -6,7 +6,6 @@ import ModalConfirm from '../../../components/ui/modal/ModalConfirm';
 
 import { getUsersInRoom } from '../../../apis/room/roomuser.api';
 import { useDeleteRoom, useQuitRoom } from '../../../hooks/queries/room';
-import { useRoomStore } from '../../../stores/room.store';
 import { useUserStore } from '../../../stores/user.store';
 
 const LeaveRoom = () => {
@@ -17,7 +16,6 @@ const LeaveRoom = () => {
   const { id } = useParams();
   const roomId = Number(id);
 
-  const { setCurrentRoomId } = useRoomStore();
   const { userId } = useUserStore();
 
   const quitMut = useQuitRoom(roomId, userId!);
@@ -47,8 +45,6 @@ const LeaveRoom = () => {
       if (willDelete) {
         await delMut.mutateAsync();
       }
-
-      setCurrentRoomId(null);
       navigate('/home');
     } catch (e) {
       console.error('방 나가기/삭제 실패', e);
