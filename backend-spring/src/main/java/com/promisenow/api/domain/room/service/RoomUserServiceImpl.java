@@ -62,6 +62,13 @@ public class RoomUserServiceImpl implements RoomUserService {
         Room room = roomRepository.findByInviteCode(request.getInviteCode())
                 .orElseThrow(() -> new AppException(ErrorCode.INVITECODE_NOT_ALLOWED));
 
+        int currentCount = roomUserRepository.countActiveUsersExcludingBot(room.getRoomId());
+
+        // 피노(챗봇)제외 9명이 최대 인원
+        if(currentCount >= 9) {
+            throw new AppException(ErrorCode.ROOM_CAPACITY_EXCEEDED);
+        }
+
         if (roomUserRepository.existsByRoom_RoomIdAndUser_UserId(room.getRoomId(), request.getUserId())) {
             throw new AppException(ErrorCode.USER_ALREADY_JOINED);
         }

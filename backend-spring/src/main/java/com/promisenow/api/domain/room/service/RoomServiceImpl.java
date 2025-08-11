@@ -156,7 +156,6 @@ public class RoomServiceImpl implements RoomService {
                         id -> roomUserRepository.findByRoom_RoomId(id)
                 ));
 
-        // 4) 목록 변환
         List<RoomListItem> roomList = joinedRoomUsers.stream()
                 .map(myRoomUser -> {
                     Room room = myRoomUser.getRoom();
