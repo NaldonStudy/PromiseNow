@@ -5,7 +5,6 @@ import CircleBtn from '../../../components/ui/CircleBtn';
 import ModalForm from '../../../components/ui/modal/ModalForm';
 
 import { useCreateRoom } from '../../../hooks/queries/room';
-import { useRoomStore } from '../../../stores/room.store';
 import { useUserStore } from '../../../stores/user.store';
 
 type ModalType = 'room' | 'name';
@@ -13,7 +12,6 @@ type ModalType = 'room' | 'name';
 const RoomMake = () => {
   const navigate = useNavigate();
   const { userId } = useUserStore();
-  const { setNickname } = useRoomStore();
   const createRoomMutation = useCreateRoom(userId!);
 
   const [isOpen, setIsOpen] = useState(false);
@@ -35,8 +33,6 @@ const RoomMake = () => {
     }
 
     if (modalType === 'name') {
-      setNickname(inputValue);
-
       createRoomMutation.mutate(
         {
           roomTitle,
