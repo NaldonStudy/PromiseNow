@@ -11,8 +11,10 @@ interface Props {
 
 const RoomLayout = ({ children }: Props) => {
   const { id } = useParams<{ id: string }>();
-  const { data: roomInfo } = useRoomTitleCode(Number(id));
-  const { data: users } = useUsersInRoom(Number(id));
+  const parsedRoomId = Number(id);
+  
+  const { data: roomInfo } = useRoomTitleCode(parsedRoomId);
+  const { data: users } = useUsersInRoom(parsedRoomId);
 
   return (
     <div className="flex justify-center bg-gray-100 min-h-screen">
