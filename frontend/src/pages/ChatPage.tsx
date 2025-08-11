@@ -1,8 +1,17 @@
-import ChatTemplate from './templates/ChatTemplate';
+import { useEffect, useRef, useState } from "react";
+import './App.css';
+import { Client } from "@stomp/stompjs";
+import SockJS from "sockjs-client";
 
-const ChatPage = () => {
-  return <ChatTemplate />;
-};
+interface MessageResponseDto {
+    content: string;
+    sessionId?: string;
+    type?: 'TEXT' | 'IMAGE' | 'PINO';
+    imageUrl?: string;
+    userId?: number;
+    nickname?: string;
+    sentDate?: string;
+}
 
 interface MessageRequestDto {
     roomUserId: number;
@@ -18,6 +27,7 @@ interface MessageRequestDto {
 }
 
 const SOCKET_URL = "http://localhost:8080/ws-chat";
+
 
 function App() {
     // == 사용자 입력 값 상태 ==

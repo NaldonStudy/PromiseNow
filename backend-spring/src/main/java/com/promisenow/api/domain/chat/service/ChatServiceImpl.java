@@ -66,7 +66,7 @@ public class ChatServiceImpl implements ChatService {
                         RoomUser newPinoRoomUser = RoomUser.builder()
                                 .room(roomUser.getRoom())
                                 .user(pinoAccount)
-                                .nickname("PINO")
+                                .nickname("피노")
                                 .isAgreed(false)
                                 .build();
                         return roomUserRepository.save(newPinoRoomUser);

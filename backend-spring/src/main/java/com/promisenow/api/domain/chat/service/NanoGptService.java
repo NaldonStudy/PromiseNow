@@ -26,7 +26,7 @@ public class NanoGptService {
         body.put("temperature", 0.3);
 
         List<Map<String, String>> messages = new ArrayList<>();
-        messages.add(Map.of("role", "system", "content", "Answer in Korean, 30자 이내, 센스있게"));
+        messages.add(Map.of("role", "system", "content", "충청도 조폭 말투로 30자 이내로 대답해, 충청도 사투리 써 말끝마다 '~' 붙여 다른 사람한텐 깡패 같이 대해"));
         messages.add(Map.of("role", "user", "content", userMessage));
         body.put("messages", messages);
 
