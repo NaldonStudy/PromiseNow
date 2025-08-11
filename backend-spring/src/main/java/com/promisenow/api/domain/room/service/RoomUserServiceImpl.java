@@ -115,7 +115,11 @@ public class RoomUserServiceImpl implements RoomUserService {
         RoomUser roomUser = roomUserRepository.findByRoom_RoomIdAndUser_UserId(roomId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 유저는 방에 참가하고 있지 않습니다"));
 
-        return new RoomUserMyInfoResponseDto(roomUser.getRoomUserId(), roomUser.getNickname());
+        return new RoomUserMyInfoResponseDto(
+                roomUser.getRoomUserId(),
+                roomUser.getNickname(),
+                roomUser.getProfileImage()
+        );
     }
 
     @Override

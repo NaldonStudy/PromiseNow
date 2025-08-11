@@ -41,7 +41,7 @@ public class RoomUserResponseDto {
     }
 
     // 방에서 내 roomUserId, nickname GET
-    @Schema(description = "roomUserId, nickname 응답")
+    @Schema(description = "roomUserId, nickname, profileImage 응답")
     @Getter
     @AllArgsConstructor
     public static class RoomUserMyInfoResponseDto {
@@ -51,6 +51,9 @@ public class RoomUserResponseDto {
 
         @Schema(description = "사용자 nickname", example = "손빵재")
         private String nickname;
+
+        @Schema(description = "사용자 profileImage URL", example = "https://example.com/SYJprofile.jpg")
+        private String profileImage;
     }
 
     // 프로필 이미지 수정 정보

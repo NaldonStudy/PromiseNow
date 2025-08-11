@@ -203,11 +203,11 @@ public class RoomController {
         }
     }
 
-    // 방에서의 roomUserId, nickname 조회
+    // 방에서의 roomUserId, nickname, profileImage 조회
     @GetMapping("/{roomId}/me/{userId}")
     @Operation(
-            summary = "내 roomUserId와 닉네임 조회",
-            description = "특정 방(`roomId`)에서 사용자(`userId`)의 참가 정보(roomUserId, nickname)를 조회합니다.",
+            summary = "내 roomUserId, 닉네임, 프로필 이미지 조회",
+            description = "특정 방(`roomId`)에서 사용자(`userId`)의 참가 정보(roomUserId, nickname, profileImage)를 조회합니다.",
             parameters = {
                     @Parameter(
                             name = "roomId",
@@ -232,15 +232,16 @@ public class RoomController {
                                     examples = @ExampleObject(
                                             name = "성공 응답 예시",
                                             value = """
-                                            {
-                                                "success": true,
-                                                "data": {
-                                                    "roomUserId": 42,
-                                                    "nickname": "홍길동"
-                                                },
-                                                "message": null
-                                            }
-                                        """
+                    {
+                        "success": true,
+                        "data": {
+                            "roomUserId": 61,
+                            "nickname": "손빵재",
+                            "profileImage": "https://example.com/SYJprofile.jpg"
+                        },
+                        "message": null
+                    }
+                    """
                                     )
                             )
                     ),
