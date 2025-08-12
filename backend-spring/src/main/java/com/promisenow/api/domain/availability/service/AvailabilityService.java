@@ -24,10 +24,13 @@ public interface AvailabilityService {
     
     // 일정 배치 업데이트 (여러 날짜)
     void batchUpdateAvailability(AvailabilityRequestDto.BatchUpdateRequest request);
-    
+
     // 사용자 정보 DTO
     record UserInfo(String nickname, String profileImage) {}
 
     // 추천 날짜 조회
     List<RecommendationTimeResponseDto.RecommendationData> getRecommendationTime(Long roomId);
+
+    // 특정 날짜 선택자 조회
+    List<AvailabilityResponseDto.ConfirmedUsersResponse.UserInfo> getSelectedUsersByDate(Long roomId, LocalDate date);
 } 
