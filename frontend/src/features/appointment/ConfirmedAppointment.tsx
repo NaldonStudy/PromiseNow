@@ -18,6 +18,12 @@ const ConfirmedAppointment = ({
 }: ConfirmedAppointmentProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const formatDate = () => {
+    if (!appointmentData?.locationDate) return '';
+    const [year, month, day] = appointmentData.locationDate.split('-');
+    return `${Number(year)}년 ${Number(month)}월 ${Number(day)}일`;
+  };
+
   const handleEdit = () => {
     setIsModalOpen(true);
   };
@@ -35,7 +41,7 @@ const ConfirmedAppointment = ({
     <div className="pb-5 relative">
       <div className="rounded-md font-medium bg-primary px-5 py-3">
         <AppointmentInfo
-          calenderText={appointmentData?.locationDate || '확정된 날짜가 없습니다.'}
+          calenderText={formatDate() || '확정된 날짜가 없습니다.'}
           timeText={appointmentData?.locationTime || '확정된 시간이 없습니다.'}
           locationText={appointmentData?.locationName || '확정된 장소가 없습니다.'}
           textColor="text-white"
