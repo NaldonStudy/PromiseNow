@@ -158,6 +158,24 @@ public class GlobalExceptionHandler {
         
         return ApiUtils.error(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다.");
     }
+
+    /**
+     * 404 에러 처리 (NoHandlerFoundException)
+     */
+    @ExceptionHandler(org.springframework.web.servlet.NoHandlerFoundException.class)
+    public ResponseEntity<ApiUtils.ApiResponse<Void>> handleNoHandlerFoundException(
+            org.springframework.web.servlet.NoHandlerFoundException ex) {
+        
+        // Chrome DevTools 관련 요청은 로그 레벨을 낮춤
+        if (ex.getMessage().contains("com.chrome.devtools") || 
+            ex.getMessage().contains(".well-known")) {
+            log.debug("Chrome DevTools 요청 무시: {}", ex.getMessage());
+        } else {
+            log.warn("404 Not Found: {}", ex.getMessage());
+        }
+        
+        return ApiUtils.error(HttpStatus.NOT_FOUND, "요청한 리소스를 찾을 수 없습니다.");
+    }
     
     /**
      * 파일 업로드 오류

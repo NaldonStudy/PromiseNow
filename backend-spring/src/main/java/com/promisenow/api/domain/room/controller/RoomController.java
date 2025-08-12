@@ -2,6 +2,8 @@ package com.promisenow.api.domain.room.controller;
 
 import com.promisenow.api.common.ApiUtils;
 import com.promisenow.api.infrastructure.file.dto.FileUploadResponse;
+import com.promisenow.api.global.annotation.RequireRoomMember;
+import com.promisenow.api.global.security.OAuth2UserDetails;
 import com.promisenow.api.domain.room.dto.RoomRequestDto.*;
 import com.promisenow.api.domain.room.dto.RoomResponseDto.*;
 import com.promisenow.api.domain.room.dto.RoomUserRequestDto.*;
@@ -16,6 +18,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -187,21 +191,16 @@ public class RoomController {
     }
 
     // 방에서의 roomUserId, nickname, profileImage 조회
-    @GetMapping("/{roomId}/me/{userId}")
+    @GetMapping("/{roomId}/me")
+    @RequireRoomMember(roomIdParam = "roomId")
     @Operation(
             summary = "내 roomUserId, 닉네임, 프로필 이미지 조회",
-            description = "특정 방(`roomId`)에서 사용자(`userId`)의 참가 정보(roomUserId, nickname, profileImage)를 조회합니다.",
+            description = "특정 방(`roomId`)에서 현재 인증된 사용자의 참가 정보(roomUserId, nickname, profileImage)를 조회합니다.",
             parameters = {
                     @Parameter(
                             name = "roomId",
                             description = "조회할 방의 ID",
                             example = "101",
-                            required = true
-                    ),
-                    @Parameter(
-                            name = "userId",
-                            description = "사용자 ID",
-                            example = "1001",
                             required = true
                     )
             },
@@ -232,7 +231,12 @@ public class RoomController {
                     @ApiResponse(responseCode = "404", description = "해당 방 또는 사용자를 찾을 수 없음")
             }
     )
-    public ResponseEntity<?> getMyRoomUserInfo(@PathVariable Long roomId, @PathVariable Long userId) {
+    public ResponseEntity<?> getMyRoomUserInfo(@PathVariable Long roomId) {
+        // 현재 인증된 사용자의 ID를 가져옴
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        OAuth2UserDetails userDetails = (OAuth2UserDetails) authentication.getPrincipal();
+        Long userId = userDetails.getUserId();
+        
         RoomUserMyInfoResponseDto response = roomUserService.getMyRoomUserInfo(roomId, userId);
         return ApiUtils.success(response);
     }

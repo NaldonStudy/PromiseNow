@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 
+import io.jsonwebtoken.Claims;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
@@ -92,6 +93,25 @@ public class JwtTokenProvider {
             return false;
         }
     }
+    
+    /**
+     * 토큰 타입 검증
+     */
+    public boolean validateTokenType(String token, String expectedType) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+            
+            String tokenType = claims.get("type", String.class);
+            return expectedType.equals(tokenType);
+        } catch (JwtException | IllegalArgumentException e) {
+            log.warn("JWT 타입 검증 실패: {}", e.getMessage());
+            return false;
+        }
+    }
 
     /**
      * 요청 쿠키에서 지정된 이름의 토큰 값을 추출
@@ -113,9 +133,9 @@ public class JwtTokenProvider {
     public ResponseCookie createAccessTokenCookie(String token) {
         return ResponseCookie.from("access_token", token)
                 .httpOnly(true)
-                .secure(false) // 프로덕션에서 true
+                .secure(isProduction()) // 프로덕션에서 true
                 .path("/")
-                .maxAge(60 * 60 * 3) // 3시간
+                .maxAge(accessTokenValidity / 1000) // JWT 만료시간과 일치
                 .sameSite("Lax")
                 .build();
     }
@@ -126,7 +146,7 @@ public class JwtTokenProvider {
     public ResponseCookie createRefreshTokenCookie(String token) {
         return ResponseCookie.from("refresh_token", token)
                 .httpOnly(true)
-                .secure(false)
+                .secure(isProduction())
                 .path("/")
                 .maxAge(60 * 60 * 24 * 14) // 14일
                 .sameSite("Lax")
@@ -152,11 +172,19 @@ public class JwtTokenProvider {
     public ResponseCookie expireRefreshTokenCookie() {
         return ResponseCookie.from("refresh_token", "")
                 .httpOnly(true)
-                .secure(false)
+                .secure(isProduction())
                 .path("/")
                 .maxAge(0)
                 .sameSite("Lax")
                 .build();
+    }
+    
+    /**
+     * 프로덕션 환경 여부 확인
+     */
+    private boolean isProduction() {
+        String profile = System.getProperty("spring.profiles.active", "dev");
+        return "prod".equals(profile);
     }
 
 
