@@ -11,14 +11,14 @@ interface Props {
   isVideoMuted?: boolean;
 }
 
-const CallControlPanel = ({ 
-  onClick, 
-  onLeaveCall, 
-  onToggleMic, 
+const CallControlPanel = ({
+  onClick,
+  onLeaveCall,
+  onToggleMic,
   onToggleVideo,
-  isConnected, 
+  isConnected,
   isMicMuted = false,
-  isVideoMuted = false 
+  isVideoMuted = false,
 }: Props) => {
   const { toggleViewMode } = useCallScreenStore();
 
@@ -54,9 +54,9 @@ const CallControlPanel = ({
         <CircleBtn iconType="grid" color={'white'} onClick={toggleViewMode} />
         <CircleBtn iconType="chat" color="point" iconSize={39} onClick={onClick} />
         {onLeaveCall && (
-          <CircleBtn 
-            iconType="close" 
-            color="primary" 
+          <CircleBtn
+            iconType="close"
+            color="primary"
             onClick={onLeaveCall}
             disabled={!isConnected}
           />
