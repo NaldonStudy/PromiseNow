@@ -24,23 +24,26 @@ const HomePage = () => {
     setMode('view');
   };
 
-  useEffect(() => {
-    if (!isAuthenticated || !user) {
-      navigate('/');
-    }
-  }, [isAuthenticated, user, navigate]);
-
   // 사용자 정보 가져오기
   useEffect(() => {
-    if (isAuthenticated && !user) {
-      getMyInfo()
-        .then((userInfo) => {
+    const fetchUserInfo = async () => {
+      try {
+        const userInfo = await getMyInfo();
+        if (userInfo) {
           setUser(userInfo);
-        })
-        .catch((error) => {
-          console.error('사용자 정보 조회 실패:', error);
+        } else {
+          console.error('사용자 정보가 null입니다.');
           navigate('/');
-        });
+        }
+      } catch (error) {
+        console.error('사용자 정보 조회 실패:', error);
+        navigate('/');
+      }
+    };
+
+    // 인증되지 않았거나 사용자 정보가 없으면 사용자 정보 가져오기 시도
+    if (!isAuthenticated || !user) {
+      fetchUserInfo();
     }
   }, [isAuthenticated, user, setUser, navigate]);
 
