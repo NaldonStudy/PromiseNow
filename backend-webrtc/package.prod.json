@@ -1,0 +1,43 @@
+{
+  "name": "mediasoup-demo-server",
+  "version": "4.0.0",
+  "description": "mediasoup demo server",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "DEBUG=* node server.js",
+    "prod": "NODE_ENV=production node server.js",
+    "pm2": "pm2 start server.js --name mediasoup-server",
+    "pm2:stop": "pm2 stop mediasoup-server",
+    "pm2:restart": "pm2 restart mediasoup-server",
+    "pm2:logs": "pm2 logs mediasoup-server",
+    "pm2:status": "pm2 status"
+  },
+  "dependencies": {
+    "mediasoup": "^3.13.0",
+    "mediasoup-client": "^3.6.0",
+    "protoo-server": "^4.0.0",
+    "express": "^4.18.0",
+    "cors": "^2.8.5",
+    "body-parser": "^1.20.0",
+    "awaitqueue": "^1.0.0",
+    "debug": "^4.3.0",
+    "random-string": "^0.2.0",
+    "url-parse": "^1.5.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "keywords": [
+    "mediasoup",
+    "webrtc",
+    "video",
+    "audio",
+    "streaming"
+  ],
+  "author": "mediasoup",
+  "license": "ISC"
+}
