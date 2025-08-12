@@ -8,6 +8,7 @@ import {
   useTotalAvailability,
   useUpdateAvailability,
   useInvalidateAvailabilityQueries,
+  useRecommendTime,
 } from '../hooks/queries/availability';
 import {
   useAppointment,
@@ -15,6 +16,7 @@ import {
   useUpdateAppointment,
   useUpdateRoomDateRange,
   useRoomUserInfo,
+  useUsersInRoom,
 } from '../hooks/queries/room';
 import { useUserStore } from '../stores/user.store';
 import { useTitle } from '../hooks/common/useTitle';
@@ -34,10 +36,14 @@ const SchedulePage = () => {
 
   const { invalidateRoom } = useInvalidateAvailabilityQueries();
 
+  const { data: usersInRoom } = useUsersInRoom(roomId);
+  const totalMembers = usersInRoom?.length || 0;
+
   const { data: totalAvailabilityData } = useTotalAvailability(roomId);
   const { data: roomDateRangeData } = useRoomDateRange(roomId);
   const { data: appointmentData } = useAppointment(roomId);
-  const { data: myAvailabilityData } = useMyAvailability(roomId);
+  const { data: myAvailabilityData } = useMyAvailability(roomUserId ?? -1);
+  const { data: recommendTimeData } = useRecommendTime(roomId);
   const updateAppointmentMutation = useUpdateAppointment(roomId);
   const updateRoomDateRangeMutation = useUpdateRoomDateRange(roomId);
   const updateUserSelectionsMutation = useUpdateAvailability(roomId, roomUserId ?? -1);
@@ -110,9 +116,11 @@ const SchedulePage = () => {
   return (
     <RequireAuth>
       <ScheduleTemplate
+        totalMembers={totalMembers}
         appointmentData={appointmentData}
         dateRangeData={roomDateRangeData}
         totalAvailabilityData={totalAvailabilityData}
+        recommendTimeData={recommendTimeData}
         onAppointmentUpdate={handleAppointmentUpdate}
         onDateRangeUpdate={handleDateRangeUpdate}
         onUserSelectionsUpdate={handleUserSelectionsUpdate}
