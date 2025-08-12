@@ -6,6 +6,7 @@ import type {
   GetMyAvailabilityRequest,
   GetTotalAvailabilityRequest,
   MyAvailabilityResponse,
+  RecommendTimeResponse,
   TotalAvailabilityResponse,
   UpdateAvailabilityRequest,
   UpdateOneAvailabilityRequest,
@@ -52,6 +53,15 @@ export const getConfirmedUsers = async (request: GetConfirmedUsersRequest) => {
   const data = await handleApi<ConfirmedUsersResponse>(
     axiosInstance.get('/availability/confirmed-users', {
       params: request,
+    }),
+  );
+  return data;
+};
+
+export const getRecommendTime = async (roomId: number) => {
+  const data = await handleApi<RecommendTimeResponse>(
+    axiosInstance.get('/availability/recommend-time', {
+      params: { roomId },
     }),
   );
   return data;

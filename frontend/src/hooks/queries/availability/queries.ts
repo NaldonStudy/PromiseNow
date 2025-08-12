@@ -2,12 +2,14 @@ import { useQuery } from '@tanstack/react-query';
 import type {
   ConfirmedUsersResponse,
   MyAvailabilityResponse,
+  RecommendTimeResponse,
   TotalAvailabilityResponse,
 } from '../../../apis/availability/availability.types';
 import { availabilityKeys } from './keys';
 import {
   getConfirmedUsers,
   getMyAvailability,
+  getRecommendTime,
   getTotalAvailability,
 } from '../../../apis/availability/availability.api';
 
@@ -47,5 +49,18 @@ export const useConfirmedUsers = (roomId: number, date: string, slot: number) =>
       return result;
     },
     enabled: !!roomId && !!date && slot !== undefined,
+  });
+};
+
+// 추천 시간대 조회
+export const useRecommendTime = (roomId: number) => {
+  return useQuery<RecommendTimeResponse>({
+    queryKey: availabilityKeys.recommendTime(roomId),
+    queryFn: async () => {
+      const result = await getRecommendTime(roomId);
+      if (result === null) throw new Error('추천 시간대 조회 실패');
+      return result;
+    },
+    enabled: !!roomId,
   });
 };
