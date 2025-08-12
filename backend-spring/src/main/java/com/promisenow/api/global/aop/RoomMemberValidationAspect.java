@@ -37,14 +37,14 @@ public class RoomMemberValidationAspect {
             Optional<RoomUser> roomUser = roomUserRepository.findByRoom_RoomIdAndUser_UserId(roomId, userId);
             
             if (roomUser.isEmpty()) {
-                throw new AppException(ErrorCode.UNAUTHORIZED, ErrorMessage.ROOM_USER_NOT_FOUND);
+                throw new AppException(ErrorCode.UNAUTHORIZED);
             }
 
             
         } catch (AppException e) {
             throw e;
         } catch (Exception e) {
-            throw new AppException(ErrorCode.UNAUTHORIZED, ErrorMessage.ROOM_MEMBER_VALIDATION_ERROR);
+            throw new AppException(ErrorCode.UNAUTHORIZED);
         }
     }
 
@@ -61,7 +61,7 @@ public class RoomMemberValidationAspect {
             }
         }
         
-        throw new AppException(ErrorCode.BAD_REQUEST, ErrorMessage.BAD_REQUEST);
+        throw new AppException(ErrorCode.BAD_REQUEST);
     }
 
     /**
@@ -102,6 +102,6 @@ public class RoomMemberValidationAspect {
             return userDetails.getUserId();
         }
         
-        throw new AppException(ErrorCode.UNAUTHORIZED, ErrorMessage.UNAUTHORIZED_ACCESS);
+        throw new AppException(ErrorCode.UNAUTHORIZED);
     }
 }

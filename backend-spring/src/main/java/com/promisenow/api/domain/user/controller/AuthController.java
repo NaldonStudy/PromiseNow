@@ -56,10 +56,8 @@ public class AuthController {
             if (refreshToken != null) {
                 Long userId = jwtTokenProvider.getUserId(refreshToken);
                 refreshTokenService.deleteRefreshToken(userId);
-                log.info("✅ Redis에서 Refresh Token 삭제 완료: userId={}", userId);
             }
         } catch (Exception e) {
-            log.warn("⚠️ 로그아웃 시 Refresh Token 삭제 실패: {}", e.getMessage());
         }
         
         // 쿠키 삭제
@@ -69,8 +67,7 @@ public class AuthController {
         response.addHeader("Set-Cookie", expiredAccessTokenCookie.toString());
         response.addHeader("Set-Cookie", expiredRefreshTokenCookie.toString());
 
-        log.info("🎉 로그아웃 완료");
-        return ApiUtils.success("로그아웃이 완료되었습니다.");
+        return ApiUtils.success();
     }
 
     @PostMapping("/refresh")
@@ -107,7 +104,6 @@ public class AuthController {
         ResponseCookie accessCookie = jwtTokenProvider.createAccessTokenCookie(newAccessToken);
         response.addHeader("Set-Cookie", accessCookie.toString());
 
-        log.info("🎉 Access Token 재발급 완료: userId={}", userId);
-        return ApiUtils.success("Access Token이 성공적으로 재발급되었습니다.");
+        return ApiUtils.success();
     }
 }
