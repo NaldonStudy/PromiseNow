@@ -4,13 +4,13 @@ import { useUserStore } from '../stores/user.store';
 
 const RequireAuth = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
-  const { userId, isAuthenticated } = useUserStore();
+  const { user, isAuthenticated } = useUserStore();
 
   useEffect(() => {
-    if (!isAuthenticated || userId === -1) {
+    if (!isAuthenticated || !user) {
       navigate('/');
     }
-  }, [isAuthenticated, userId, navigate]);
+  }, [isAuthenticated, user, navigate]);
 
   return <>{children}</>;
 };

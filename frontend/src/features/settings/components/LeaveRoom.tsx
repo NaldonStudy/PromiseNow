@@ -16,10 +16,10 @@ const LeaveRoom = () => {
   const { id } = useParams();
   const roomId = Number(id);
 
-  const { userId } = useUserStore();
+  const { user } = useUserStore();
 
-  const quitMut = useQuitRoom(roomId, userId!);
-  const delMut = useDeleteRoom(roomId, userId!);
+  const quitMut = useQuitRoom(roomId, user?.userId || 0);
+  const delMut = useDeleteRoom(roomId, user?.userId || 0);
 
   const handleOpen = async () => {
     try {
@@ -35,13 +35,13 @@ const LeaveRoom = () => {
   };
 
   const handleConfirm = async () => {
-    if (userId == null) {
+    if (!user?.userId) {
       alert('사용자 정보를 확인할 수 없습니다.');
       return;
     }
 
     try {
-      await quitMut.mutateAsync({ roomId, userId });
+      await quitMut.mutateAsync({ roomId, userId: user.userId });
       if (willDelete) {
         await delMut.mutateAsync();
       }

@@ -11,13 +11,13 @@ const SettingsPage = () => {
 
   const { id } = useParams<{ id: string }>();
   const roomId = Number(id);
-  const userId = useUserStore((state) => state.userId);
+  const { user } = useUserStore();
 
-  const { data: roomUserInfo } = useRoomUserInfo(roomId, userId);
+  const { data: roomUserInfo } = useRoomUserInfo(roomId, user?.userId || 0);
   const nicknameData = roomUserInfo?.nickname;
   const profileImageUrl = roomUserInfo?.profileImage;
-  const updateNicknameMutation = useUpdateNickname(userId, roomId);
-  const updateProfileImageMutation = useUpdateProfileImage(userId, roomId);
+  const updateNicknameMutation = useUpdateNickname(user?.userId || 0, roomId);
+  const updateProfileImageMutation = useUpdateProfileImage(user?.userId || 0, roomId);
 
   const handleNicknameUpdate = (nickname: string) => {
     updateNicknameMutation.mutate({

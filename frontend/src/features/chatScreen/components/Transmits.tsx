@@ -20,12 +20,12 @@ const Transmits = ({ roomId, isConnected, sendMessage }: Props) => {
   const [sending, setSending] = useState(false);
   const [openPicker, setOpenPicker] = useState(false);
 
-  const { userId } = useUserStore();
-  const roomUserId = useRoomUserInfo(roomId, userId).data?.roomUserId;
+  const { user } = useUserStore();
+  const roomUserId = useRoomUserInfo(roomId, user?.userId || 0).data?.roomUserId;
 
   const { mutateAsync: uploadImage } = useUploadChatImage();
 
-  const disabledByContext = roomId == null || roomUserId == null || userId == null;
+  const disabledByContext = roomId == null || roomUserId == null || !user?.userId;
 
   const handlePickFile = () => setOpenPicker((v) => !v);
 
@@ -64,7 +64,7 @@ const Transmits = ({ roomId, isConnected, sendMessage }: Props) => {
         sendMessage({
           roomId,
           roomUserId,
-          userId,
+          userId: user?.userId || 0,
           type: 'IMAGE',
           content: '이미지',
           imageUrl: uploadResult.fileUrl,
@@ -90,7 +90,7 @@ const Transmits = ({ roomId, isConnected, sendMessage }: Props) => {
       sendMessage({
         roomId,
         roomUserId,
-        userId,
+        userId: user?.userId || 0,
         type: 'TEXT',
         content: message.trim(),
         imageUrl: null,
