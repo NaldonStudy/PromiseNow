@@ -58,6 +58,17 @@ export const getConfirmedUsers = async (request: GetConfirmedUsersRequest) => {
   return data;
 };
 
+// 특정 날짜가 가능한 사용자 조회
+export const getDateConfirmedUsers = async (roomId: number, date: string) => {
+  const data = await handleApi<ConfirmedUsersResponse>(
+    axiosInstance.get('/availability/confirmed-users-by-date', {
+      params: { roomId, date },
+    }),
+  );
+  return data;
+};
+
+// 추천 시간 조회
 export const getRecommendTime = async (roomId: number) => {
   const data = await handleApi<RecommendTimeResponse>(
     axiosInstance.get('/availability/recommend-time', {

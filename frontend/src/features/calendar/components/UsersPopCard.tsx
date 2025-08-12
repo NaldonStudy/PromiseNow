@@ -37,7 +37,7 @@ const UsersPopCard = ({ users, onClose, anchor }: Props) => {
   return (
     <div
       ref={cardRef}
-      className={`fixed z-[1000] bg-white rounded-lg shadow-lg pl-4 pr-5 py-3 max-w-[120px] transform ${positionClass}`}
+      className={`fixed z-[1000] bg-white rounded-lg shadow-lg pl-3 pr-4 py-2 max-w-[120px] transform ${positionClass}`}
       style={{
         top: anchor.y,
         left: anchor.x,
@@ -49,7 +49,7 @@ const UsersPopCard = ({ users, onClose, anchor }: Props) => {
             <div className="shrink-0">
               <Profile imgUrl={user.profileImage} width="w-5" iconSize={12} />
             </div>
-            <span className="pl-2 truncate block max-w-[80px]">{user.nickname}</span>
+            <span className="pl-2 truncate block max-w-[80px] text-xs">{user.nickname}</span>
           </div>
         ))}
       </div>

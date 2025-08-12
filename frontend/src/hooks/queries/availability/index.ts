@@ -6,6 +6,7 @@ export {
   useTotalAvailability,
   useMyAvailability,
   useConfirmedUsers,
+  useDateConfirmedUsers,
   useRecommendTime,
 } from './queries';
 
