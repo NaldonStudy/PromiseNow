@@ -5,6 +5,7 @@ import java.util.Arrays;
 import com.promisenow.api.domain.user.service.UserService;
 import com.promisenow.api.global.jwt.JwtAuthenticationFilter;
 import com.promisenow.api.global.jwt.JwtTokenProvider;
+import com.promisenow.api.global.jwt.RefreshTokenService;
 import com.promisenow.api.global.oauth.CustomOAuth2UserService;
 import com.promisenow.api.global.oauth.OAuth2LoginSuccessHandler;
 import jakarta.servlet.http.HttpServletResponse;
@@ -36,7 +37,7 @@ public class SecurityConfig {
 
     @Bean
     @Profile("!test")
-    public SecurityFilterChain filterChain(HttpSecurity http, JwtTokenProvider jwtTokenProvider, UserService userService) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtTokenProvider jwtTokenProvider, UserService userService, RefreshTokenService refreshTokenService) throws Exception {
         // CORS 설정
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
 
@@ -56,26 +57,27 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, userService, refreshTokenService), UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/api/chatting/**").permitAll()          // 메시지 조회, 이미지 업로드 허용
-                .requestMatchers("/uploaded-images/**").permitAll()  // ← 여기가 중요!
+                .requestMatchers("/uploaded-images/**").permitAll()
                 .requestMatchers("/ws-chat/**").permitAll() // 웹소켓 경로
                 .requestMatchers("/ws-leaderboard/**").permitAll() // 리더보드 웹소켓 경로
                 .requestMatchers("/api/upload/**").permitAll()
                 .requestMatchers("/api/leaderboard/**").permitAll() // 리더보드 API 경로
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // OPTIONS 요청 허용
-                .requestMatchers("/actuator/**").permitAll()
+                .requestMatchers("/actuator/health").permitAll() // 헬스체크만 허용
+                .requestMatchers("/actuator/info").permitAll() // 정보만 허용
+                .requestMatchers("/actuator/metrics").permitAll() // 메트릭만 허용
                 .requestMatchers("/swagger-ui/**").permitAll()
                 .requestMatchers("/v3/api-docs/**").permitAll()
-                .requestMatchers("/api/**").permitAll() // 일반 API 경로는 마지막에
-                .anyRequest().permitAll()
+                .requestMatchers("/api/**").authenticated() // 인증 필요
+                .anyRequest().authenticated() // 모든 요청에 인증 필요
             )
             .oauth2Login(oauth2 -> oauth2
                     .userInfoEndpoint(userInfo -> userInfo
                             .userService(customOAuth2UserService(userService))
                     )
-                    .successHandler(oAuth2SuccessHandler(jwtTokenProvider))
+                    .successHandler(oAuth2SuccessHandler(jwtTokenProvider, refreshTokenService))
                     .failureHandler(oAuth2FailureHandler())
             );
 
@@ -86,14 +88,19 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // 개발/테스트용으로 모든 오리진 허용 (운영에서는 제한 필요)
-        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
-        // configuration.setAllowedOriginPatterns(Arrays.asList(
-        // "https://promisenow.store",
-        // "http://localhost:[*]",
-        // "http://127.0.0.1:[*]",
-        // "http://api.promisenow.store"
-        // ));
+        
+        // 프로덕션 환경에서는 특정 도메인만 허용
+        if (isProduction()) {
+            configuration.setAllowedOriginPatterns(Arrays.asList(
+                "https://promisenow.store",
+                "https://www.promisenow.store",
+                "https://api.promisenow.store"
+            ));
+        } else {
+            // 개발/테스트용으로 모든 오리진 허용
+            configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+        }
+        
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
@@ -101,6 +108,14 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+    
+    /**
+     * 프로덕션 환경 여부 확인
+     */
+    private boolean isProduction() {
+        String profile = System.getProperty("spring.profiles.active", "dev");
+        return "prod".equals(profile);
     }
 
     @Bean
@@ -116,14 +131,17 @@ public class SecurityConfig {
 
     // 로그인 성공 핸들러
     @Bean
-    public AuthenticationSuccessHandler oAuth2SuccessHandler(JwtTokenProvider jwtTokenProvider) {
-        return new OAuth2LoginSuccessHandler(jwtTokenProvider);
+    public AuthenticationSuccessHandler oAuth2SuccessHandler(JwtTokenProvider jwtTokenProvider, RefreshTokenService refreshTokenService) {
+        return new OAuth2LoginSuccessHandler(jwtTokenProvider, refreshTokenService);
     }
 
     // 로그인 실패 핸들러
     @Bean
     public AuthenticationFailureHandler oAuth2FailureHandler() {
         return (request, response, exception) -> {
+            System.err.println("OAuth2 로그인 실패: " + exception.getMessage());
+            exception.printStackTrace();
+            
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("text/plain;charset=UTF-8");
             response.getWriter().write("OAuth 로그인 실패: " + exception.getMessage());
