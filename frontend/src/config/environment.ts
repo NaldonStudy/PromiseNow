@@ -20,7 +20,7 @@ const getEnvironmentConfig = (): EnvironmentConfig => {
     return {
       apiBaseUrl: 'https://api.promisenow.store/api',
       wsBaseUrl: 'https://api.promisenow.store',
-      oauthRedirectUrl: 'https://promisenow.store/oauth2/authorization/kakao'
+      oauthRedirectUrl: 'https://api.promisenow.store/oauth2/authorization/kakao'
     };
   }
 };
