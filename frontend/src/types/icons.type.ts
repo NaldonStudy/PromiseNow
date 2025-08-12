@@ -6,6 +6,7 @@ import {
   FiCamera,
   FiMapPin,
   FiPhoneCall,
+  FiPhoneOff,
   FiPlus,
   FiSettings,
   FiTarget,
@@ -44,6 +45,7 @@ export type IconType =
   | 'mappin'
   | 'settings'
   | 'call'
+  | 'callOff'
   | 'chat'
   | 'time'
   | 'location'
@@ -76,6 +78,7 @@ const arrowIcons = {
 
 const callIcons = {
   call: FiPhoneCall,
+  callOff: FiPhoneOff,
   mic: IoMic,
   micOff: IoMicOff,
   video: MdOutlineVideocam,
