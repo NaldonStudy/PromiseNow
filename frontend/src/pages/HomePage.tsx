@@ -43,14 +43,6 @@ const HomePage = () => {
         });
     }
   }, [isAuthenticated, user, setUser, navigate]);
-  // 방 입장 시 초기화해야 하는 것들
-  const resetRoomState = () => {
-    setView('month');
-    setMode('view');
-  };
-
-  const handleJoinRoom = (inviteCode: string, nickname: string, onSuccess: (roomId: number) => void) => {
-    if (!user?.userId) return;
 
   // 참여코드로 참여할 때
   const handleJoinRoom = (
@@ -58,6 +50,8 @@ const HomePage = () => {
     nickname: string,
     onSuccess: (roomId: number, roomUserId: number) => void,
   ) => {
+    if (!user?.userId) return;
+    
     joinRoomMutation.mutate(
       { inviteCode, nickname, userId: user.userId },
       {

@@ -2,17 +2,18 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '../stores/user.store';
 
+
 import LandingTemplate from './templates/LandingTemplate';
 
 const LandingPage = () => {
   const navigate = useNavigate();
-  const { userId, isAuthenticated } = useUserStore();
+  const { user, isAuthenticated } = useUserStore();
 
   useEffect(() => {
-    if (isAuthenticated && userId !== -1) {
+    if (isAuthenticated && user) {
       navigate('/home');
     }
-  }, [isAuthenticated, userId, navigate]);
+  }, [isAuthenticated, user, navigate]);
 
   return <LandingTemplate />;
 };
