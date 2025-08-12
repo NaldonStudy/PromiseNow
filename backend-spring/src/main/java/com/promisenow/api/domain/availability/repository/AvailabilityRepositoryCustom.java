@@ -15,4 +15,6 @@ public interface AvailabilityRepositoryCustom {
      * @return 선택한 사용자들의 정보 DTO 리스트
      */
     List<AvailabilityResponseDto.ConfirmedUsersResponse.UserInfo> findConfirmedUsersBySlot(Long roomId, LocalDate date, int slot);
+
+    List<AvailabilityResponseDto.ConfirmedUsersResponse.UserInfo> findConfirmedUsersByDate(Long roomId, LocalDate date);
 } 

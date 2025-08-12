@@ -197,4 +197,9 @@ public class AvailabilityServiceImpl implements AvailabilityService {
                 .count(count)
                 .build();
     }
+
+    @Override
+    public List<AvailabilityResponseDto.ConfirmedUsersResponse.UserInfo> getSelectedUsersByDate(Long roomId, LocalDate date) {
+        return availabilityRepository.findConfirmedUsersByDate(roomId, date);
+    }
 } 
