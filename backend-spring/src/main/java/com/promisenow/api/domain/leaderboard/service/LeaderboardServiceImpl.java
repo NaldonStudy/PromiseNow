@@ -144,9 +144,7 @@ public class LeaderboardServiceImpl implements LeaderboardService {
             dto.setProgress(userInfo.getProgress() != null ? userInfo.getProgress() : 0.0);
             dto.setArrived(userInfo.getArrived() != null && Boolean.parseBoolean(userInfo.getArrived().toString()));
             dto.setOnline(isOnline);  // 실제 온라인 상태 설정
-            
-            // 개선된 예상 도착 시간 계산
-            dto.setEstimatedArrivalMinutes(calculateEstimatedArrivalTime(dto.getDistance(), dto.getVelocity()));
+
 
             positions.add(dto);
         }
@@ -168,41 +166,5 @@ public class LeaderboardServiceImpl implements LeaderboardService {
 
     public Long getLeaderboardSize(String leaderboardKey) {
         return leaderboardRepository.getLeaderboardSize(leaderboardKey);
-    }
-    
-    /**
-     * 개선된 예상 도착 시간 계산
-     * 가만히 있는 사용자의 비현실적인 도착 시간을 방지
-     */
-    private Integer calculateEstimatedArrivalTime(double distanceKm, double velocityKmh) {
-        // 이미 도착한 경우
-        if (distanceKm <= 0.4) { // 400m 이내
-            return 0;
-        }
-        
-        // 최소 속도 설정 (도보 속도: 4km/h)
-        final double MIN_VELOCITY_KMH = 4.0;
-        // 최대 속도 설정 (자전거 속도: 20km/h)
-        final double MAX_VELOCITY_KMH = 20.0;
-        
-        // 속도 범위 제한
-        double adjustedVelocity = Math.max(MIN_VELOCITY_KMH, Math.min(MAX_VELOCITY_KMH, velocityKmh));
-        
-        // 정지 상태이거나 매우 느린 경우 최소 속도 사용
-        if (velocityKmh < 1.0) {
-            adjustedVelocity = MIN_VELOCITY_KMH;
-        }
-        
-        // 예상 도착 시간 계산 (분 단위)
-        double estimatedMinutes = (distanceKm / adjustedVelocity) * 60;
-        
-        // 최대 예상 시간 제한 (2시간)
-        final int MAX_ESTIMATED_MINUTES = 120;
-        estimatedMinutes = Math.min(estimatedMinutes, MAX_ESTIMATED_MINUTES);
-        
-        log.info("⏰ 도착 시간 계산: distance={}km, velocity={}km/h, adjustedVelocity={}km/h, estimatedMinutes={}분", 
-                distanceKm, velocityKmh, adjustedVelocity, estimatedMinutes);
-        
-        return (int) Math.round(estimatedMinutes);
     }
 }
