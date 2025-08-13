@@ -58,18 +58,18 @@ public class LeaderboardServiceImpl implements LeaderboardService {
         // 속도 계산 (이전 위치가 있는 경우)
         double velocity = 0.0;
         if (prevPosition.getLat() != null && prevPosition.getLng() != null && prevPosition.getTimestamp() != null) {
-            double distanceMoved = haversine(prevPosition.getLat(), prevPosition.getLng(), lat, lng);
-            long timeDiff = now - prevPosition.getTimestamp();
-            if (timeDiff > 0) {
-                velocity = distanceMoved / (timeDiff / 1000.0); // m/s
+            double distanceMovedKm = haversine(prevPosition.getLat(), prevPosition.getLng(), lat, lng); // km 단위 거리
+            long timeDiffMs = now - prevPosition.getTimestamp(); // 밀리초 단위 시간차
+            if (timeDiffMs > 0) {
+                velocity = distanceMovedKm / (timeDiffMs / 3600000.0); // km/h 단위 속도
             }
         }
 
         // 진행률 계산
         double progress = totalDistance > 0 ? ((totalDistance - distanceLeft) / totalDistance) * 100.0 : 0.0;
 
-        // 도착 여부 확인 (목표 지점 50m 이내)
-        boolean arrived = distanceLeft <= 0.05; // 50m
+        // 도착 여부 확인 (목표 지점 200m 이내)
+        boolean arrived = distanceLeft <= 0.2; // 200m
 
         // 새로운 위치 정보 생성
         UserPositionDto newPosition = UserPositionDto.builder()
