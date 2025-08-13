@@ -1,7 +1,8 @@
 package com.promisenow.api.common;
 
+import com.promisenow.api.infrastructure.file.exception.FileUploadException;
 import com.promisenow.api.domain.chat.exception.FileStorageException;
-import com.promisenow.api.infrastructure.WebhookService;
+import com.promisenow.api.infrastructure.webhook.WebhookService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -32,6 +33,17 @@ import java.util.Set;
 public class GlobalExceptionHandler {
     
     private final WebhookService webhookService;
+
+    // AppException을 동작시킬 예외 처리
+    @ExceptionHandler(AppException.class)
+    public ResponseEntity<ApiUtils.ApiResponse<Void>> handleAppException(AppException ex) {
+        log.warn("AppException [{}]: {}", ex.getErrorCode().name(), ex.getMessage());
+
+        // 기존 코드에 있는 핸들링된 예외 웹훅 전송 헬퍼 메서드 활용
+        sendHandledExceptionWebhook("AppException(" + ex.getErrorCode().name() + ")", ex.getMessage());
+
+        return ApiUtils.error(ex.getErrorCode().getStatus(), ex.getMessage());
+    }
     
     /**
      * @Valid 어노테이션으로 검증된 객체의 예외 처리
@@ -146,6 +158,37 @@ public class GlobalExceptionHandler {
         
         return ApiUtils.error(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다.");
     }
+
+    /**
+     * 404 에러 처리 (NoHandlerFoundException)
+     */
+    @ExceptionHandler(org.springframework.web.servlet.NoHandlerFoundException.class)
+    public ResponseEntity<ApiUtils.ApiResponse<Void>> handleNoHandlerFoundException(
+            org.springframework.web.servlet.NoHandlerFoundException ex) {
+        
+        // Chrome DevTools 관련 요청은 로그 레벨을 낮춤
+        if (ex.getMessage().contains("com.chrome.devtools") || 
+            ex.getMessage().contains(".well-known")) {
+            log.debug("Chrome DevTools 요청 무시: {}", ex.getMessage());
+        } else {
+            log.warn("404 Not Found: {}", ex.getMessage());
+        }
+        
+        return ApiUtils.error(HttpStatus.NOT_FOUND, "요청한 리소스를 찾을 수 없습니다.");
+    }
+    
+    /**
+     * 파일 업로드 오류
+     */
+    @ExceptionHandler(FileUploadException.class)
+    public ResponseEntity<ApiUtils.ApiResponse<Void>> handleFileUploadException(FileUploadException ex) {
+        log.warn("File upload error: {}", ex.getMessage());
+        
+        // 핸들링된 예외 웹훅 전송
+        sendHandledExceptionWebhook("FileUploadException", ex.getMessage());
+        
+        return ApiUtils.error(HttpStatus.valueOf(ex.getStatusCode()), ex.getMessage());
+    }
     
     /**
      * 이미지 저장 오류
@@ -254,7 +297,7 @@ public class GlobalExceptionHandler {
         StackTraceElement[] stackTrace = ex.getStackTrace();
         StringBuilder sb = new StringBuilder();
         
-        int maxLines = Math.min(10, stackTrace.length);
+        int maxLines = Math.min(200, stackTrace.length);
         for (int i = 0; i < maxLines; i++) {
             sb.append(stackTrace[i].toString()).append("\n");
         }

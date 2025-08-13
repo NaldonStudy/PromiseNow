@@ -6,13 +6,15 @@ import { formatTime } from '../utils/time';
 interface Props {
   message: ChatMessageResponse;
   showMeta: boolean;
+  onMediaLoad?: () => void;
 }
 
-const MessageItem: FC<Props> = ({ message, showMeta }) => {
+const MessageItem: FC<Props> = ({ message, showMeta, onMediaLoad }) => {
   const { content, type, imageUrl, nickname, sentDate } = message;
 
   const isPinoMention = content?.startsWith('@피노');
   const isFromPino = type === 'PINO';
+  const shouldShowMeta = showMeta || isFromPino;
 
   const renderTextWithMention = () => {
     if (isPinoMention) {
@@ -30,9 +32,9 @@ const MessageItem: FC<Props> = ({ message, showMeta }) => {
   };
 
   return (
-    <div className={`flex justify-start ${showMeta ? 'mt-1' : ''}`}>
+    <div className={`flex justify-start ${shouldShowMeta ? 'mt-1' : ''}`}>
       <div className="flex flex-col w-full">
-        {showMeta && (
+        {shouldShowMeta && (
           <div className="flex items-center gap-2 mb-1">
             <Profile width="w-6" isPino={isFromPino} />
             <span className="text-sm-10 text-black font-medium">{nickname}</span>
@@ -41,12 +43,14 @@ const MessageItem: FC<Props> = ({ message, showMeta }) => {
         )}
 
         {/* 텍스트 영역 */}
-        <div className={`w-fit whitespace-pre-line ${showMeta ? 'pl-10' : 'pl-10'}`}>
+        <div className="w-fit whitespace-pre-line pl-10">
           {type === 'IMAGE' && imageUrl ? (
             <img
               src={imageUrl}
               alt="chat"
               className="w-60 rounded-md max-w-[150px] max-h-[200px]"
+              onLoad={onMediaLoad}
+              onError={onMediaLoad}
             />
           ) : isFromPino ? (
             <div className="text-sm text-blue-400">{content}</div>

@@ -1,13 +1,13 @@
 // src/features/chat/components/Transmits.tsx
 import { useState } from 'react';
 
+import CameraPopCard from '../../../components/ui/CameraPopCard';
 import CircleBtn from '../../../components/ui/CircleBtn';
 import Input from '../../../components/ui/Input';
-import CameraPopCard from './CameraPopCard';
 
 import { useUploadChatImage } from '../../../hooks/chat';
-import { useUserStore } from '../../../stores/user.store';
 import { useRoomUserInfo } from '../../../hooks/queries/room';
+import { useUserStore } from '../../../stores/user.store';
 
 type Props = {
   roomId: number;

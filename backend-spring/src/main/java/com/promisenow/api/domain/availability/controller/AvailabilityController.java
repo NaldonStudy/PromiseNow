@@ -3,6 +3,7 @@ package com.promisenow.api.domain.availability.controller;
 import com.promisenow.api.common.ApiUtils;
 import com.promisenow.api.domain.availability.dto.AvailabilityRequestDto;
 import com.promisenow.api.domain.availability.dto.AvailabilityResponseDto;
+import com.promisenow.api.domain.availability.dto.RecommendationTimeResponseDto;
 import com.promisenow.api.domain.availability.entity.Availability;
 import com.promisenow.api.domain.availability.processor.AvailabilityProcessor;
 import com.promisenow.api.domain.availability.service.AvailabilityService;
@@ -290,4 +291,75 @@ public class AvailabilityController {
         availabilityService.batchUpdateAvailability(request);
         return ApiUtils.success();
     }
+
+    @Operation(summary = "추천 시간 구간 조회",
+            description = "roomId로 전체 누적 데이터를 계산하여 동일 인원 연속 구간을 병합 후 인기 순으로 반환")
+    @GetMapping("/recommend-time")
+    public ResponseEntity<ApiUtils.ApiResponse<RecommendationTimeResponseDto>> getRecommendationTime(
+            @RequestParam Long roomId) {
+
+        List<RecommendationTimeResponseDto.RecommendationData> recommendationData = availabilityService.getRecommendationTime(roomId);
+
+        RecommendationTimeResponseDto responseDto = RecommendationTimeResponseDto.builder()
+                .times(recommendationData)
+                .build();
+
+        return ApiUtils.success(responseDto);
+    }
+
+    @Operation(
+            summary = "특정 날짜 선택자 전체 조회",
+            description = "특정 날짜에 하나 이상의 시간을 선택한 사용자 목록을 조회합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "선택자 목록 조회 성공",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = AvailabilityResponseDto.ConfirmedUsersResponse.class),
+                            examples = @ExampleObject(
+                                    name = "성공 응답 예시",
+                                    value = """
+                    {
+                        "success": true,
+                        "data": {
+                            "confirmedUserList": [
+                                {
+                                    "nickname": "푸른호랑이32",
+                                    "profileImage": "https://example.com/profile1.jpg"
+                                },
+                                {
+                                    "nickname": "조용한고래78",
+                                    "profileImage": null
+                                }
+                            ]
+                        },
+                        "message": null
+                    }
+                    """
+                            )
+                    )
+            )
+    })
+    @GetMapping("/confirmed-users-by-date")
+    public ResponseEntity<ApiUtils.ApiResponse<AvailabilityResponseDto.ConfirmedUsersResponse>> getConfirmedUsersByDate(
+            @Parameter(description = "룸 ID", example = "1", required = true)
+            @NotNull(message = "roomId는 필수입니다.")
+            @RequestParam Long roomId,
+            @Parameter(description = "조회할 날짜 (YYYY-MM-DD)", example = "2025-01-15", required = true)
+            @NotNull(message = "date는 필수입니다.")
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+
+            List<AvailabilityResponseDto.ConfirmedUsersResponse.UserInfo> confirmedUsers =
+                    availabilityService.getSelectedUsersByDate(roomId, date);
+
+            AvailabilityResponseDto.ConfirmedUsersResponse response =
+                    AvailabilityResponseDto.ConfirmedUsersResponse.builder()
+                            .confirmedUserList(confirmedUsers)
+                            .build();
+
+        return ApiUtils.success(response);
+    }
+
 } 

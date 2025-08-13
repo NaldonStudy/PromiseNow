@@ -1,14 +1,13 @@
 package com.promisenow.api.domain.room.service;
 
-import com.promisenow.api.domain.room.dto.RoomRequestDto;
-import com.promisenow.api.domain.room.entity.Room;
+import com.promisenow.api.domain.room.dto.RoomRequestDto.*;
 import com.promisenow.api.domain.room.dto.RoomResponseDto.*;
 
 import java.util.List;
 
 public interface RoomService {
 
-    CreateResponse createRoomWithUser(String roomTitle, Long userId, String nickname);
+    CreateResponse createRoomWithUser(CreateRequest request);
 
 
     void deleteRoom(Long roomId);
@@ -29,17 +28,14 @@ public interface RoomService {
     // userId로 방정보
     List<RoomListItem> getRoomsByUserId(Long userId);
 
-    // 방 상태 업데이트
-    void updateRoomState(Long roomId, Room.RoomState roomState);
-
     // 방 제목 업데이트
     void updateRoomTitle(Long roomId, String newTitle);
 
     // 약속기간 범위 업데이트
-    void updateRoomDateRange(Long roomId, RoomRequestDto.DateRangeUpdateRequest dto);
+    void updateRoomDateRange(Long roomId, DateRangeUpdateRequest request);
 
     // 약속상세 업데이트
-    void updateRoomAppointment(Long roomId, RoomRequestDto.AppointmentUpdateRequest dto);
+    void updateRoomAppointment(Long roomId, AppointmentUpdateRequest request);
 
     // 조건에 따른 방 상태 Activate으로 변경
     void checkAndActivateRooms();

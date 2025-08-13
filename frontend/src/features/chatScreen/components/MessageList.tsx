@@ -5,9 +5,11 @@ import MessageItem from './MessageItem';
 
 interface Props {
   messages: ChatMessageResponse[];
+    onMediaLoad?: () => void;
+
 }
 
-const MessageList = ({ messages }: Props) => {
+const MessageList = ({ messages, onMediaLoad }: Props) => {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -17,19 +19,25 @@ const MessageList = ({ messages }: Props) => {
     });
   }, [messages.length]);
 
+  const authorKey = (m?: ChatMessageResponse) =>
+    !m ? null : m.type === 'PINO' ? 'PINO' : m.roomUserId;
+
   return (
     <div className="flex flex-col gap-1">
       {messages.map((msg, idx) => {
         const prev = messages[idx - 1];
-        const isSameSender = prev?.roomUserId === msg.roomUserId;
-        const isSameTime = isSameMinute(prev?.sentDate ?? '', msg.sentDate);
-        const showMeta = !(isSameSender && isSameTime);
-        const key = `${msg.roomUserId}-${msg.sentDate}`;
+
+        const sameAuthor = authorKey(prev) === authorKey(msg);
+        const sameMinute = prev ? isSameMinute(prev.sentDate, msg.sentDate) : false;
+
+        const baseShowMeta = !(sameAuthor && sameMinute);
+        const showMeta = msg.type === 'PINO' ? true : baseShowMeta;
+
+        const key = `${authorKey(msg)}-${msg.sentDate}-${idx}`;
 
         return (
           <Fragment key={key}>
-            <MessageItem message={msg} showMeta={showMeta} />
-          </Fragment>
+  <MessageItem message={msg} showMeta={showMeta} onMediaLoad={onMediaLoad} />          </Fragment>
         );
       })}
       <div ref={bottomRef} />

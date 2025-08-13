@@ -44,4 +44,27 @@ public class AvailabilityRepositoryImpl implements AvailabilityRepositoryCustom 
                 )
                 .fetch();
     }
+
+    @Override
+    public List<AvailabilityResponseDto.ConfirmedUsersResponse.UserInfo> findConfirmedUsersByDate(Long roomId, LocalDate date) {
+        QAvailability availability = QAvailability.availability;
+        QRoomUser roomUser = QRoomUser.roomUser;
+        QRoom room = QRoom.room;
+
+        return queryFactory
+                .select(Projections.constructor(
+                        AvailabilityResponseDto.ConfirmedUsersResponse.UserInfo.class,
+                        roomUser.nickname,
+                        roomUser.profileImage
+                ))
+                .from(availability)
+                .join(availability.roomUser, roomUser)
+                .join(roomUser.room, room)
+                .where(
+                        room.roomId.eq(roomId),
+                        availability.date.eq(date),
+                        availability.timeData.contains("1")
+                )
+                .fetch();
+    }
 } 

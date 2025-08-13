@@ -12,9 +12,11 @@ import {
   FiTarget,
 } from 'react-icons/fi';
 import { GoCopy, GoDependabot } from 'react-icons/go';
+import { GrPowerReset } from 'react-icons/gr';
 import { HiLocationMarker } from 'react-icons/hi';
 import { IoMdTime } from 'react-icons/io';
 import {
+  IoAirplane,
   IoCloseOutline,
   IoFlagSharp,
   IoLocationOutline,
@@ -32,7 +34,11 @@ import {
 import { RiKakaoTalkFill } from 'react-icons/ri';
 import { SlArrowDown, SlArrowLeft, SlArrowRight, SlArrowUp } from 'react-icons/sl';
 import { VscSend } from 'react-icons/vsc';
-import { GrPowerReset } from 'react-icons/gr';
+
+import { BiCycling } from 'react-icons/bi';
+import { FaCar, FaRunning, FaWalking } from 'react-icons/fa';
+
+import { SiSpeedtest } from 'react-icons/si';
 
 export type IconType =
   | 'left'
@@ -67,7 +73,13 @@ export type IconType =
   | 'camera'
   | 'copy'
   | 'grid'
-  | 'bot';
+  | 'bot'
+  | 'walking'
+  | 'running'
+  | 'cycling'
+  | 'driving'
+  | 'flying'
+  | 'speed';
 
 const arrowIcons = {
   left: SlArrowLeft,
@@ -96,6 +108,15 @@ const mapIcons = {
   myLocation: MdMyLocation,
   flag: IoFlagSharp,
   marker: HiLocationMarker,
+  speed: SiSpeedtest,
+};
+
+const statusIcons = {
+  walking: FaWalking,
+  running: FaRunning,
+  cycling: BiCycling,
+  driving: FaCar,
+  flying: IoAirplane,
 };
 
 const generalIcons = {
@@ -124,4 +145,5 @@ export const iconMap: Record<IconType, ReactIconType> = {
   ...mapIcons,
   ...generalIcons,
   ...chatIcons,
+  ...statusIcons,
 };
