@@ -133,7 +133,8 @@ public class JwtTokenProvider {
     public ResponseCookie createAccessTokenCookie(String token) {
         return ResponseCookie.from("access_token", token)
                 .httpOnly(true)
-                .secure(isProduction()) // 프로덕션에서 true
+                //.secure(isProduction()) // 프로덕션에서 true
+                .secure(!isProduction()) // 프로덕션에서 true
                 .path("/")
                 .maxAge(accessTokenValidity / 1000) // JWT 만료시간과 일치
                 .sameSite("Lax")
@@ -146,7 +147,8 @@ public class JwtTokenProvider {
     public ResponseCookie createRefreshTokenCookie(String token) {
         return ResponseCookie.from("refresh_token", token)
                 .httpOnly(true)
-                .secure(isProduction())
+                //.secure(isProduction())
+                .secure(!isProduction())
                 .path("/")
                 .maxAge(60 * 60 * 24 * 14) // 14일
                 .sameSite("Lax")
@@ -173,6 +175,8 @@ public class JwtTokenProvider {
         return ResponseCookie.from("refresh_token", "")
                 .httpOnly(true)
                 .secure(isProduction())
+                //.secure(isProduction())
+                .secure(!isProduction())
                 .path("/")
                 .maxAge(0)
                 .sameSite("Lax")
