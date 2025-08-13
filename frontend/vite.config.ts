@@ -34,6 +34,18 @@ export default defineConfig({
   define: {
     global: 'window',
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      '/oauth2': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+    },
+  },
   preview: {
     port: 3000,
     host: true,

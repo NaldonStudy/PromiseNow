@@ -27,10 +27,10 @@ const MapView = () => {
   const { rankingHeight, setMoveToCurrentLocation } = useMapStore();
 
   // 사용자 정보
-  const { userId } = useUserStore();
-  const roomUserId = useRoomUserInfo(parsedRoomId, userId).data?.roomUserId;
+  const { user } = useUserStore();
+  const roomUserId = useRoomUserInfo(parsedRoomId, user?.userId || 0).data?.roomUserId;
   const { data: users } = useUsersInRoom(parsedRoomId);
-  const { data: myRoomUserInfo } = useRoomUserInfo(parsedRoomId, userId!);
+  const { data: myRoomUserInfo } = useRoomUserInfo(parsedRoomId, user?.userId || 0);
 
   // 약속 정보 조회
   const { data: appointmentData } = useAppointment(parsedRoomId);
@@ -92,7 +92,7 @@ const MapView = () => {
       return;
     }
 
-    if (!users || !userId) {
+    if (!users || !user?.userId) {
       return;
     }
 
@@ -104,7 +104,7 @@ const MapView = () => {
 
     if (!roomUserId) {
       console.log('⚠️ roomUserId를 찾을 수 없음:', {
-        userId,
+        userId: user?.userId || 0,
         roomId: parsedRoomId,
         myRoomUserInfo,
       });
@@ -132,11 +132,11 @@ const MapView = () => {
         },
       );
     }
-  }, [parsedRoomId, userId, users, sendPosition, appointmentData, roomUserId, myRoomUserInfo]);
+  }, [parsedRoomId, user?.userId, users, sendPosition, appointmentData, roomUserId, myRoomUserInfo]);
 
   // 실시간 위치 전송 시작/중지
   useEffect(() => {
-    if (appointmentData?.locationLat && appointmentData?.locationLng && userId && myRoomUserInfo) {
+    if (appointmentData?.locationLat && appointmentData?.locationLng && user?.userId && myRoomUserInfo) {
       // 5초마다 위치 전송
       const interval = setInterval(() => {
         sendCurrentPosition();
@@ -149,7 +149,7 @@ const MapView = () => {
         console.log('📍 실시간 위치 전송 중지');
       };
     }
-  }, [appointmentData, userId, myRoomUserInfo, sendCurrentPosition]);
+  }, [appointmentData, user?.userId, myRoomUserInfo, sendCurrentPosition]);
 
   // 현재 위치로 이동
   const moveToCurrentLocation = useCallback(() => {
@@ -305,7 +305,7 @@ const MapView = () => {
 
   // 위치 전송 시작/중지 (지도 초기화와 독립적으로 실행)
   useEffect(() => {
-    if (!userId) {
+    if (!user?.userId) {
       return;
     }
 
@@ -328,7 +328,7 @@ const MapView = () => {
         positionIntervalRef.current = null;
       }
     };
-  }, [sendCurrentPosition, userId, appointmentData]);
+  }, [sendCurrentPosition, user?.userId, appointmentData]);
 
   return (
     <div className="h-full relative bg-gray">

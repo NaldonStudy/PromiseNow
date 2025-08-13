@@ -29,8 +29,8 @@ const SchedulePage = () => {
 
   const { id } = useParams<{ id: string }>();
   const roomId = Number(id);
-  const userId = useUserStore((state) => state.userId);
-  const roomUserId = useRoomUserInfo(roomId, userId).data?.roomUserId;
+  const { user } = useUserStore();
+  const roomUserId = useRoomUserInfo(roomId, user?.userId || 0).data?.roomUserId;
 
   const { setUserSelections } = useCalendarStore();
 
