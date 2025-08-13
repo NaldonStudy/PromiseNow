@@ -18,6 +18,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.context.annotation.Profile;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.*;
 
 
 @Tag(name = "사용자 정보", description = "카카오 고유 ID, 가입날짜 확인")
@@ -196,6 +200,40 @@ public class UserController {
         return ApiUtils.success(response);
     }
     
+    /**
+     * HttpOnly 쿠키 테스트용 엔드포인트
+     * 개발 환경에서만 사용
+     */
+    @GetMapping("/test-cookie")
+    @Profile("dev")
+    public ResponseEntity<Map<String, Object>> testCookie(HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        
+        // 쿠키 정보 수집
+        Cookie[] cookies = request.getCookies();
+        List<Map<String, String>> cookieInfo = new ArrayList<>();
+        
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                Map<String, String> cookieData = new HashMap<>();
+                cookieData.put("name", cookie.getName());
+                cookieData.put("value", cookie.getValue().substring(0, Math.min(20, cookie.getValue().length())) + "...");
+                cookieData.put("domain", cookie.getDomain());
+                cookieData.put("path", cookie.getPath());
+                cookieData.put("secure", String.valueOf(cookie.getSecure()));
+                cookieData.put("httpOnly", String.valueOf(cookie.isHttpOnly()));
+                cookieInfo.add(cookieData);
+            }
+        }
+        
+        response.put("message", "쿠키 테스트 성공");
+        response.put("cookies", cookieInfo);
+        response.put("timestamp", new Date());
+        response.put("userAgent", request.getHeader("User-Agent"));
+        
+        return ResponseEntity.ok(response);
+    }
+
     /**
      * 프로덕션 환경 여부 확인
      */

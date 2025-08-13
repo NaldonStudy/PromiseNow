@@ -1,0 +1,428 @@
+> Task :compileJava
+> Task :processResources UP-TO-DATE
+> Task :classes
+> Task :resolveMainClassName UP-TO-DATE
+
+> Task :bootRun
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.5.3)
+
+2025-08-13T13:49:26.174+09:00  INFO 88792 --- [promisenow] [           main] com.promisenow.api.ApiApplication        : Starting ApiApplication using Java 21.0.5 with PID 88792 (/Users/chos/Documents/Github/S13P11B107/backend-spring/build/classes/java/main started by chos in /Users/chos/Documents/Github/S13P11B107/backend-spring)
+2025-08-13T13:49:26.175+09:00 DEBUG 88792 --- [promisenow] [           main] com.promisenow.api.ApiApplication        : Running with Spring Boot v3.5.3, Spring v6.2.8
+2025-08-13T13:49:26.176+09:00  INFO 88792 --- [promisenow] [           main] com.promisenow.api.ApiApplication        : The following 1 profile is active: "dev"
+2025-08-13T13:49:26.555+09:00  INFO 88792 --- [promisenow] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2025-08-13T13:49:26.556+09:00  INFO 88792 --- [promisenow] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-08-13T13:49:26.628+09:00  INFO 88792 --- [promisenow] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 69 ms. Found 7 JPA repository interfaces.
+2025-08-13T13:49:26.633+09:00  INFO 88792 --- [promisenow] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2025-08-13T13:49:26.634+09:00  INFO 88792 --- [promisenow] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2025-08-13T13:49:26.640+09:00  INFO 88792 --- [promisenow] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.promisenow.api.domain.availability.repository.AvailabilityRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2025-08-13T13:49:26.640+09:00  INFO 88792 --- [promisenow] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.promisenow.api.domain.chat.repository.ChatRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2025-08-13T13:49:26.640+09:00  INFO 88792 --- [promisenow] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.promisenow.api.domain.chat.repository.ImageRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2025-08-13T13:49:26.640+09:00  INFO 88792 --- [promisenow] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.promisenow.api.domain.room.repository.RoomRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2025-08-13T13:49:26.640+09:00  INFO 88792 --- [promisenow] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.promisenow.api.domain.room.repository.RoomUserRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2025-08-13T13:49:26.640+09:00  INFO 88792 --- [promisenow] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.promisenow.api.domain.roulette.repository.RouletteRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2025-08-13T13:49:26.641+09:00  INFO 88792 --- [promisenow] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.promisenow.api.domain.user.repository.UserRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2025-08-13T13:49:26.641+09:00  INFO 88792 --- [promisenow] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 4 ms. Found 0 Redis repository interfaces.
+2025-08-13T13:49:26.912+09:00  INFO 88792 --- [promisenow] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-08-13T13:49:26.917+09:00  INFO 88792 --- [promisenow] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-08-13T13:49:26.917+09:00  INFO 88792 --- [promisenow] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.42]
+2025-08-13T13:49:26.945+09:00  INFO 88792 --- [promisenow] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-08-13T13:49:26.945+09:00  INFO 88792 --- [promisenow] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 756 ms
+2025-08-13T13:49:27.024+09:00  INFO 88792 --- [promisenow] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-08-13T13:49:27.093+09:00  INFO 88792 --- [promisenow] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@1e7d3d87
+2025-08-13T13:49:27.094+09:00  INFO 88792 --- [promisenow] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-08-13T13:49:27.127+09:00  INFO 88792 --- [promisenow] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-08-13T13:49:27.142+09:00  INFO 88792 --- [promisenow] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.18.Final
+2025-08-13T13:49:27.152+09:00  INFO 88792 --- [promisenow] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-08-13T13:49:27.248+09:00  INFO 88792 --- [promisenow] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-08-13T13:49:27.282+09:00  WARN 88792 --- [promisenow] [           main] org.hibernate.orm.deprecation            : HHH90000025: MySQL8Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-08-13T13:49:27.282+09:00  WARN 88792 --- [promisenow] [           main] org.hibernate.orm.deprecation            : HHH90000026: MySQL8Dialect has been deprecated; use org.hibernate.dialect.MySQLDialect instead
+2025-08-13T13:49:27.286+09:00  INFO 88792 --- [promisenow] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 8.0
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2025-08-13T13:49:27.818+09:00  INFO 88792 --- [promisenow] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-08-13T13:49:27.881+09:00  INFO 88792 --- [promisenow] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-08-13T13:49:28.004+09:00  INFO 88792 --- [promisenow] [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-08-13T13:49:28.476+09:00  WARN 88792 --- [promisenow] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-08-13T13:49:28.613+09:00  INFO 88792 --- [promisenow] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 3 endpoints beneath base path '/actuator'
+2025-08-13T13:49:28.696+09:00  INFO 88792 --- [promisenow] [           main] o.s.v.b.OptionalValidatorFactoryBean     : Failed to set up a Bean Validation provider: jakarta.validation.NoProviderFoundException: Unable to create a Configuration, because no Jakarta Bean Validation provider could be found. Add a provider like Hibernate Validator (RI) to your classpath.
+2025-08-13T13:49:28.746+09:00 DEBUG 88792 --- [promisenow] [           main] s.w.s.m.m.a.RequestMappingHandlerAdapter : ControllerAdvice beans: 0 @ModelAttribute, 0 @InitBinder, 1 RequestBodyAdvice, 1 ResponseBodyAdvice
+2025-08-13T13:49:28.892+09:00  INFO 88792 --- [promisenow] [           main] .w.s.a.s.AnnotationActionEndpointMapping : Supporting [WS-Addressing August 2004, WS-Addressing 1.0]
+2025-08-13T13:49:28.920+09:00  INFO 88792 --- [promisenow] [           main] o.s.m.s.b.SimpleBrokerMessageHandler     : Starting...
+2025-08-13T13:49:28.920+09:00  INFO 88792 --- [promisenow] [           main] o.s.m.s.b.SimpleBrokerMessageHandler     : BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@2da788b]]
+2025-08-13T13:49:28.920+09:00  INFO 88792 --- [promisenow] [           main] o.s.m.s.b.SimpleBrokerMessageHandler     : Started.
+2025-08-13T13:49:28.926+09:00  INFO 88792 --- [promisenow] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2025-08-13T13:49:28.934+09:00  INFO 88792 --- [promisenow] [           main] com.promisenow.api.ApiApplication        : Started ApiApplication in 2.933 seconds (process running for 3.051)
+2025-08-13T13:49:29.925+09:00  INFO 88792 --- [promisenow] [0.0-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-08-13T13:50:00.134+09:00 DEBUG 88792 --- [promisenow] [MessageBroker-1] org.hibernate.SQL                        : 
+    select
+        r1_0.room_id,
+        r1_0.end_date,
+        r1_0.invite_code,
+        r1_0.location_date,
+        r1_0.location_lat,
+        r1_0.location_lng,
+        r1_0.location_name,
+        r1_0.location_time,
+        r1_0.room_state,
+        r1_0.room_title,
+        r1_0.start_date 
+    from
+        room r1_0
+Hibernate: 
+    select
+        r1_0.room_id,
+        r1_0.end_date,
+        r1_0.invite_code,
+        r1_0.location_date,
+        r1_0.location_lat,
+        r1_0.location_lng,
+        r1_0.location_name,
+        r1_0.location_time,
+        r1_0.room_state,
+        r1_0.room_title,
+        r1_0.start_date 
+    from
+        room r1_0
+2025-08-13T13:50:11.168+09:00  INFO 88792 --- [promisenow] [0.0-8080-exec-3] c.p.a.g.oauth.CustomOAuth2UserService    : OAuth2 사용자 정보 로드 시작
+2025-08-13T13:50:11.270+09:00  INFO 88792 --- [promisenow] [0.0-8080-exec-3] c.p.a.g.oauth.CustomOAuth2UserService    : 카카오에서 받은 원본 속성: {id=4393142665, connected_at=2025-08-12T02:17:43Z}
+2025-08-13T13:50:11.270+09:00  INFO 88792 --- [promisenow] [0.0-8080-exec-3] c.p.a.g.oauth.CustomOAuth2UserService    : KakaoOAuth2User 생성 완료: id=4393142665, email=null, nickname=null
+2025-08-13T13:50:11.281+09:00 DEBUG 88792 --- [promisenow] [0.0-8080-exec-3] org.hibernate.SQL                        : 
+    select
+        u1_0.user_id,
+        u1_0.email,
+        u1_0.join_date,
+        u1_0.password,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.user_id=?
+Hibernate: 
+    select
+        u1_0.user_id,
+        u1_0.email,
+        u1_0.join_date,
+        u1_0.password,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.user_id=?
+2025-08-13T13:50:11.295+09:00  INFO 88792 --- [promisenow] [0.0-8080-exec-3] c.p.a.g.oauth.CustomOAuth2UserService    : 사용자 처리 완료: userId=4393142665
+2025-08-13T13:50:11.295+09:00  INFO 88792 --- [promisenow] [0.0-8080-exec-3] c.p.a.g.oauth.CustomOAuth2UserService    : OAuth2 사용자 정보 로드 완료
+2025-08-13T13:50:11.299+09:00  INFO 88792 --- [promisenow] [0.0-8080-exec-3] c.p.a.g.oauth.OAuth2LoginSuccessHandler  : OAuth2 로그인 성공 핸들러 시작
+2025-08-13T13:50:11.299+09:00  INFO 88792 --- [promisenow] [0.0-8080-exec-3] c.p.a.g.oauth.OAuth2LoginSuccessHandler  : OAuth2User Principal: {userId=4393142665, id=4393142665, connected_at=2025-08-12T02:17:43Z}
+2025-08-13T13:50:11.299+09:00  INFO 88792 --- [promisenow] [0.0-8080-exec-3] c.p.a.g.oauth.OAuth2LoginSuccessHandler  : 추출된 userId: 4393142665
+2025-08-13T13:50:11.327+09:00  INFO 88792 --- [promisenow] [0.0-8080-exec-3] c.p.api.global.jwt.RefreshTokenService   : Refresh Token Redis 저장 완료: userId=4393142665, ttl=14일
+2025-08-13T13:50:11.327+09:00  INFO 88792 --- [promisenow] [0.0-8080-exec-3] c.p.a.g.oauth.OAuth2LoginSuccessHandler  : JWT 발급 성공: userId=4393142665
+2025-08-13T13:50:11.332+09:00  INFO 88792 --- [promisenow] [0.0-8080-exec-3] c.p.a.g.oauth.OAuth2LoginSuccessHandler  : 프론트엔드로 리다이렉트: http://localhost:5173/home
+2025-08-13T13:50:11.937+09:00 DEBUG 88792 --- [promisenow] [0.0-8080-exec-4] c.p.a.g.jwt.JwtAuthenticationFilter      : 유효한 Access Token으로 인증 성공: userId=4393142665
+2025-08-13T13:50:11.940+09:00 DEBUG 88792 --- [promisenow] [0.0-8080-exec-4] org.hibernate.SQL                        : 
+    select
+        u1_0.user_id,
+        u1_0.email,
+        u1_0.join_date,
+        u1_0.password,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.user_id=?
+Hibernate: 
+    select
+        u1_0.user_id,
+        u1_0.email,
+        u1_0.join_date,
+        u1_0.password,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.user_id=?
+2025-08-13T13:50:11.948+09:00 DEBUG 88792 --- [promisenow] [0.0-8080-exec-4] org.hibernate.SQL                        : 
+    select
+        u1_0.user_id,
+        u1_0.email,
+        u1_0.join_date,
+        u1_0.password,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.user_id=?
+Hibernate: 
+    select
+        u1_0.user_id,
+        u1_0.email,
+        u1_0.join_date,
+        u1_0.password,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.user_id=?
+2025-08-13T13:50:11.965+09:00 DEBUG 88792 --- [promisenow] [0.0-8080-exec-5] c.p.a.g.jwt.JwtAuthenticationFilter      : 유효한 Access Token으로 인증 성공: userId=4393142665
+2025-08-13T13:50:11.967+09:00 DEBUG 88792 --- [promisenow] [0.0-8080-exec-5] org.hibernate.SQL                        : 
+    select
+        u1_0.user_id,
+        u1_0.email,
+        u1_0.join_date,
+        u1_0.password,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.user_id=?
+Hibernate: 
+    select
+        u1_0.user_id,
+        u1_0.email,
+        u1_0.join_date,
+        u1_0.password,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.user_id=?
+2025-08-13T13:50:11.973+09:00 DEBUG 88792 --- [promisenow] [0.0-8080-exec-5] org.hibernate.SQL                        : 
+    select
+        u1_0.user_id,
+        u1_0.email,
+        u1_0.join_date,
+        u1_0.password,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.user_id=?
+Hibernate: 
+    select
+        u1_0.user_id,
+        u1_0.email,
+        u1_0.join_date,
+        u1_0.password,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.user_id=?
+2025-08-13T13:50:12.009+09:00 DEBUG 88792 --- [promisenow] [0.0-8080-exec-5] org.hibernate.SQL                        : 
+    select
+        ru1_0.room_user_id,
+        ru1_0.is_agreed,
+        ru1_0.nickname,
+        ru1_0.profile_image,
+        ru1_0.room_id,
+        r1_0.room_id,
+        r1_0.end_date,
+        r1_0.invite_code,
+        r1_0.location_date,
+        r1_0.location_lat,
+        r1_0.location_lng,
+        r1_0.location_name,
+        r1_0.location_time,
+        r1_0.room_state,
+        r1_0.room_title,
+        r1_0.start_date,
+        ru1_0.sort_order,
+        ru1_0.user_id 
+    from
+        room_user ru1_0 
+    join
+        room r1_0 
+            on r1_0.room_id=ru1_0.room_id 
+    where
+        ru1_0.user_id=?
+Hibernate: 
+    select
+        ru1_0.room_user_id,
+        ru1_0.is_agreed,
+        ru1_0.nickname,
+        ru1_0.profile_image,
+        ru1_0.room_id,
+        r1_0.room_id,
+        r1_0.end_date,
+        r1_0.invite_code,
+        r1_0.location_date,
+        r1_0.location_lat,
+        r1_0.location_lng,
+        r1_0.location_name,
+        r1_0.location_time,
+        r1_0.room_state,
+        r1_0.room_title,
+        r1_0.start_date,
+        ru1_0.sort_order,
+        ru1_0.user_id 
+    from
+        room_user ru1_0 
+    join
+        room r1_0 
+            on r1_0.room_id=ru1_0.room_id 
+    where
+        ru1_0.user_id=?
+2025-08-13T13:50:12.025+09:00 DEBUG 88792 --- [promisenow] [0.0-8080-exec-5] org.hibernate.SQL                        : 
+    select
+        ru1_0.room_user_id,
+        ru1_0.is_agreed,
+        ru1_0.nickname,
+        ru1_0.profile_image,
+        ru1_0.room_id,
+        ru1_0.sort_order,
+        ru1_0.user_id 
+    from
+        room_user ru1_0 
+    left join
+        room r1_0 
+            on r1_0.room_id=ru1_0.room_id 
+    where
+        r1_0.room_id=?
+Hibernate: 
+    select
+        ru1_0.room_user_id,
+        ru1_0.is_agreed,
+        ru1_0.nickname,
+        ru1_0.profile_image,
+        ru1_0.room_id,
+        ru1_0.sort_order,
+        ru1_0.user_id 
+    from
+        room_user ru1_0 
+    left join
+        room r1_0 
+            on r1_0.room_id=ru1_0.room_id 
+    where
+        r1_0.room_id=?
+2025-08-13T13:50:28.946+09:00  INFO 88792 --- [promisenow] [MessageBroker-2] o.s.w.s.c.WebSocketMessageBrokerStats    : WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 3, active threads = 1, queued tasks = 1, completed tasks = 1]
+2025-08-13T13:51:00.039+09:00 DEBUG 88792 --- [promisenow] [MessageBroker-3] org.hibernate.SQL                        : 
+    select
+        r1_0.room_id,
+        r1_0.end_date,
+        r1_0.invite_code,
+        r1_0.location_date,
+        r1_0.location_lat,
+        r1_0.location_lng,
+        r1_0.location_name,
+        r1_0.location_time,
+        r1_0.room_state,
+        r1_0.room_title,
+        r1_0.start_date 
+    from
+        room r1_0
+Hibernate: 
+    select
+        r1_0.room_id,
+        r1_0.end_date,
+        r1_0.invite_code,
+        r1_0.location_date,
+        r1_0.location_lat,
+        r1_0.location_lng,
+        r1_0.location_name,
+        r1_0.location_time,
+        r1_0.room_state,
+        r1_0.room_title,
+        r1_0.start_date 
+    from
+        room r1_0
+2025-08-13T13:52:00.025+09:00 DEBUG 88792 --- [promisenow] [MessageBroker-4] org.hibernate.SQL                        : 
+    select
+        r1_0.room_id,
+        r1_0.end_date,
+        r1_0.invite_code,
+        r1_0.location_date,
+        r1_0.location_lat,
+        r1_0.location_lng,
+        r1_0.location_name,
+        r1_0.location_time,
+        r1_0.room_state,
+        r1_0.room_title,
+        r1_0.start_date 
+    from
+        room r1_0
+Hibernate: 
+    select
+        r1_0.room_id,
+        r1_0.end_date,
+        r1_0.invite_code,
+        r1_0.location_date,
+        r1_0.location_lat,
+        r1_0.location_lng,
+        r1_0.location_name,
+        r1_0.location_time,
+        r1_0.room_state,
+        r1_0.room_title,
+        r1_0.start_date 
+    from
+        room r1_0
+2025-08-13T13:53:00.022+09:00 DEBUG 88792 --- [promisenow] [MessageBroker-1] org.hibernate.SQL                        : 
+    select
+        r1_0.room_id,
+        r1_0.end_date,
+        r1_0.invite_code,
+        r1_0.location_date,
+        r1_0.location_lat,
+        r1_0.location_lng,
+        r1_0.location_name,
+        r1_0.location_time,
+        r1_0.room_state,
+        r1_0.room_title,
+        r1_0.start_date 
+    from
+        room r1_0
+Hibernate: 
+    select
+        r1_0.room_id,
+        r1_0.end_date,
+        r1_0.invite_code,
+        r1_0.location_date,
+        r1_0.location_lat,
+        r1_0.location_lng,
+        r1_0.location_name,
+        r1_0.location_time,
+        r1_0.room_state,
+        r1_0.room_title,
+        r1_0.start_date 
+    from
+        room r1_0
+2025-08-13T13:54:00.038+09:00 DEBUG 88792 --- [promisenow] [MessageBroker-5] org.hibernate.SQL                        : 
+    select
+        r1_0.room_id,
+        r1_0.end_date,
+        r1_0.invite_code,
+        r1_0.location_date,
+        r1_0.location_lat,
+        r1_0.location_lng,
+        r1_0.location_name,
+        r1_0.location_time,
+        r1_0.room_state,
+        r1_0.room_title,
+        r1_0.start_date 
+    from
+        room r1_0
+Hibernate: 
+    select
+        r1_0.room_id,
+        r1_0.end_date,
+        r1_0.invite_code,
+        r1_0.location_date,
+        r1_0.location_lat,
+        r1_0.location_lng,
+        r1_0.location_name,
+        r1_0.location_time,
+        r1_0.room_state,
+        r1_0.room_title,
+        r1_0.start_date 
+    from
+        room r1_0

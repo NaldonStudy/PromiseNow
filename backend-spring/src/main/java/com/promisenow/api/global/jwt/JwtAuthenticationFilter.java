@@ -30,6 +30,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+        
+        String requestURI = request.getRequestURI();
+        
+        // Swagger UI 관련 요청은 토큰 검증 없이 통과
+        if (isSwaggerRequest(requestURI)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+        
         String token = null;
 
         // 쿠키에서 access_token 추출
@@ -109,10 +118,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         } else {
-            log.debug("토큰이 없음: {}", request.getRequestURI());
+            // API 요청에 대해서만 토큰 없음 로그 출력
+            if (requestURI.startsWith("/api/")) {
+                log.debug("토큰이 없음: {}", requestURI);
+            }
         }
 
         filterChain.doFilter(request, response);
     }
-
+    
+    /**
+     * Swagger UI 관련 요청인지 확인
+     */
+    private boolean isSwaggerRequest(String requestURI) {
+        return requestURI.startsWith("/swagger-ui/") ||
+               requestURI.startsWith("/v3/api-docs") ||
+               requestURI.equals("/swagger-ui-config") ||
+               requestURI.equals("/swagger-ui/index.html") ||
+               requestURI.contains("swagger-ui") ||
+               requestURI.contains("api-docs");
+    }
 }

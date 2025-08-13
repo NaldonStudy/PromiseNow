@@ -139,8 +139,8 @@ public class JwtTokenProvider {
         if (isProduction()) {
             builder.secure(true).sameSite("Lax");
         } else {
-            // 개발 환경에서는 Secure false, SameSite None으로 설정
-            builder.secure(false).sameSite("None");
+            // 개발 환경에서는 SameSite Lax로 설정 (Secure false와 호환)
+            builder.secure(false).sameSite("Lax");
         }
         
         return builder.build();
@@ -158,8 +158,8 @@ public class JwtTokenProvider {
         if (isProduction()) {
             builder.secure(true).sameSite("Lax");
         } else {
-            // 개발 환경에서는 Secure false, SameSite None으로 설정
-            builder.secure(false).sameSite("None");
+            // 개발 환경에서는 SameSite Lax로 설정 (Secure false와 호환)
+            builder.secure(false).sameSite("Lax");
         }
         
         return builder.build();
