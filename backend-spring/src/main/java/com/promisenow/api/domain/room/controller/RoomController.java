@@ -19,7 +19,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -231,13 +233,8 @@ public class RoomController {
                     @ApiResponse(responseCode = "404", description = "해당 방 또는 사용자를 찾을 수 없음")
             }
     )
-    public ResponseEntity<?> getMyRoomUserInfo(@PathVariable Long roomId) {
-        // 현재 인증된 사용자의 ID를 가져옴
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        OAuth2UserDetails userDetails = (OAuth2UserDetails) authentication.getPrincipal();
-        Long userId = userDetails.getUserId();
-        
-        RoomUserMyInfoResponseDto response = roomUserService.getMyRoomUserInfo(roomId, userId);
+    public ResponseEntity<?> getMyRoomUserInfo(@PathVariable Long roomId, @AuthenticationPrincipal OAuth2UserDetails oAuth2UserDetails) {
+        RoomUserMyInfoResponseDto response = roomUserService.getMyRoomUserInfo(roomId, oAuth2UserDetails.getUserId());
         return ApiUtils.success(response);
     }
 

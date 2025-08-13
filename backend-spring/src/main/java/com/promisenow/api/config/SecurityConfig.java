@@ -99,21 +99,39 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // 허용할 오리진 설정
+        // 허용할 오리진 설정 (개발 환경 포함)
         configuration.setAllowedOriginPatterns(Arrays.asList(
             "https://promisenow.store",
             "https://api.promisenow.store",
             "http://localhost:*",
-            "http://127.0.0.1:*"
+            "http://127.0.0.1:*",
+            "https://localhost:*",
+            "https://127.0.0.1:*"
         ));
         
         // 허용할 HTTP 메서드
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         
-        // 허용할 헤더
-        configuration.setAllowedHeaders(Arrays.asList("*"));
+        // 허용할 헤더 (쿠키 관련 헤더 포함)
+        configuration.setAllowedHeaders(Arrays.asList(
+            "*",
+            "Authorization",
+            "Content-Type",
+            "X-Requested-With",
+            "Accept",
+            "Origin",
+            "Access-Control-Request-Method",
+            "Access-Control-Request-Headers"
+        ));
         
-        // 쿠키 허용
+        // 노출할 헤더
+        configuration.setExposedHeaders(Arrays.asList(
+            "Access-Control-Allow-Origin",
+            "Access-Control-Allow-Credentials",
+            "Set-Cookie"
+        ));
+        
+        // 쿠키 허용 (HttpOnly 쿠키 지원을 위해 필수)
         configuration.setAllowCredentials(true);
         
         // 프리플라이트 요청 캐시 시간

@@ -131,55 +131,74 @@ public class JwtTokenProvider {
      * Access Token을 담은 HttpOnly 쿠키를 생성
      */
     public ResponseCookie createAccessTokenCookie(String token) {
-        return ResponseCookie.from("access_token", token)
+        ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from("access_token", token)
                 .httpOnly(true)
-                .secure(isProduction()) // 프로덕션에서 true
-                // .secure(!isProduction()) // 프로덕션에서 true
                 .path("/")
-                .maxAge(accessTokenValidity / 1000) // JWT 만료시간과 일치
-                .sameSite("Lax")
-                .build();
+                .maxAge(accessTokenValidity / 1000); // JWT 만료시간과 일치
+        
+        if (isProduction()) {
+            builder.secure(true).sameSite("Lax");
+        } else {
+            // 개발 환경에서는 Secure false, SameSite None으로 설정
+            builder.secure(false).sameSite("None");
+        }
+        
+        return builder.build();
     }
 
     /**
      * Refresh Token을 담은 HttpOnly 쿠키를 생성
      */
     public ResponseCookie createRefreshTokenCookie(String token) {
-        return ResponseCookie.from("refresh_token", token)
+        ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from("refresh_token", token)
                 .httpOnly(true)
-                .secure(isProduction())
-                // .secure(!isProduction())
                 .path("/")
-                .maxAge(60 * 60 * 24 * 14) // 14일
-                .sameSite("Lax")
-                .build();
+                .maxAge(60 * 60 * 24 * 14); // 14일
+        
+        if (isProduction()) {
+            builder.secure(true).sameSite("Lax");
+        } else {
+            // 개발 환경에서는 Secure false, SameSite None으로 설정
+            builder.secure(false).sameSite("None");
+        }
+        
+        return builder.build();
     }
 
     /**
      * Access Token 쿠키를 즉시 만료시키는 빈 쿠키를 생성
      */
     public ResponseCookie expireAccessTokenCookie() {
-        return ResponseCookie.from("access_token", "")
+        ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from("access_token", "")
                 .httpOnly(true)
-                .secure(false)
                 .path("/")
-                .maxAge(0)
-                .sameSite("Lax")
-                .build();
+                .maxAge(0);
+        
+        if (isProduction()) {
+            builder.secure(true).sameSite("Lax");
+        } else {
+            builder.secure(false).sameSite("None");
+        }
+        
+        return builder.build();
     }
 
     /**
      * Refresh Token 쿠키를 즉시 만료시키는 빈 쿠키를 생성
      */
     public ResponseCookie expireRefreshTokenCookie() {
-        return ResponseCookie.from("refresh_token", "")
+        ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from("refresh_token", "")
                 .httpOnly(true)
-                .secure(isProduction())
-                // .secure(!isProduction())
                 .path("/")
-                .maxAge(0)
-                .sameSite("Lax")
-                .build();
+                .maxAge(0);
+        
+        if (isProduction()) {
+            builder.secure(true).sameSite("Lax");
+        } else {
+            builder.secure(false).sameSite("None");
+        }
+        
+        return builder.build();
     }
     
     /**
