@@ -57,5 +57,6 @@ public class RoomUser {
     }
 
     @OneToMany(mappedBy = "roomUser", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @Builder.Default
     private List<Chat> chats = new ArrayList<>();
 }

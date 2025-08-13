@@ -5,6 +5,7 @@ import java.util.Arrays;
 import com.promisenow.api.domain.user.service.UserService;
 import com.promisenow.api.global.jwt.JwtAuthenticationFilter;
 import com.promisenow.api.global.jwt.JwtTokenProvider;
+import com.promisenow.api.global.jwt.RefreshTokenService;
 import com.promisenow.api.global.oauth.CustomOAuth2UserService;
 import com.promisenow.api.global.oauth.OAuth2LoginSuccessHandler;
 import jakarta.servlet.http.HttpServletResponse;
@@ -36,49 +37,60 @@ public class SecurityConfig {
 
     @Bean
     @Profile("!test")
-    public SecurityFilterChain filterChain(HttpSecurity http, JwtTokenProvider jwtTokenProvider, UserService userService) throws Exception {
-        // CORS 설정
-        http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
-
-
-        // CSRF 설정 Disable
-        http.csrf(csrf -> csrf
-            .ignoringRequestMatchers("/h2-console/**")
-            .disable()
-        );
-        // 헤더 설정
-        http.headers(
-            // h2-console에서 iframe을 사용함. X-Frame-Options을 위해 sameOrigin 설정
-            headersCustomizer -> headersCustomizer
-                .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
-        );
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtTokenProvider jwtTokenProvider, UserService userService, RefreshTokenService refreshTokenService, OAuth2LoginSuccessHandler oAuth2SuccessHandler) throws Exception {
         http
+            // CSRF 비활성화
             .csrf(AbstractHttpConfigurer::disable)
+            
+            // CORS 설정
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            
+            // 세션 정책 설정
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
+            
+            // JWT 필터 추가
+            .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, userService, refreshTokenService), UsernamePasswordAuthenticationFilter.class)
+            
+            // 헤더 설정 (h2-console용)
+            .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
+            
+            // 요청 인증 설정
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/api/chatting/**").permitAll()          // 메시지 조회, 이미지 업로드 허용
-                .requestMatchers("/uploaded-images/**").permitAll()  // ← 여기가 중요!
-                .requestMatchers("/ws-chat/**").permitAll() // 웹소켓 경로
-                .requestMatchers("/ws-leaderboard/**").permitAll() // 리더보드 웹소켓 경로
-                .requestMatchers("/api/upload/**").permitAll()
-                .requestMatchers("/api/leaderboard/**").permitAll() // 리더보드 API 경로
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // OPTIONS 요청 허용
+                // 공개 엔드포인트
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/swagger-ui/**").permitAll()
                 .requestMatchers("/v3/api-docs/**").permitAll()
-                .requestMatchers("/api/**").permitAll() // 일반 API 경로는 마지막에
+                .requestMatchers("/h2-console/**").permitAll()
+                
+                // OAuth2 관련 엔드포인트
+                .requestMatchers("/oauth2/**").permitAll()
+                .requestMatchers("/login/oauth2/code/**").permitAll()
+                
+                // 웹소켓
+                .requestMatchers("/ws-chat/**").permitAll()
+                
+                // 파일 업로드
+                .requestMatchers("/api/upload/**").permitAll()
+                .requestMatchers("/uploaded-images/**").permitAll()
+                
+                // OPTIONS 요청
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                
+                // API 엔드포인트 (인증 필요)
+                .requestMatchers("/api/**").authenticated()
+                
+                // 기타 모든 요청 허용
                 .anyRequest().permitAll()
             )
+            
+            // OAuth2 설정
             .oauth2Login(oauth2 -> oauth2
-                    .userInfoEndpoint(userInfo -> userInfo
-                            .userService(customOAuth2UserService(userService))
-                    )
-                    .successHandler(oAuth2SuccessHandler(jwtTokenProvider))
-                    .failureHandler(oAuth2FailureHandler())
+                .userInfoEndpoint(userInfo -> userInfo
+                    .userService(customOAuth2UserService(userService))
+                )
+                .successHandler(oAuth2SuccessHandler)
+                .failureHandler(oAuth2FailureHandler())
             );
-
 
         return http.build();
     }
@@ -86,17 +98,44 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // 개발/테스트용으로 모든 오리진 허용 (운영에서는 제한 필요)
-        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
-        // configuration.setAllowedOriginPatterns(Arrays.asList(
-        // "https://promisenow.store",
-        // "http://localhost:[*]",
-        // "http://127.0.0.1:[*]",
-        // "http://api.promisenow.store"
-        // ));
+        
+        // 허용할 오리진 설정 (개발 환경 포함)
+        configuration.setAllowedOriginPatterns(Arrays.asList(
+            "https://promisenow.store",
+            "https://api.promisenow.store",
+            "http://localhost:*",
+            "http://127.0.0.1:*",
+            "https://localhost:*",
+            "https://127.0.0.1:*"
+        ));
+        
+        // 허용할 HTTP 메서드
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
+        
+        // 허용할 헤더 (쿠키 관련 헤더 포함)
+        configuration.setAllowedHeaders(Arrays.asList(
+            "*",
+            "Authorization",
+            "Content-Type",
+            "X-Requested-With",
+            "Accept",
+            "Origin",
+            "Access-Control-Request-Method",
+            "Access-Control-Request-Headers"
+        ));
+        
+        // 노출할 헤더
+        configuration.setExposedHeaders(Arrays.asList(
+            "Access-Control-Allow-Origin",
+            "Access-Control-Allow-Credentials",
+            "Set-Cookie"
+        ));
+        
+        // 쿠키 허용 (HttpOnly 쿠키 지원을 위해 필수)
         configuration.setAllowCredentials(true);
+        
+        // 프리플라이트 요청 캐시 시간
+        configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
@@ -108,17 +147,15 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+
+
     // 커스텀 OAuth2UserService 빈 등록
     @Bean
     public OAuth2UserService<OAuth2UserRequest, OAuth2User> customOAuth2UserService(UserService userService) {
         return new CustomOAuth2UserService(userService);
     }
 
-    // 로그인 성공 핸들러
-    @Bean
-    public AuthenticationSuccessHandler oAuth2SuccessHandler(JwtTokenProvider jwtTokenProvider) {
-        return new OAuth2LoginSuccessHandler(jwtTokenProvider);
-    }
+
 
     // 로그인 실패 핸들러
     @Bean
@@ -129,7 +166,6 @@ public class SecurityConfig {
             response.getWriter().write("OAuth 로그인 실패: " + exception.getMessage());
         };
     }
-
 
     @Bean
     @Profile("test")

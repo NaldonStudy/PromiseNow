@@ -9,7 +9,7 @@ import java.util.List;
 public interface RoomUserService {
 
     // 방에 초대코드로 참가
-    JoinInfoResponse joinRoomByInviteCode(JoinRequest dto);
+    JoinInfoResponse joinRoomByInviteCode(JoinRequest request);
 
     // 방 나가기
     void quitRoom(Long roomId, Long userId);

@@ -1,7 +1,8 @@
 package com.promisenow.api.domain.room.service;
 
-import com.promisenow.api.common.ErrorMessage;
-import com.promisenow.api.domain.room.dto.RoomRequestDto;
+import com.promisenow.api.common.AppException;
+import com.promisenow.api.common.ErrorCode;
+import com.promisenow.api.domain.room.dto.RoomRequestDto.*;
 import com.promisenow.api.domain.room.dto.RoomResponseDto.*;
 import com.promisenow.api.domain.room.entity.Room;
 import com.promisenow.api.domain.room.entity.Room.*;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -28,14 +30,16 @@ public class RoomServiceImpl implements RoomService {
     private final UserRepository userRepository;
 
     // 메서드로 묶어서 관리
+    // 방을 찾지 못하면
     private Room findRoomOrThrow(Long roomId) {
         return roomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException(ErrorMessage.ROOM_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_FOUND));
     }
 
+    // User를 찾지 못하면
     private User findUserOrThrow(Long userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException(ErrorMessage.USER_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
     }
 
     // 방이 대기이거나 활성화 인지 확인하는 메서드
@@ -43,29 +47,35 @@ public class RoomServiceImpl implements RoomService {
         return state == Room.RoomState.WAITING || state == Room.RoomState.ACTIVE;
     }
 
+
     // 방 만드는 서비스
     @Override
-    public CreateResponse createRoomWithUser(String roomTitle, Long userId, String nickname) {
+    public CreateResponse createRoomWithUser(CreateRequest request) {
 
         String roomCode = generateRandomCode(6);
 
+        // 오늘 날짜가 기본으로 시작날짜
+        LocalDate startDate = LocalDate.now();
+        // 1주일 동안을 기본으로 설정
+        LocalDate endDate = startDate.plusWeeks(1);
+
         Room room = Room.builder()
-                .roomTitle(roomTitle)
+                .roomTitle(request.getRoomTitle())
                 .inviteCode(roomCode)
                 .roomState(Room.RoomState.WAITING)
+                .startDate(startDate)
+                .endDate(endDate)
                 .build();
-
         roomRepository.save(room);
 
-        User user = findUserOrThrow(userId);
+        User user = findUserOrThrow(request.getUserId());
 
         RoomUser roomUser = RoomUser.builder()
                 .room(room)
                 .user(user)
-                .nickname(nickname)
+                .nickname(request.getNickname())
                 .isAgreed(true)
                 .build();
-
         roomUserRepository.save(roomUser);
 
         return CreateResponse.builder()
@@ -73,7 +83,7 @@ public class RoomServiceImpl implements RoomService {
                 .roomUserId(roomUser.getRoomUserId())
                 .roomTitle(room.getRoomTitle())
                 .roomCode(room.getInviteCode())
-                .nickname(nickname)
+                .nickname(request.getNickname())
                 .build();
     }
 
@@ -84,11 +94,12 @@ public class RoomServiceImpl implements RoomService {
         List<RoomUser> roomUsers = roomUserRepository.findByRoom_RoomId(roomId);
 
         if(roomUsers.size() > 1) {
-            throw new IllegalArgumentException(ErrorMessage.ROOM_DELETE_NOT_ALLOWED);
+            throw new AppException(ErrorCode.ROOM_DELETE_NOT_ALLOWED);
         }
 
-        if(roomUsers.size() == 1) {
-            roomUserRepository.delete(roomUsers.get(0));
+        if (roomUsers.size() == 1) {
+            RoomUser lastUser = roomUsers.get(0);
+            roomUserRepository.delete(lastUser);
         }
 
         roomRepository.delete(room);
@@ -131,22 +142,39 @@ public class RoomServiceImpl implements RoomService {
 
     // 내가 참가되어있는 방 정보들 확인
     public List<RoomListItem> getRoomsByUserId(Long userId) {
+        findUserOrThrow(userId);
+
         List<RoomUser> joinedRoomUsers = roomUserRepository.findByUserId(userId);
+
+        Set<Long> roomIds = joinedRoomUsers.stream()
+                .map(ru -> ru.getRoom().getRoomId())
+                .collect(Collectors.toSet());
+
+        Map<Long, List<RoomUser>> participantsByRoom = roomIds.stream()
+                .collect(Collectors.toMap(
+                        id -> id,
+                        id -> roomUserRepository.findByRoom_RoomId(id)
+                ));
 
         List<RoomListItem> roomList = joinedRoomUsers.stream()
                 .map(myRoomUser -> {
                     Room room = myRoomUser.getRoom();
-                    List<RoomUser> participants = roomUserRepository.findByRoom_RoomId(room.getRoomId());
+                    List<RoomUser> participants = participantsByRoom
+                            .getOrDefault(room.getRoomId(), Collections.emptyList())
+                            .stream()
+                            .filter(p -> !Objects.equals(p.getUser().getUserId(), -1L))
+                            .toList();
 
                     int total = participants.size();
                     String myNickname = myRoomUser.getNickname();
+
                     String firstNickname = participants.stream()
-                            .filter(p -> !p.getUser().getUserId().equals(userId))
+                            .filter(p -> !Objects.equals(p.getUser().getUserId(), userId))
                             .map(RoomUser::getNickname)
                             .findFirst()
                             .orElse(myNickname);
 
-                    String summary = (total == 1) ? myNickname : firstNickname + " 외 " + (total - 1) + "명";
+                    String summary = (total <= 1) ? myNickname : firstNickname + " 외 " + (total - 1) + "명";
 
                     return new RoomListItem(
                             room.getRoomId(),
@@ -198,13 +226,6 @@ public class RoomServiceImpl implements RoomService {
         return result;
     }
 
-    @Override
-    public void updateRoomState(Long roomId, Room.RoomState roomState) {
-        Room room = findRoomOrThrow(roomId);
-
-        room.changeRoomState(roomState);
-    }
-
     // 방 제목 변경
     @Transactional
     public void updateRoomTitle(Long roomId, String newTitle) {
@@ -216,23 +237,23 @@ public class RoomServiceImpl implements RoomService {
     // 일정 기간 조절
     @Override
     @Transactional
-    public void updateRoomDateRange(Long roomId, RoomRequestDto.DateRangeUpdateRequest dto) {
+    public void updateRoomDateRange(Long roomId, DateRangeUpdateRequest request) {
         Room room = findRoomOrThrow(roomId);
 
-        room.upadteDateRange(dto.getStartDate(), dto.getEndDate());
+        room.upadteDateRange(request.getStartDate(), request.getEndDate());
     }
 
     @Override
     @Transactional
-    public void updateRoomAppointment(Long roomId, RoomRequestDto.AppointmentUpdateRequest dto) {
+    public void updateRoomAppointment(Long roomId, AppointmentUpdateRequest request) {
         Room room = findRoomOrThrow(roomId);
 
         room.updateAppointment(
-                dto.getLocationDate(),
-                dto.getLocationTime(),
-                dto.getLocationName(),
-                dto.getLocationLat(),
-                dto.getLocationLng());
+                request.getLocationDate(),
+                request.getLocationTime(),
+                request.getLocationName(),
+                request.getLocationLat(),
+                request.getLocationLng());
     }
 
     // 시간 확인하고 방 상태 Activate로 변경
