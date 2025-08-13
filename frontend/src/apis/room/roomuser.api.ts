@@ -28,10 +28,8 @@ export const getUsersInRoom = async (roomId: number) => {
 };
 
 /// 방 사용자 정보 조회
-export const getRoomUserInfo = async (roomId: number, userId: number) => {
-  const data = await handleApi<RoomUserInfoResponse>(
-    axiosInstance.get(`/rooms/${roomId}/me/${userId}`),
-  );
+export const getRoomUserInfo = async (roomId: number) => {
+  const data = await handleApi<RoomUserInfoResponse>(axiosInstance.get(`/rooms/${roomId}/me/`));
   return data;
 };
 
