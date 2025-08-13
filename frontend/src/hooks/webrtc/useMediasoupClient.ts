@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import protooClient from 'protoo-client';
 import * as mediasoupClient from 'mediasoup-client';
+import { useMeStore } from './stores';
 
 // Types
 interface MediasoupConfig {
@@ -79,6 +80,8 @@ export const useMediasoupClient = (config: MediasoupConfig) => {
     webcamProducer: null,
     consumers: new Map(),
   });
+
+  const { setAudioMuted, setVideoMuted } = useMeStore();
 
   // Refs
   const protooRef = useRef<protooClient.Peer | null>(null);
@@ -552,42 +555,46 @@ export const useMediasoupClient = (config: MediasoupConfig) => {
   const muteMic = useCallback(async () => {
     if (state.micProducer) {
       await state.micProducer.pause();
+      setAudioMuted(true);
       setState((prev) => ({
         ...prev,
         micProducer: prev.micProducer,
       }));
     }
-  }, [state.micProducer]);
+  }, [setAudioMuted, state.micProducer]);
 
   const unmuteMic = useCallback(async () => {
     if (state.micProducer) {
       await state.micProducer.resume();
+      setAudioMuted(false);
       setState((prev) => ({
         ...prev,
         micProducer: prev.micProducer,
       }));
     }
-  }, [state.micProducer]);
+  }, [setAudioMuted, state.micProducer]);
 
   const muteWebcam = useCallback(async () => {
     if (state.webcamProducer) {
       await state.webcamProducer.pause();
+      setVideoMuted(true);
       setState((prev) => ({
         ...prev,
         webcamProducer: prev.webcamProducer,
       }));
     }
-  }, [state.webcamProducer]);
+  }, [setVideoMuted, state.webcamProducer]);
 
   const unmuteWebcam = useCallback(async () => {
     if (state.webcamProducer) {
       await state.webcamProducer.resume();
+      setVideoMuted(false);
       setState((prev) => ({
         ...prev,
         webcamProducer: prev.webcamProducer,
       }));
     }
-  }, [state.webcamProducer]);
+  }, [setVideoMuted, state.webcamProducer]);
 
   // Cleanup on unmount
   useEffect(() => {

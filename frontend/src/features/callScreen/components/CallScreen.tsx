@@ -10,7 +10,8 @@ interface Participant {
   id: string;
   name: string;
   isOnline: boolean;
-  isMuted: boolean;
+  isMicMuted: boolean;
+  isVideoMuted: boolean;
   videoStream: MediaStream | null;
 }
 
@@ -70,9 +71,14 @@ const CallScreen = () => {
     if (localStream) {
       setParticipants((prev) => {
         const existingLocal = prev.find((p) => p.id === 'local');
+        // webcamProducer가 아직 없으면 isVideoMuted를 false로 간주
+        const isVideoMuted = webcamProducer ? webcamProducer.paused : false;
+        const isMicMuted = micProducer ? micProducer.paused : false;
         if (existingLocal) {
           return prev.map((p) =>
-            p.id === 'local' ? { ...p, videoStream: localStream, isOnline: true } : p,
+            p.id === 'local'
+              ? { ...p, videoStream: localStream, isOnline: true, isMicMuted, isVideoMuted }
+              : p,
           );
         } else {
           return [
@@ -81,14 +87,15 @@ const CallScreen = () => {
               id: 'local',
               name: '나',
               isOnline: true,
-              isMuted: !micProducer || micProducer.paused,
+              isMicMuted,
+              isVideoMuted,
               videoStream: localStream,
             },
           ];
         }
       });
     }
-  }, [localStream, micProducer]);
+  }, [localStream, micProducer, webcamProducer]);
 
   // 원격 스트림들을 참가자 목록에 추가
   useEffect(() => {
@@ -106,7 +113,8 @@ const CallScreen = () => {
               id: peerId,
               name: `참가자 ${peerId.slice(0, 8)}`,
               isOnline: true,
-              isMuted: false,
+              isMicMuted: false,
+              isVideoMuted: false,
               videoStream: stream,
             },
           ];
@@ -180,7 +188,7 @@ const CallScreen = () => {
   }
 
   return (
-    <div className="relative h-full">
+    <div className="relative h-full bg-gray-200">
       <VideoGrid participants={participants} />
       <CallControlPanel
         onClick={handleChatClick}

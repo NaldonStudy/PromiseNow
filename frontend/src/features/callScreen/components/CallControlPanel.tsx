@@ -1,4 +1,5 @@
 import CircleBtn from '../../../components/ui/CircleBtn';
+import { useMeStore } from '../../../hooks/webrtc/stores/me';
 import { useCallScreenStore } from '../callScreen.store';
 
 interface Props {
@@ -17,10 +18,9 @@ const CallControlPanel = ({
   onToggleMic,
   onToggleVideo,
   isConnected,
-  isMicMuted = false,
-  isVideoMuted = false,
 }: Props) => {
   const { toggleViewMode } = useCallScreenStore();
+  const { audioMuted, videoMuted } = useMeStore();
 
   const handleMicToggle = () => {
     if (onToggleMic) {
@@ -38,14 +38,14 @@ const CallControlPanel = ({
     <div className="absolute bottom-7 left-0 w-full px-7 flex justify-between items-end pointer-events-none">
       <div className="flex gap-4 items-end pointer-events-auto">
         <CircleBtn
-          iconType={isMicMuted ? 'micOff' : 'mic'}
-          color={isMicMuted ? 'white' : 'primary'}
+          iconType={audioMuted ? 'micOff' : 'mic'}
+          color={audioMuted ? 'white' : 'primary'}
           onClick={handleMicToggle}
           disabled={!isConnected}
         />
         <CircleBtn
-          iconType={isVideoMuted ? 'videoOff' : 'video'}
-          color={isVideoMuted ? 'white' : 'primary'}
+          iconType={videoMuted ? 'videoOff' : 'video'}
+          color={videoMuted ? 'white' : 'primary'}
           onClick={handleVideoToggle}
           disabled={!isConnected}
         />
