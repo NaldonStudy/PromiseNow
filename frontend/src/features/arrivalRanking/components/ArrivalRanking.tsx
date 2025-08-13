@@ -1,13 +1,17 @@
-import { useRef, useState, useEffect, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
-import ArrivalRankingItem from './ArrivalRankingItem';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { MdDragHandle } from 'react-icons/md';
-import useMapStore from '../../map/map.store';
-import { useLeaderboardSocket } from '../../../hooks/socket/useLeaderboardSocket';
-import { useUsersInRoom, useAppointment } from '../../../hooks/queries';
+import { useParams } from 'react-router-dom';
+import { useAppointment, useUsersInRoom } from '../../../hooks/queries';
 import { useLeaderboard } from '../../../hooks/queries/leaderboard';
+import { useLeaderboardSocket } from '../../../hooks/socket/useLeaderboardSocket';
+import useMapStore from '../../map/map.store';
+import ArrivalRankingItem from './ArrivalRankingItem';
 
-import type { PositionResponseDto, ArrivalRankingItem as ArrivalRankingItemType, UserJoinNotificationDto } from '../../../apis/leaderboard/leaderboard.types';
+import type {
+  ArrivalRankingItem as ArrivalRankingItemType,
+  PositionResponseDto,
+  UserJoinNotificationDto,
+} from '../../../apis/leaderboard/leaderboard.types';
 
 const MIN_HEIGHT = 150;
 const MAX_HEIGHT = window.innerHeight * 0.7;
@@ -15,62 +19,75 @@ const MAX_HEIGHT = window.innerHeight * 0.7;
 const ArrivalRanking = () => {
   const { id } = useParams<{ id: string }>();
   const parsedRoomId = parseInt(id || '', 10);
-  
+
   const containerRef = useRef<HTMLDivElement>(null);
   const { rankingHeight, setRankingHeight } = useMapStore();
-  
+
   const [positions, setPositions] = useState<PositionResponseDto[]>([]);
   const [rankingItems, setRankingItems] = useState<ArrivalRankingItemType[]>([]);
   const [isUpdating, setIsUpdating] = useState(false);
-  
+
   // 방 참가자 정보 조회
   const { data: users } = useUsersInRoom(parsedRoomId);
-  
+
   // 약속 정보 조회
   const { data: appointmentData, isLoading: isLoadingAppointment } = useAppointment(parsedRoomId);
-  
+
   // 초기 리더보드 데이터 조회
-  const { data: initialLeaderboard, isLoading: isLoadingLeaderboard } = useLeaderboard(parsedRoomId);
+  const { data: initialLeaderboard, isLoading: isLoadingLeaderboard } =
+    useLeaderboard(parsedRoomId);
 
   // 새로운 사용자 참가 알림 처리
-  const handleUserJoin = useCallback((notification: UserJoinNotificationDto) => {
-    console.log('👋 새로운 사용자 참가:', notification);
-    
-    // 토스트 알림 표시 (선택사항)
-    // toast.success(`${notification.nickname}님이 참가했습니다!`);
-    
-    // 리더보드 데이터 새로고침
-    if (initialLeaderboard) {
-      setPositions(initialLeaderboard);
-    }
-  }, [initialLeaderboard]);
+  const handleUserJoin = useCallback(
+    (notification: UserJoinNotificationDto) => {
+      console.log('👋 새로운 사용자 참가:', notification);
+
+      // 토스트 알림 표시 (선택사항)
+      // toast.success(`${notification.nickname}님이 참가했습니다!`);
+
+      // 리더보드 데이터 새로고침
+      if (initialLeaderboard) {
+        setPositions(initialLeaderboard);
+      }
+    },
+    [initialLeaderboard],
+  );
 
   // WebSocket 연결 - 실시간 데이터만 사용
-  useLeaderboardSocket(parsedRoomId, (newPositions: PositionResponseDto[]) => {
-    console.log('📡 WebSocket으로 받은 새로운 위치 데이터:', newPositions);
-    console.log('📊 온라인 상태 확인:', newPositions.map(p => ({ roomUserId: p.roomUserId, online: p.online })));
-    
-    // 이전 데이터와 비교하여 변경사항 확인
-    setPositions(prevPositions => {
-      const hasChanges = JSON.stringify(prevPositions) !== JSON.stringify(newPositions);
-      console.log('🔄 데이터 변경사항:', hasChanges ? '있음' : '없음');
-      return newPositions;
-    });
-    
-    // 업데이트 중 표시
-    setIsUpdating(true);
-    setTimeout(() => setIsUpdating(false), 1000);
-  }, handleUserJoin, appointmentData, isLoadingAppointment);
-  
+  useLeaderboardSocket(
+    parsedRoomId,
+    (newPositions: PositionResponseDto[]) => {
+      console.log('📡 WebSocket으로 받은 새로운 위치 데이터:', newPositions);
+      console.log(
+        '📊 온라인 상태 확인:',
+        newPositions.map((p) => ({ roomUserId: p.roomUserId, online: p.online })),
+      );
+
+      // 이전 데이터와 비교하여 변경사항 확인
+      setPositions((prevPositions) => {
+        const hasChanges = JSON.stringify(prevPositions) !== JSON.stringify(newPositions);
+        console.log('🔄 데이터 변경사항:', hasChanges ? '있음' : '없음');
+        return newPositions;
+      });
+
+      // 업데이트 중 표시
+      setIsUpdating(true);
+      setTimeout(() => setIsUpdating(false), 1000);
+    },
+    handleUserJoin,
+    appointmentData,
+    isLoadingAppointment,
+  );
+
   // 초기 데이터 설정 및 컴포넌트 마운트 시 상태 초기화
   useEffect(() => {
     console.log('🔄 ArrivalRanking 컴포넌트 마운트/업데이트:', { roomId: parsedRoomId });
-    
+
     // 컴포넌트 마운트 시 상태 초기화
     setPositions([]);
     setRankingItems([]);
     setIsUpdating(false);
-    
+
     if (initialLeaderboard && initialLeaderboard.length > 0) {
       console.log('📊 초기 리더보드 데이터 설정:', initialLeaderboard);
       setPositions(initialLeaderboard);
@@ -104,24 +121,34 @@ const ArrivalRanking = () => {
 
   // 위치 데이터를 랭킹 아이템으로 변환
   useEffect(() => {
-    console.log('🔄 랭킹 아이템 변환 시작:', { positionsLength: positions.length, usersLength: users?.length });
-    
+    console.log('🔄 랭킹 아이템 변환 시작:', {
+      positionsLength: positions.length,
+      usersLength: users?.length,
+    });
+
     if (!positions.length || !users) {
       console.log('⚠️ 변환 조건 불만족:', { hasPositions: !!positions.length, hasUsers: !!users });
       return;
     }
 
     const items: ArrivalRankingItemType[] = positions.map((position, index) => {
-      console.log('👤 사용자 변환:', { roomUserId: position.roomUserId, online: position.online, name: users[index]?.nickname });
+      console.log('👤 사용자 변환:', {
+        roomUserId: position.roomUserId,
+        online: position.online,
+        name: users[index]?.nickname,
+      });
       // 현재는 roomUserId와 users 배열의 인덱스가 일치한다고 가정
       // 실제로는 users 배열에 roomUserId 정보가 포함되어야 함
       const user = users[index] || null;
-      
+
       // 개선된 ETA 계산
       let eta: string;
       if (position.arrived) {
         eta = '도착';
-      } else if (position.estimatedArrivalMinutes !== undefined && position.estimatedArrivalMinutes > 0) {
+      } else if (
+        position.estimatedArrivalMinutes !== undefined &&
+        position.estimatedArrivalMinutes > 0
+      ) {
         if (position.estimatedArrivalMinutes < 60) {
           eta = `${position.estimatedArrivalMinutes}분`;
         } else {
@@ -132,7 +159,7 @@ const ArrivalRanking = () => {
       } else {
         eta = `${Math.round(position.distance * 1000)}m`;
       }
-      
+
       return {
         rank: index + 1,
         roomUserId: position.roomUserId,
@@ -192,7 +219,6 @@ const ArrivalRanking = () => {
   return (
     <div
       ref={containerRef}
-
       className="rounded-t-3xl bg-white w-full overflow-hidden flex flex-col transition-none relative z-10"
       style={{ height: rankingHeight }}
     >
@@ -218,13 +244,8 @@ const ArrivalRanking = () => {
             </div>
           ) : rankingItems.length > 0 ? (
             <>
-              {/* 업데이트 중 표시 */}
-              {isUpdating && (
-                <div className="text-xs px-3 py-1 rounded-full mb-2 bg-blue-100 text-blue-700">
-                  🔄 업데이트중...
-                </div>
-              )}
-              
+              업데이트 중 표시
+              {isUpdating && console.log('업데이트 중')}
               {rankingItems.map((item) => (
                 <ArrivalRankingItem
                   key={item.roomUserId}
@@ -239,9 +260,7 @@ const ArrivalRanking = () => {
               ))}
             </>
           ) : (
-            <div className="text-center text-text-gray py-8">
-              실시간 위치 정보를 불러오는 중...
-            </div>
+            <div className="text-center text-text-gray py-8">실시간 위치 정보를 불러오는 중...</div>
           )}
         </div>
       </div>

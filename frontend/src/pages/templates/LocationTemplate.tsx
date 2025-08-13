@@ -1,14 +1,18 @@
 import RoomLayout from '../../components/layout/RoomLayout';
 import ArrivalRanking from '../../features/arrivalRanking/components/ArrivalRanking';
-import MapControls from '../../features/map/components/MapControls';
 import MapView from '../../features/map/components/MapView';
+import MapControls from './../../features/map/components/MapControls';
 
-const LocationTemplate = () => {
+interface Props {
+  roomId: number;
+}
+
+const LocationTemplate = ({ roomId }: Props) => {
   return (
     <RoomLayout>
       <div className="h-full relative overflow-hidden">
         <MapView />
-        <MapControls />
+        <MapControls roomId={roomId} />
         <div className="absolute bottom-0 w-full">
           <ArrivalRanking />
         </div>
