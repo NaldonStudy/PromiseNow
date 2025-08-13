@@ -5,7 +5,8 @@ interface Participant {
   id: string;
   name: string;
   isOnline: boolean;
-  isMuted: boolean;
+  isMicMuted: boolean;
+  isVideoMuted: boolean;
   videoStream: MediaStream | null;
 }
 
@@ -40,7 +41,8 @@ const VideoGrid = ({ participants = [] }: Props) => {
                 id={participant.id}
                 name={participant.name}
                 isOnline={participant.isOnline}
-                isMuted={participant.isMuted}
+                isMicMuted={participant.isMicMuted}
+                isVideoMuted={participant.isVideoMuted}
                 videoStream={participant.videoStream}
                 onClick={handleParticipantClick}
               />
@@ -55,12 +57,31 @@ const VideoGrid = ({ participants = [] }: Props) => {
               id={selectedParticipant.id}
               name={selectedParticipant.name}
               isOnline={selectedParticipant.isOnline}
-              isMuted={selectedParticipant.isMuted}
+              isMicMuted={selectedParticipant.isMicMuted}
+              isVideoMuted={selectedParticipant.isVideoMuted}
               videoStream={selectedParticipant.videoStream}
               onClick={handleParticipantClick}
             />
           )}
         </div>
+      </div>
+    );
+  }
+
+  // 참가자가 1명일 때: 전체화면
+  if (participantCount === 1) {
+    const onlyParticipant = participants[0];
+    return (
+      <div className="w-full h-full">
+        <VideoTile
+          id={onlyParticipant.id}
+          name={onlyParticipant.name}
+          isOnline={onlyParticipant.isOnline}
+          isMicMuted={onlyParticipant.isMicMuted}
+          isVideoMuted={onlyParticipant.isVideoMuted}
+          videoStream={onlyParticipant.videoStream}
+          onClick={handleParticipantClick}
+        />
       </div>
     );
   }
@@ -78,7 +99,8 @@ const VideoGrid = ({ participants = [] }: Props) => {
             id={topParticipant.id}
             name={topParticipant.name}
             isOnline={topParticipant.isOnline}
-            isMuted={topParticipant.isMuted}
+            isMicMuted={topParticipant.isMicMuted}
+            isVideoMuted={topParticipant.isVideoMuted}
             videoStream={topParticipant.videoStream}
             onClick={handleParticipantClick}
           />
@@ -91,7 +113,8 @@ const VideoGrid = ({ participants = [] }: Props) => {
               id={participant.id}
               name={participant.name}
               isOnline={participant.isOnline}
-              isMuted={participant.isMuted}
+              isMicMuted={participant.isMicMuted}
+              isVideoMuted={participant.isVideoMuted}
               videoStream={participant.videoStream}
               onClick={handleParticipantClick}
             />
@@ -110,7 +133,8 @@ const VideoGrid = ({ participants = [] }: Props) => {
           id={participant.id}
           name={participant.name}
           isOnline={participant.isOnline}
-          isMuted={participant.isMuted}
+          isMicMuted={participant.isMicMuted}
+          isVideoMuted={participant.isVideoMuted}
           videoStream={participant.videoStream}
           onClick={handleParticipantClick}
         />

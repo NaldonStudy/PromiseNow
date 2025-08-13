@@ -13,8 +13,8 @@ export interface MeState {
   setMe: (payload: { peerId: string; displayName: string; device: any }) => void;
   setMediaCapabilities: (payload: { canSendMic: boolean; canSendWebcam: boolean }) => void;
   setDisplayName: (displayName: string) => void;
-  setAudioMutedState: (enabled: boolean) => void;
-  setVideoMutedState: (enabled: boolean) => void;
+  setAudioMuted: (enabled: boolean) => void;
+  setVideoMuted: (enabled: boolean) => void;
   resetOnRoomClosed: () => void;
 }
 
@@ -36,8 +36,8 @@ export const useMeStore = create<MeState>((set) => ({
       displayName: displayName || state.displayName,
     })),
 
-  setAudioMutedState: (enabled) => set({ audioMuted: enabled }),
-  setVideoMutedState: (enabled) => set({ videoMuted: enabled }),
+  setAudioMuted: (enabled) => set({ audioMuted: enabled }),
+  setVideoMuted: (enabled) => set({ videoMuted: enabled }),
 
   resetOnRoomClosed: () => set({ audioMuted: false, videoMuted: false }),
 }));

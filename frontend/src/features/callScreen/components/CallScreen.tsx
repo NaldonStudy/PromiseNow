@@ -1,14 +1,17 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useMediasoupClient } from '../../../hooks/webrtc/useMediasoupClient';
+
 import CallControlPanel from './CallControlPanel';
 import VideoGrid from './VideoGrid';
-import { useMediasoupClient } from '../../../hooks/webrtc/useMediasoupClient';
+import { useCallActionStore } from '../callAction';
 
 interface Participant {
   id: string;
   name: string;
   isOnline: boolean;
-  isMuted: boolean;
+  isMicMuted: boolean;
+  isVideoMuted: boolean;
   videoStream: MediaStream | null;
 }
 
@@ -43,6 +46,9 @@ const CallScreen = () => {
     webcam: true,
   });
 
+  const requestLeave = useCallActionStore((s) => s.requestLeave);
+  const resetLeave = useCallActionStore((s) => s.reset);
+
   // Mediasoup 연결 (한 번만 실행)
   useEffect(() => {
     if (id && !hasConnected.current) {
@@ -63,50 +69,66 @@ const CallScreen = () => {
   // 로컬 스트림을 참가자 목록에 추가
   useEffect(() => {
     if (localStream) {
-      setParticipants(prev => {
-        const existingLocal = prev.find(p => p.id === 'local');
+      setParticipants((prev) => {
+        const existingLocal = prev.find((p) => p.id === 'local');
+        // webcamProducer가 아직 없으면 isVideoMuted를 false로 간주
+        const isVideoMuted = webcamProducer ? webcamProducer.paused : false;
+        const isMicMuted = micProducer ? micProducer.paused : false;
         if (existingLocal) {
-          return prev.map(p =>
+          return prev.map((p) =>
             p.id === 'local'
-              ? { ...p, videoStream: localStream, isOnline: true }
-              : p
+              ? { ...p, videoStream: localStream, isOnline: true, isMicMuted, isVideoMuted }
+              : p,
           );
         } else {
-          return [...prev, {
-            id: 'local',
-            name: '나',
-            isOnline: true,
-            isMuted: !micProducer || micProducer.paused,
-            videoStream: localStream,
-          }];
+          return [
+            ...prev,
+            {
+              id: 'local',
+              name: '나',
+              isOnline: true,
+              isMicMuted,
+              isVideoMuted,
+              videoStream: localStream,
+            },
+          ];
         }
       });
     }
-  }, [localStream, micProducer]);
+  }, [localStream, micProducer, webcamProducer]);
 
   // 원격 스트림들을 참가자 목록에 추가
   useEffect(() => {
     remoteStreams.forEach((stream, peerId) => {
-      setParticipants(prev => {
-        const existing = prev.find(p => p.id === peerId);
+      setParticipants((prev) => {
+        const existing = prev.find((p) => p.id === peerId);
         if (existing) {
-          return prev.map(p =>
-            p.id === peerId
-              ? { ...p, videoStream: stream, isOnline: true }
-              : p
+          return prev.map((p) =>
+            p.id === peerId ? { ...p, videoStream: stream, isOnline: true } : p,
           );
         } else {
-          return [...prev, {
-            id: peerId,
-            name: `참가자 ${peerId.slice(0, 8)}`,
-            isOnline: true,
-            isMuted: false,
-            videoStream: stream,
-          }];
+          return [
+            ...prev,
+            {
+              id: peerId,
+              name: `참가자 ${peerId.slice(0, 8)}`,
+              isOnline: true,
+              isMicMuted: false,
+              isVideoMuted: false,
+              videoStream: stream,
+            },
+          ];
         }
       });
     });
   }, [remoteStreams]);
+
+  useEffect(() => {
+    if (requestLeave) {
+      handleLeaveCall();
+      resetLeave();
+    }
+  }, [requestLeave]);
 
   const handleChatClick = () => {
     if (!id) return;
@@ -116,7 +138,7 @@ const CallScreen = () => {
   const handleLeaveCall = () => {
     hasConnected.current = false;
     disconnect();
-    navigate('/');
+    navigate(`/${id}/schedule`);
   };
 
   const handleToggleMic = async () => {
@@ -166,11 +188,10 @@ const CallScreen = () => {
   }
 
   return (
-    <div className="relative h-full">
+    <div className="relative h-full bg-gray-200">
       <VideoGrid participants={participants} />
       <CallControlPanel
         onClick={handleChatClick}
-        onLeaveCall={handleLeaveCall}
         onToggleMic={handleToggleMic}
         onToggleVideo={handleToggleVideo}
         isConnected={isConnected}

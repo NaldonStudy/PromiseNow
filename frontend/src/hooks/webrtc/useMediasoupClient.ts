@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import protooClient from 'protoo-client';
 import * as mediasoupClient from 'mediasoup-client';
+import { useMeStore } from './stores';
 
 // Types
 interface MediasoupConfig {
@@ -20,8 +21,20 @@ interface MediasoupState {
   error: string | null;
   localStream: MediaStream | null;
   remoteStreams: Map<string, MediaStream>;
-  micProducer: { id: string; paused: boolean; close: () => void; pause: () => void; resume: () => void } | null;
-  webcamProducer: { id: string; paused: boolean; close: () => void; pause: () => void; resume: () => void } | null;
+  micProducer: {
+    id: string;
+    paused: boolean;
+    close: () => void;
+    pause: () => void;
+    resume: () => void;
+  } | null;
+  webcamProducer: {
+    id: string;
+    paused: boolean;
+    close: () => void;
+    pause: () => void;
+    resume: () => void;
+  } | null;
   consumers: Map<string, { id: string; track: MediaStreamTrack; close: () => void }>;
 }
 
@@ -68,10 +81,16 @@ export const useMediasoupClient = (config: MediasoupConfig) => {
     consumers: new Map(),
   });
 
+  const { setAudioMuted, setVideoMuted } = useMeStore();
+
   // Refs
   const protooRef = useRef<protooClient.Peer | null>(null);
-  const sendTransportRef = useRef<ReturnType<mediasoupClient.Device['createSendTransport']> | null>(null);
-  const recvTransportRef = useRef<ReturnType<mediasoupClient.Device['createRecvTransport']> | null>(null);
+  const sendTransportRef = useRef<ReturnType<mediasoupClient.Device['createSendTransport']> | null>(
+    null,
+  );
+  const recvTransportRef = useRef<ReturnType<mediasoupClient.Device['createRecvTransport']> | null>(
+    null,
+  );
   const deviceRef = useRef<mediasoupClient.Device | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
   const isConnectingRef = useRef(false);
@@ -101,7 +120,7 @@ export const useMediasoupClient = (config: MediasoupConfig) => {
 
     try {
       isConnectingRef.current = true;
-      setState(prev => ({ ...prev, isConnecting: true, error: null }));
+      setState((prev) => ({ ...prev, isConnecting: true, error: null }));
 
       const protooUrl = getProtooUrl({
         roomId,
@@ -130,27 +149,27 @@ export const useMediasoupClient = (config: MediasoupConfig) => {
       protoo.on('failed', () => {
         console.error('WebSocket connection failed');
         isConnectingRef.current = false;
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           isConnecting: false,
-          error: 'WebSocket connection failed'
+          error: 'WebSocket connection failed',
         }));
       });
 
       protoo.on('disconnected', () => {
         console.log('WebSocket disconnected');
         isConnectedRef.current = false;
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           isConnected: false,
-          error: 'WebSocket disconnected'
+          error: 'WebSocket disconnected',
         }));
       });
 
       protoo.on('close', () => {
         console.log('WebSocket closed');
         isConnectedRef.current = false;
-        setState(prev => ({ ...prev, isConnected: false }));
+        setState((prev) => ({ ...prev, isConnected: false }));
       });
 
       // Handle server requests
@@ -189,7 +208,7 @@ export const useMediasoupClient = (config: MediasoupConfig) => {
               });
 
               // Store consumer
-              setState(prev => {
+              setState((prev) => {
                 const newConsumers = new Map(prev.consumers);
                 newConsumers.set(consumer.id, consumer);
                 return { ...prev, consumers: newConsumers };
@@ -198,7 +217,7 @@ export const useMediasoupClient = (config: MediasoupConfig) => {
               // Add remote stream
               if (consumer.track) {
                 const stream = new MediaStream([consumer.track]);
-                setState(prev => {
+                setState((prev) => {
                   const newRemoteStreams = new Map(prev.remoteStreams);
                   newRemoteStreams.set(remotePeerId, stream);
                   return { ...prev, remoteStreams: newRemoteStreams };
@@ -225,14 +244,13 @@ export const useMediasoupClient = (config: MediasoupConfig) => {
             reject(400, `Unknown method: ${request.method}`);
         }
       });
-
     } catch (error) {
       console.error('Connection error:', error);
       isConnectingRef.current = false;
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isConnecting: false,
-        error: error instanceof Error ? error.message : 'Connection failed'
+        error: error instanceof Error ? error.message : 'Connection failed',
       }));
     }
   }, [roomId, peerId, displayName, forceTcp, produce, consume, mic, webcam, getProtooUrl]);
@@ -264,13 +282,8 @@ export const useMediasoupClient = (config: MediasoupConfig) => {
 
       console.log('Send transport info:', sendTransportInfo);
 
-      const {
-        id,
-        iceParameters,
-        iceCandidates,
-        dtlsParameters,
-        sctpParameters,
-      } = sendTransportInfo;
+      const { id, iceParameters, iceCandidates, dtlsParameters, sctpParameters } =
+        sendTransportInfo;
 
       const sendTransport = device.createSendTransport({
         id,
@@ -364,19 +377,18 @@ export const useMediasoupClient = (config: MediasoupConfig) => {
 
       isConnectingRef.current = false;
       isConnectedRef.current = true;
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isConnected: true,
-        isConnecting: false
+        isConnecting: false,
       }));
-
     } catch (error) {
       console.error('Join room error:', error);
       isConnectingRef.current = false;
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isConnecting: false,
-        error: error instanceof Error ? error.message : 'Failed to join room'
+        error: error instanceof Error ? error.message : 'Failed to join room',
       }));
     }
   }, [displayName, forceTcp]);
@@ -401,7 +413,7 @@ export const useMediasoupClient = (config: MediasoupConfig) => {
     }
 
     if (localStreamRef.current) {
-      localStreamRef.current.getTracks().forEach(track => track.stop());
+      localStreamRef.current.getTracks().forEach((track) => track.stop());
       localStreamRef.current = null;
     }
 
@@ -432,27 +444,24 @@ export const useMediasoupClient = (config: MediasoupConfig) => {
 
       const producer = await sendTransportRef.current.produce({
         track,
-        encodings: [
-          { maxBitrate: 128000, dtx: true },
-        ],
+        encodings: [{ maxBitrate: 128000, dtx: true }],
         codecOptions: {
           opusStereo: true,
           opusDtx: true,
         },
       });
 
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         micProducer: producer,
-        localStream: stream
+        localStream: stream,
       }));
       localStreamRef.current = stream;
-
     } catch (error) {
       console.error('Enable mic error:', error);
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        error: error instanceof Error ? error.message : 'Failed to enable microphone'
+        error: error instanceof Error ? error.message : 'Failed to enable microphone',
       }));
     }
   }, []);
@@ -471,11 +480,10 @@ export const useMediasoupClient = (config: MediasoupConfig) => {
         }
       }
 
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        micProducer: null
+        micProducer: null,
       }));
-
     } catch (error) {
       console.error('Disable mic error:', error);
     }
@@ -489,7 +497,7 @@ export const useMediasoupClient = (config: MediasoupConfig) => {
       }
 
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: VIDEO_CONSTRAINTS.vga
+        video: VIDEO_CONSTRAINTS.vga,
       });
       const track = stream.getVideoTracks()[0];
 
@@ -505,18 +513,17 @@ export const useMediasoupClient = (config: MediasoupConfig) => {
         },
       });
 
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         webcamProducer: producer,
-        localStream: stream
+        localStream: stream,
       }));
       localStreamRef.current = stream;
-
     } catch (error) {
       console.error('Enable webcam error:', error);
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        error: error instanceof Error ? error.message : 'Failed to enable webcam'
+        error: error instanceof Error ? error.message : 'Failed to enable webcam',
       }));
     }
   }, []);
@@ -535,11 +542,10 @@ export const useMediasoupClient = (config: MediasoupConfig) => {
         }
       }
 
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        webcamProducer: null
+        webcamProducer: null,
       }));
-
     } catch (error) {
       console.error('Disable webcam error:', error);
     }
@@ -549,26 +555,46 @@ export const useMediasoupClient = (config: MediasoupConfig) => {
   const muteMic = useCallback(async () => {
     if (state.micProducer) {
       await state.micProducer.pause();
+      setAudioMuted(true);
+      setState((prev) => ({
+        ...prev,
+        micProducer: prev.micProducer,
+      }));
     }
-  }, [state.micProducer]);
+  }, [setAudioMuted, state.micProducer]);
 
   const unmuteMic = useCallback(async () => {
     if (state.micProducer) {
       await state.micProducer.resume();
+      setAudioMuted(false);
+      setState((prev) => ({
+        ...prev,
+        micProducer: prev.micProducer,
+      }));
     }
-  }, [state.micProducer]);
+  }, [setAudioMuted, state.micProducer]);
 
   const muteWebcam = useCallback(async () => {
     if (state.webcamProducer) {
       await state.webcamProducer.pause();
+      setVideoMuted(true);
+      setState((prev) => ({
+        ...prev,
+        webcamProducer: prev.webcamProducer,
+      }));
     }
-  }, [state.webcamProducer]);
+  }, [setVideoMuted, state.webcamProducer]);
 
   const unmuteWebcam = useCallback(async () => {
     if (state.webcamProducer) {
       await state.webcamProducer.resume();
+      setVideoMuted(false);
+      setState((prev) => ({
+        ...prev,
+        webcamProducer: prev.webcamProducer,
+      }));
     }
-  }, [state.webcamProducer]);
+  }, [setVideoMuted, state.webcamProducer]);
 
   // Cleanup on unmount
   useEffect(() => {
