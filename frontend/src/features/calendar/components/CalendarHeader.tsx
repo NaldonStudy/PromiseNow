@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
 import { useCalendarStore } from '../calendar.store';
+
 import Icon from '../../../components/ui/Icon';
 import SquareBtn from '../../../components/ui/SquareBtn';
 
@@ -9,9 +11,16 @@ interface Props {
 
 const CalendarHeader = ({ onRefreshCalendar }: Props) => {
   const { view, currentDate, setView, moveWeek, moveMonth } = useCalendarStore();
+  const [rotating, setRotating] = useState(false);
 
   const handlePrev = () => (view === 'month' ? moveMonth(-1) : moveWeek(-1));
   const handleNext = () => (view === 'month' ? moveMonth(1) : moveWeek(1));
+
+  const handleRefresh = () => {
+    setRotating(true);
+    onRefreshCalendar();
+    setTimeout(() => setRotating(false), 700); // 0.7초 후 회전 해제
+  };
 
   const getDateText = () => {
     if (view === 'month') {
@@ -56,7 +65,9 @@ const CalendarHeader = ({ onRefreshCalendar }: Props) => {
           textSize="text-xs"
           onClick={() => setView('week')}
         />
-        <Icon type="repeat" color="text-text-dark" size={20} onClick={onRefreshCalendar} />
+        <span className={rotating ? 'animate-spin' : ''} style={{ display: 'inline-flex' }}>
+          <Icon type="repeat" color="text-text-dark" size={18} onClick={handleRefresh} />
+        </span>
       </div>
     </div>
   );

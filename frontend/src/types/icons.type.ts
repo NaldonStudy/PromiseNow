@@ -12,7 +12,7 @@ import {
 } from 'react-icons/fi';
 import { GoCopy, GoDependabot } from 'react-icons/go';
 import { HiLocationMarker } from 'react-icons/hi';
-import { IoMdRepeat, IoMdTime } from 'react-icons/io';
+import { IoMdTime } from 'react-icons/io';
 import {
   IoCloseOutline,
   IoFlagSharp,
@@ -31,6 +31,7 @@ import {
 import { RiKakaoTalkFill } from 'react-icons/ri';
 import { SlArrowDown, SlArrowLeft, SlArrowRight, SlArrowUp } from 'react-icons/sl';
 import { VscSend } from 'react-icons/vsc';
+import { GrPowerReset } from 'react-icons/gr';
 
 export type IconType =
   | 'left'
@@ -103,7 +104,7 @@ const generalIcons = {
   chat: MdChatBubbleOutline,
   time: IoMdTime,
   location: IoLocationOutline,
-  repeat: IoMdRepeat,
+  repeat: GrPowerReset,
   ai: BsStars,
   plus: FiPlus,
   bell: BsBell,

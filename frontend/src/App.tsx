@@ -6,12 +6,12 @@ import CallPage from './pages/CallPage';
 import ChatPage from './pages/ChatPage';
 import HomePage from './pages/HomePage';
 import LocationPage from './pages/LocationPage';
-import RandingPage from './pages/RandingPage';
+import LandingPage from './pages/LandingPage';
 import RoulettePage from './pages/RoulettePage';
 import SchedulePage from './pages/SchedulePage';
 import SettingsPage from './pages/SettingsPage';
+import NotFoundPage from './pages/NotFoundPage';
 
-import TestPage from './hooks/webrtc/TestPage';
 
 function App() {
   useKakaoLoader();
@@ -22,7 +22,7 @@ function App() {
         <QueryClientProvider client={new QueryClient()}>
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<RandingPage />} />
+              <Route path="/" element={<LandingPage />} />
               <Route path="/home" element={<HomePage />} />
               <Route path="/:id/roulette" element={<RoulettePage />} />
               <Route path="/:id/schedule" element={<SchedulePage />} />
@@ -30,7 +30,7 @@ function App() {
               <Route path="/:id/chat" element={<ChatPage />} />
               <Route path="/:id/location" element={<LocationPage />} />
               <Route path="/:id/settings" element={<SettingsPage />} />
-              <Route path="/:id/test" element={<TestPage />} />
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </BrowserRouter>
         </QueryClientProvider>

@@ -10,6 +10,14 @@ export interface ConfirmedUserData {
   profileImage: string;
 }
 
+// 추천 시간대
+export interface RecommendTime {
+  date: string;
+  timeStart: string;
+  timeEnd: string;
+  count: number;
+}
+
 // Request 타입들
 export interface UpdateAvailabilityRequest {
   roomUserId: number;
@@ -47,4 +55,8 @@ export interface MyAvailabilityResponse {
 
 export interface ConfirmedUsersResponse {
   confirmedUserList: ConfirmedUserData[];
+}
+
+export interface RecommendTimeResponse {
+  times: RecommendTime[];
 }

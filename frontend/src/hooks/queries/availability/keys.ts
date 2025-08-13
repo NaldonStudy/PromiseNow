@@ -7,6 +7,9 @@ export const availabilityKeys = {
   my: (roomUserId: number) => [...availabilityKeys.all, 'my', roomUserId] as const,
   confirmedUsers: (roomId: number, date: string, slot: number) =>
     [...availabilityKeys.all, 'confirmedUsers', roomId, date, slot] as const,
+  dateConfirmedUsers: (roomId: number, date: string) =>
+    [...availabilityKeys.all, 'dateConfirmedUsers', roomId, date] as const,
+  recommendTime: (roomId: number) => ['availability', 'recommendTime', roomId],
 };
 
 // 전체 쿼리 무효화 훅
@@ -25,6 +28,10 @@ export const useInvalidateAvailabilityQueries = () => {
     queryClient.invalidateQueries({
       queryKey: [...availabilityKeys.all, 'confirmedUsers', roomId],
     });
+    queryClient.invalidateQueries({
+      queryKey: [...availabilityKeys.all, 'dateConfirmedUsers', roomId],
+    });
+    queryClient.invalidateQueries({ queryKey: availabilityKeys.recommendTime(roomId) });
   };
 
   return {

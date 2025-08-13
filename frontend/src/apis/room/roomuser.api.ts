@@ -8,11 +8,11 @@ import type {
   JoinInfoResponse,
   JoinRequest,
   QuitRoomRequest,
+  RoomUserInfoResponse,
   UpdateNicknameRequest,
   UpdateNicknameResponse,
   UpdateProfileRequest,
   UpdateProfileResponse,
-  RoomUserMyInfoResponse,
 } from './roomuser.types';
 
 // 초대코드로 방 참가
@@ -27,9 +27,11 @@ export const getUsersInRoom = async (roomId: number) => {
   return data;
 };
 
-// 내 roomUserId 조회
-export const getMyRoomUserInfo = async (roomId: number, userId: number) => {
-  const data = await handleApi<RoomUserMyInfoResponse>(axiosInstance.get(`/rooms/${roomId}/me/${userId}`));
+/// 방 사용자 정보 조회
+export const getRoomUserInfo = async (roomId: number, userId: number) => {
+  const data = await handleApi<RoomUserInfoResponse>(
+    axiosInstance.get(`/rooms/${roomId}/me/${userId}`),
+  );
   return data;
 };
 
@@ -57,7 +59,7 @@ export const updateProfileImage = async (
   const data = await handleApi<UpdateProfileResponse>(
     axiosInstance.patch(`/rooms/${roomId}/profile-image/${userId}`, formdata),
   );
-  return data; // { fileUrl, ... } | null
+  return data;
 };
 
 // 방 나가기

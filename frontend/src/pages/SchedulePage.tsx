@@ -8,17 +8,20 @@ import {
   useTotalAvailability,
   useUpdateAvailability,
   useInvalidateAvailabilityQueries,
+  useRecommendTime,
 } from '../hooks/queries/availability';
 import {
   useAppointment,
   useRoomDateRange,
   useUpdateAppointment,
   useUpdateRoomDateRange,
+  useRoomUserInfo,
+  useUsersInRoom,
 } from '../hooks/queries/room';
-import { useRoomStore } from '../stores/room.store';
-import { useRoomUserStore } from '../stores/roomUser.store';
+import { useUserStore } from '../stores/user.store';
 import { useTitle } from '../hooks/common/useTitle';
 
+import RequireAuth from '../components/RequireAuth';
 import ScheduleTemplate from './templates/ScheduleTemplate';
 
 const SchedulePage = () => {
@@ -26,40 +29,24 @@ const SchedulePage = () => {
 
   const { id } = useParams<{ id: string }>();
   const roomId = Number(id);
-  const roomUserId = useRoomUserStore((state) => state.getRoomUserId(roomId));
+  const { user } = useUserStore();
+  const roomUserId = useRoomUserInfo(roomId, user?.userId || 0).data?.roomUserId;
 
-  const { setDateRange } = useRoomStore();
   const { setUserSelections } = useCalendarStore();
 
   const { invalidateRoom } = useInvalidateAvailabilityQueries();
 
+  const { data: usersInRoom } = useUsersInRoom(roomId);
+  const totalMembers = usersInRoom?.length || 0;
+
   const { data: totalAvailabilityData } = useTotalAvailability(roomId);
   const { data: roomDateRangeData } = useRoomDateRange(roomId);
   const { data: appointmentData } = useAppointment(roomId);
-  const { data: myAvailabilityData } = useMyAvailability(roomId);
+  const { data: myAvailabilityData } = useMyAvailability(roomUserId ?? -1);
+  const { data: recommendTimeData } = useRecommendTime(roomId);
   const updateAppointmentMutation = useUpdateAppointment(roomId);
   const updateRoomDateRangeMutation = useUpdateRoomDateRange(roomId);
-  const updateUserSelectionsMutation = useUpdateAvailability(roomId);
-
-  useEffect(() => {
-    if (!roomDateRangeData) return;
-
-    const rawStart = roomDateRangeData.startDate;
-    const rawEnd = roomDateRangeData.endDate;
-
-    const isValidDateStr = (d: unknown) => typeof d === 'string' && d !== '' && d !== '1970-01-01';
-
-    const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
-
-    const safeStartStr = isValidDateStr(rawStart) ? rawStart : todayStr;
-    const safeEndStr = isValidDateStr(rawEnd) ? rawEnd : todayStr;
-
-    const start = new Date(safeStartStr);
-    const end = new Date(safeEndStr);
-
-    setDateRange({ start, end });
-  }, [roomDateRangeData, setDateRange]);
+  const updateUserSelectionsMutation = useUpdateAvailability(roomId, roomUserId ?? -1);
 
   // userSelections 조회
   const convertMyAvailabilityToUserSelections = (myAvailabilityData: MyAvailabilityResponse) => {
@@ -127,14 +114,19 @@ const SchedulePage = () => {
   };
 
   return (
-    <ScheduleTemplate
-      appointmentData={appointmentData}
-      totalAvailabilityData={totalAvailabilityData}
-      onAppointmentUpdate={handleAppointmentUpdate}
-      onDateRangeUpdate={handleDateRangeUpdate}
-      onUserSelectionsUpdate={handleUserSelectionsUpdate}
-      onRefreshCalendar={handleInvalidateRoom}
-    />
+    <RequireAuth>
+      <ScheduleTemplate
+        totalMembers={totalMembers}
+        appointmentData={appointmentData}
+        dateRangeData={roomDateRangeData}
+        totalAvailabilityData={totalAvailabilityData}
+        recommendTimeData={recommendTimeData}
+        onAppointmentUpdate={handleAppointmentUpdate}
+        onDateRangeUpdate={handleDateRangeUpdate}
+        onUserSelectionsUpdate={handleUserSelectionsUpdate}
+        onRefreshCalendar={handleInvalidateRoom}
+      />
+    </RequireAuth>
   );
 };
 

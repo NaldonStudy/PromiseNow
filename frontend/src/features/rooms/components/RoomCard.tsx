@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import AppointmentInfo from '../../../components/ui/AppointmentInfo';
 import Card from '../../../components/ui/Card';
 import Profile from '../../../components/ui/Profile';
-import { useRoomStore } from '../../../stores/room.store';
 
 interface Props {
   id: number;
@@ -23,8 +22,6 @@ const RoomCard = ({
   locationName,
   resetRoomState,
 }: Props): React.ReactElement => {
-  const { setCurrentRoomId } = useRoomStore();
-
   const now = new Date();
   const date = locationDate ? new Date(locationDate) : null;
   const isPast = date ? date < now : false;
@@ -43,7 +40,6 @@ const RoomCard = ({
   const cardOpacityClass = isPast ? 'opacity-50' : 'opacity-100';
 
   const handleRoomClick = () => {
-    setCurrentRoomId(id);
     resetRoomState();
   };
 

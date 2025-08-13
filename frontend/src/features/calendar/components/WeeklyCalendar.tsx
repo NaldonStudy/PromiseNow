@@ -1,21 +1,43 @@
 import { Fragment, useMemo, useState, useEffect, useRef, useCallback } from 'react';
-import { getOpacityForWeek } from '../calendar.util';
 import { format, addDays, startOfWeek, startOfDay, isBefore, isAfter } from 'date-fns';
+import { useParams } from 'react-router-dom';
+import { getOpacityForWeek } from '../calendar.util';
 import { useCalendarStore } from '../calendar.store';
+import { useConfirmedUsers } from '../../../hooks/queries/availability';
 import type { TotalAvailabilityResponse } from '../../../apis/availability/availability.types';
-import { useRoomStore } from '../../../stores/room.store';
+import type { DateRangeResponse } from '../../../apis/room/room.types';
+
+import UsersPopCard from './UsersPopCard';
 
 interface Props {
   mode: 'view' | 'edit';
+  dateRange?: DateRangeResponse;
   currentDate: Date;
   totalDatas?: TotalAvailabilityResponse;
   totalMembers: number;
 }
 
-const WeeklyCalendar = ({ mode, currentDate, totalDatas, totalMembers }: Props) => {
+const WeeklyCalendar = ({ mode, currentDate, totalDatas, totalMembers, dateRange }: Props) => {
   const { userSelections, setUserSelections } = useCalendarStore();
-  const { dateRange } = useRoomStore();
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const { id } = useParams<{ id: string }>();
+  const roomId = Number(id);
+
+  const [popCard, setPopCard] = useState<{
+    open: boolean;
+    anchor: { x: number; y: number };
+    date: string;
+    slot: number;
+  } | null>(null);
+
+  const { data: confirmedUsersData } = useConfirmedUsers(
+    roomId,
+    popCard?.date ?? '',
+    popCard?.slot ?? -1,
+  );
+
+  const confirmedUsers = confirmedUsersData?.confirmedUserList;
 
   const days = useMemo(() => {
     const startOfWeekDate = startOfWeek(currentDate, { weekStartsOn: 0 }); // 0: Sunday
@@ -86,11 +108,11 @@ const WeeklyCalendar = ({ mode, currentDate, totalDatas, totalMembers }: Props) 
   // 날짜 범위 검증 함수 개선
   const isDateInRange = useCallback(
     (dateString: string) => {
-      if (!dateRange?.start || !dateRange?.end) return false;
+      if (!dateRange?.startDate || !dateRange?.endDate) return false;
 
       const date = startOfDay(new Date(dateString));
-      const start = startOfDay(new Date(dateRange.start));
-      const end = startOfDay(new Date(dateRange.end));
+      const start = startOfDay(new Date(dateRange.startDate));
+      const end = startOfDay(new Date(dateRange.endDate));
 
       return !isBefore(date, start) && !isAfter(date, end);
     },
@@ -146,69 +168,92 @@ const WeeklyCalendar = ({ mode, currentDate, totalDatas, totalMembers }: Props) 
   }, [mode, dragStart, dateRange, setDragEnd, userSelections, isDateInRange]);
 
   return (
-    <div
-      ref={containerRef}
-      className="grid grid-cols-[auto_repeat(7,minmax(0,1fr))] select-none"
-      onMouseUp={handleDragEnd}
-      onTouchEnd={handleDragEnd}
-    >
-      <div />
-      {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
-        <div key={`${d}-${i}`} className="text-center text-xs">
-          {d}
-        </div>
-      ))}
+    <>
+      <div
+        ref={containerRef}
+        className="grid grid-cols-[auto_repeat(7,minmax(0,1fr))] select-none"
+        onMouseUp={handleDragEnd}
+        onTouchEnd={handleDragEnd}
+      >
+        <div />
+        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+          <div key={`${d}-${i}`} className="text-center text-xs">
+            {d}
+          </div>
+        ))}
 
-      {Array.from({ length: 30 }, (_, idx) => {
-        const label = idx % 2 === 0 ? `${String(8 + Math.floor(idx / 2)).padStart(2, '0')}` : '';
-        return (
-          <Fragment key={idx}>
-            <div className="text-xs text-right pr-1 select-none pointer-events-none">{label}</div>
-            {days.map((date) => {
-              const isValid = isDateInRange(date);
+        {Array.from({ length: 30 }, (_, idx) => {
+          const label = idx % 2 === 0 ? `${String(8 + Math.floor(idx / 2)).padStart(2, '0')}` : '';
+          return (
+            <Fragment key={idx}>
+              <div className="text-xs text-right pr-1 select-none pointer-events-none">{label}</div>
+              {days.map((date) => {
+                const isValid = isDateInRange(date);
 
-              const dateData = getDateData(date);
-              const hasData = !!dateData;
-              const count = hasData ? Number(dateData.timeData?.[idx] ?? 0) : 0;
-              const selected = userSelections[date]?.[idx] ?? false;
-              const isDrag = isInDragRange(date, idx);
+                const dateData = getDateData(date);
+                const hasData = !!dateData;
+                const count = hasData ? Number(dateData.timeData?.[idx] ?? 0) : 0;
+                const selected = userSelections[date]?.[idx] ?? false;
+                const isDrag = isInDragRange(date, idx);
 
-              const bg = !isValid
-                ? 'bg-gray-200'
-                : isDrag
-                ? 'bg-point/50'
-                : mode === 'edit' && selected
-                ? 'bg-point'
-                : getOpacityForWeek(count, totalMembers);
+                const bg = !isValid
+                  ? 'bg-gray-200'
+                  : isDrag
+                  ? 'bg-point/50'
+                  : mode === 'edit' && selected
+                  ? 'bg-point'
+                  : getOpacityForWeek(count, totalMembers);
 
-              return (
-                <div
-                  key={date + idx}
-                  className={`h-5 border ${bg} ${
-                    isValid ? 'cursor-pointer' : 'pointer-events-none'
-                  }`}
-                  style={{ borderColor: 'rgba(209, 213, 219, 0.5)' }}
-                  data-date={date}
-                  data-index={idx}
-                  onMouseDown={() => {
-                    if (mode === 'edit' && isValid) {
-                      setDragStart({ day: date, index: idx });
-                      setDragEnd({ day: date, index: idx });
-                      setDragAction(selected ? 'deselect' : 'select');
-                    }
-                  }}
-                  onMouseEnter={() => {
-                    if (mode === 'edit' && dragStart && isValid) {
-                      setDragEnd({ day: date, index: idx });
-                    }
-                  }}
-                />
-              );
-            })}
-          </Fragment>
-        );
-      })}
-    </div>
+                // view 모드에서 클릭 시 PopCard 표시
+                const handleCellClick = (e: React.MouseEvent) => {
+                  if (mode === 'view' && isValid) {
+                    setPopCard({
+                      open: true,
+                      anchor: { x: e.clientX, y: e.clientY },
+                      date,
+                      slot: idx,
+                    });
+                  }
+                };
+
+                return (
+                  <div
+                    key={date + idx}
+                    className={`h-5 border ${bg} ${
+                      isValid ? 'cursor-pointer' : 'pointer-events-none'
+                    }`}
+                    style={{ borderColor: 'rgba(209, 213, 219, 0.5)' }}
+                    data-date={date}
+                    data-index={idx}
+                    onMouseDown={() => {
+                      if (mode === 'edit' && isValid) {
+                        setDragStart({ day: date, index: idx });
+                        setDragEnd({ day: date, index: idx });
+                        setDragAction(selected ? 'deselect' : 'select');
+                      }
+                    }}
+                    onMouseEnter={() => {
+                      if (mode === 'edit' && dragStart && isValid) {
+                        setDragEnd({ day: date, index: idx });
+                      }
+                    }}
+                    onClick={handleCellClick}
+                  />
+                );
+              })}
+            </Fragment>
+          );
+        })}
+      </div>
+      {/* PopCard */}
+      {popCard && popCard.open && (confirmedUsers?.length ?? 0) > 0 && (
+        <UsersPopCard
+          users={confirmedUsers ?? []}
+          onClose={() => setPopCard(null)}
+          anchor={popCard.anchor}
+        />
+      )}
+    </>
   );
 };
 

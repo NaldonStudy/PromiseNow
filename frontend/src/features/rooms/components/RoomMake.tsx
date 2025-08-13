@@ -5,29 +5,25 @@ import CircleBtn from '../../../components/ui/CircleBtn';
 import ModalForm from '../../../components/ui/modal/ModalForm';
 
 import { useCreateRoom } from '../../../hooks/queries/room';
-import { useRoomStore } from '../../../stores/room.store';
-import { useRoomUserStore } from '../../../stores/roomUser.store';
 import { useUserStore } from '../../../stores/user.store';
 
 type ModalType = 'room' | 'name';
 
 const RoomMake = () => {
   const navigate = useNavigate();
-  const { userId } = useUserStore();
-  const { setNickname } = useRoomStore();
-  const { setRoomUser } = useRoomUserStore();
-  const createRoomMutation = useCreateRoom(userId!);
+  const { user } = useUserStore();
+  const createRoomMutation = useCreateRoom(user?.userId || 0);
 
   const [isOpen, setIsOpen] = useState(false);
   const [modalType, setModalType] = useState<ModalType>('room');
   const [roomTitle, setRoomTitle] = useState('');
 
   useEffect(() => {
-    if (userId === null) {
+    if (!user?.userId) {
       alert('로그인이 필요합니다.');
       navigate('/');
     }
-  }, [userId, navigate]);
+  }, [user?.userId, navigate]);
 
   const handleSubmit = (inputValue: string) => {
     if (modalType === 'room') {
@@ -37,19 +33,15 @@ const RoomMake = () => {
     }
 
     if (modalType === 'name') {
-      setNickname(inputValue);
-
       createRoomMutation.mutate(
         {
           roomTitle,
           nickname: inputValue,
-          userId: userId!,
+          userId: user?.userId || 0,
         },
         {
           onSuccess: (data) => {
             if (data) {
-              // 생성 시 roomUserId 저장
-              setRoomUser(data.roomId, data.roomUserId);
               setIsOpen(false);
               navigate(`/${data.roomId}/schedule`);
             } else {

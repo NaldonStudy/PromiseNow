@@ -8,19 +8,19 @@ import { useUserStore } from './../../../stores/user.store';
 const Notification = () => {
   const { id } = useParams();
   const roomId = Number(id);
-  const { userId } = useUserStore();
+  const { user } = useUserStore();
 
   const [isAgreed, setIsAgreed] = useState<boolean | null>(null);
 
   useEffect(() => {
     const fetchAlarmSetting = async () => {
-      if (userId == null || !roomId) {
+      if (!user?.userId || !roomId) {
         console.log('⛔ 조건 미충족: userId or roomId null');
         return;
       }
 
       try {
-        const res = await getAlarmSetting(roomId, userId);
+        const res = await getAlarmSetting(roomId, user.userId);
         if (!res) {
           console.log('⚠️ getAlarmSetting returned null');
           return;
@@ -33,20 +33,20 @@ const Notification = () => {
     };
 
     fetchAlarmSetting();
-  }, [roomId, userId]);
+  }, [roomId, user?.userId]);
 
   const handleToggle = async (checked: boolean) => {
-    if (userId == null || !roomId) return;
+    if (!user?.userId || !roomId) return;
 
     try {
-      await updateAlarmSetting(roomId, userId, { isAgreed: checked });
+      await updateAlarmSetting(roomId, user.userId, { isAgreed: checked });
       setIsAgreed(checked);
     } catch (error) {
       console.error('❌ 알림 설정 실패:', error);
     }
   };
 
-  if (userId == null || !roomId || isAgreed === null) {
+  if (!user?.userId || !roomId || isAgreed === null) {
     return null;
   }
 

@@ -1,16 +1,15 @@
 import { useState } from 'react';
-import type { DateRangeUpdateRequest } from '../../../apis/room/room.types';
+import type { DateRangeResponse, DateRangeUpdateRequest } from '../../../apis/room/room.types';
 import Card from '../../../components/ui/Card';
 import SquareBtn from '../../../components/ui/SquareBtn';
-import { useRoomStore } from '../../../stores/room.store';
 import { useCalendarStore } from '../calendar.store';
 
 interface DateRangeSelectorProps {
+  dateRange?: DateRangeResponse;
   onDateRangeUpdate: (dateRangeData: DateRangeUpdateRequest) => void;
 }
 
-const DateRangeSelector = ({ onDateRangeUpdate }: DateRangeSelectorProps) => {
-  const { dateRange, setDateRange } = useRoomStore();
+const DateRangeSelector = ({ dateRange, onDateRangeUpdate }: DateRangeSelectorProps) => {
   const { setCurrentDate } = useCalendarStore();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -19,10 +18,21 @@ const DateRangeSelector = ({ onDateRangeUpdate }: DateRangeSelectorProps) => {
 
   const today = new Date();
 
-  const isValidDate = (date?: Date | null) => date instanceof Date && !isNaN(date.getTime());
+  const isValidDateString = (dateStr?: string | null) => {
+    if (!dateStr) return false;
+    const d = new Date(dateStr);
+    return !isNaN(d.getTime());
+  };
 
-  const startDate = isValidDate(dateRange?.start) ? dateRange!.start : today;
-  const endDate = isValidDate(dateRange?.end) ? dateRange!.end : today;
+  const getDateOrToday = (dateStr?: string | null) => {
+    if (isValidDateString(dateStr)) {
+      return new Date(dateStr as string);
+    }
+    return today;
+  };
+
+  const startDate = getDateOrToday(dateRange?.startDate);
+  const endDate = getDateOrToday(dateRange?.endDate);
 
   const formatDate = (date: Date) => date.toISOString().split('T')[0];
 
@@ -46,11 +56,7 @@ const DateRangeSelector = ({ onDateRangeUpdate }: DateRangeSelectorProps) => {
 
     onDateRangeUpdate(dateRangeData);
 
-    const start = new Date(safeStartDate);
-    const end = new Date(safeEndDate);
-
-    setDateRange({ start, end });
-    setCurrentDate(start);
+    setCurrentDate(new Date(safeStartDate));
     setIsEditing(false);
   };
 
@@ -86,8 +92,14 @@ const DateRangeSelector = ({ onDateRangeUpdate }: DateRangeSelectorProps) => {
               className="border border-gray-dark rounded-md px-3 py-2 text-xs flex-1 min-w-0"
               type="date"
               value={tempStartDate}
-              onChange={(e) => setTempStartDate(e.target.value)}
-              max={tempEndDate || undefined}
+              onChange={(e) => {
+                const newStart = e.target.value;
+                setTempStartDate(newStart);
+                if (tempEndDate && newStart > tempEndDate) {
+                  setTempEndDate(newStart);
+                }
+              }}
+              min={formatDate(today)}
             />
             <span className="flex-shrink-0 text-xs">~</span>
             <input
