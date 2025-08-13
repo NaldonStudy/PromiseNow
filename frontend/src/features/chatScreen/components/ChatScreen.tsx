@@ -1,98 +1,94 @@
-import { useEffect, useRef, useState } from 'react';
+// src/features/chat/components/ChatScreen.tsx
+import { useQueryClient } from '@tanstack/react-query';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 
-import type { IMessage } from '@stomp/stompjs';
-import { Client } from '@stomp/stompjs';
+import type { ChatMessageResponse } from '../../../apis/chat/chat.types';
+import { chatKeys } from '../../../hooks/chat';
+import { useChatMessages } from '../../../hooks/chat/queries';
+import { useChatSocket } from '../../../hooks/socket/useChatSocket';
 
-import type { ChatMessageResponse as ChatMessage } from '../../../apis/chat/chat.types';
-import { getChatMessages } from './../../../apis/chat/chat.api';
-import createWebSocketConnection from '../../../lib/websocketInstance';
-
-// import { dummyMessages } from '../dummy';
+import { useRoomUserInfo } from '../../../hooks/queries/room';
+import { useUserStore } from '../../../stores/user.store'; // ★ 추가
 import MessageList from './MessageList';
 import PinoExample from './PinoExample';
 import Transmits from './Transmits';
 
-// 수신 메시지 형식 (서버에서 push됨)
-
 const ChatScreen = () => {
   const { id } = useParams<{ id: string }>();
-  const parsedRoomId = parseInt(id || '', 10);
+  const roomId = Number(id);
 
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const clientRef = useRef<Client | null>(null);
+  // ★ room store 제거 → 현재 로그인 사용자만 사용
+  const userId = useUserStore((s) => s.user?.userId);
 
-  // 1️⃣ 과거 메시지 조회 (REST API)
-  useEffect(() => {
-    if (isNaN(parsedRoomId)) return;
+  // ★ 방-사용자 매핑 정보 조회(멤버십 확인 등 필요 시 활용 가능)
+  const { data: roomUserInfo } = useRoomUserInfo(roomId, userId ?? 0);
 
-    const fetchMessages = async () => {
-      try {
-        const data = await getChatMessages(parsedRoomId);
-        setMessages(data ?? []);
-      } catch (error) {
-        console.error('❌ 메시지 로딩 에러:', error);
-      }
-      // setMessages(dummyMessages);
-    };
+  const { data: messages = [], isLoading, isError } = useChatMessages(roomId);
 
-    fetchMessages();
-  }, [parsedRoomId]);
+  const qc = useQueryClient();
+  const handleIncoming = useCallback(
+    (raw: unknown) => {
+      const msg = raw as ChatMessageResponse;
+      qc.setQueryData<ChatMessageResponse[]>(chatKeys.messages(roomId), (old = []) => [...old, msg]);
+    },
+    [qc, roomId],
+  );
 
-  // 2️⃣ WebSocket 연결 및 구독
-  useEffect(() => {
-    if (isNaN(parsedRoomId)) return;
+  const wsBase = useMemo(() => 'https://api.promisenow.store/ws-chat', []);
+  const subscribeDest = useCallback((rid: number) => `/topic/chat/${rid}`, []);
+  const { isConnected, sendMessage } = useChatSocket(roomId, handleIncoming, {
+    wsBase,
+    subscribeDest,
+  });
 
-    const socket = createWebSocketConnection('/ws-chat'); // ✅ 새로운 WebSocket 인스턴스 사용
-    const client = new Client({
-      webSocketFactory: () => socket,
-      reconnectDelay: 5000,
-      onConnect: () => {
-        console.log('🟢 Chat WebSocket 연결 성공');
+  const scrollerRef = useRef<HTMLDivElement>(null);
 
-        // ✅ 구독: /topic/chat/{id}
-        client.subscribe(`/topic/chat/${parsedRoomId}`, (message: IMessage) => {
-          const payload: ChatMessage = JSON.parse(message.body);
-          setMessages((prev) => [...prev, payload]);
-        });
-      },
-      onStompError: (frame) => {
-        console.error('❌ Chat STOMP 에러:', frame);
-      },
+  const scrollToBottom = useCallback(() => {
+    const c = scrollerRef.current;
+    if (!c) return;
+    requestAnimationFrame(() => {
+      c.scrollTop = c.scrollHeight;
+      setTimeout(() => {
+        c.scrollTop = c.scrollHeight;
+      }, 0);
     });
+  }, []);
 
-    client.activate();
-    clientRef.current = client;
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages.length, scrollToBottom]);
 
-    // 언마운트 시 연결 해제
-    return () => {
-      console.log('🔴 Chat WebSocket 연결 해제');
-      client.deactivate();
-    };
-  }, [parsedRoomId]);
+  const handleMediaLoad = useCallback(() => {
+    scrollToBottom();
+  }, [scrollToBottom]);
+
+  if (Number.isNaN(roomId)) {
+    return (
+      <div className="flex items-center justify-center h-full text-sm text-red-500">
+        잘못된 채팅방입니다.
+      </div>
+    );
+  }
+
+  // 방 멤버가 아닐 때 막고 싶움
+  if (userId && !roomUserInfo?.roomUserId) {
+    return <div className="flex items-center justify-center h-full text-sm text-red-500">채팅방 접근 권한이 없습니다.</div>;
+  }
 
   return (
-    <div className="relative h-full">
-      {/* 메시지 표시 영역 */}
-      <div className="overflow-y-auto h-full pb-[180px] px-4 pt-2">
-        <MessageList messages={messages} />
+    <div className="flex h-full flex-col pb-3">
+      <div ref={scrollerRef} className="flex-1 overflow-y-auto px-4 pt-2">
+        {isLoading && <p className="text-center text-sm text-gray-500">로딩 중...</p>}
+        {isError && <p className="text-center text-sm text-red-500">메시지 로드 실패</p>}
+        {!isLoading && !isError && <MessageList messages={messages} onMediaLoad={handleMediaLoad} />}
       </div>
 
-      {/* 메시지 전송 영역 */}
-      <div className="fixed bottom-[80px] left-1/2 -translate-x-1/2 w-full max-w-mobile px-4">
-        <div className="flex flex-col gap-2">
-          <Transmits 
-            roomId={parsedRoomId} 
-            isConnected={!!clientRef.current?.connected}
-            sendMessage={(body) => {
-              if (clientRef.current?.connected) {
-                clientRef.current.publish({
-                  destination: '/app/chat/message',
-                  body: JSON.stringify(body),
-                });
-              }
-            }}
-          />
+      <div className="px-4 pt-2">
+        <div className="rounded-2xl bg-white p-1">
+          <Transmits roomId={roomId} isConnected={isConnected} sendMessage={sendMessage} />
+        </div>
+        <div>
           <PinoExample />
         </div>
       </div>

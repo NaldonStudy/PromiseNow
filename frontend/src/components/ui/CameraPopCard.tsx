@@ -1,7 +1,7 @@
 // src/features/chat/components/CameraPopCard.tsx
 import { useEffect, useRef, useState } from 'react';
-import SquareBtn from '../../../components/ui/SquareBtn';
-import CameraModal from '../../../components/ui/modal/CameraModal.tsx';
+import SquareBtn from './SquareBtn';
+import CameraModal from './modal/CameraModal';
 
 type Props = {
   onSelect: (file: File) => void;
@@ -75,7 +75,10 @@ const CameraPopCard = ({ onSelect, onClose, disabled, className }: Props) => {
       <CameraModal
         open={openCamera}
         onClose={() => setOpenCamera(false)}
-        onShot={(file) => onSelect(file)}
+        onShot={(file) => {
+          onSelect(file);
+          setOpenCamera(false);
+        }}
       />
     </>
   );
