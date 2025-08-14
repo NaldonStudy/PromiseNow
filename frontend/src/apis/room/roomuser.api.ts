@@ -28,9 +28,19 @@ export const getUsersInRoom = async (roomId: number) => {
 };
 
 /// 방 사용자 정보 조회
-export const getRoomUserInfo = async (roomId: number) => {
-  const data = await handleApi<RoomUserInfoResponse>(axiosInstance.get(`/rooms/${roomId}/me`));
-  return data;
+export const getRoomUserInfo = async (roomId: number, userId: number) => {
+  console.log('getRoomUserInfo API 호출:', { roomId, userId });
+  
+  try {
+    const data = await handleApi<RoomUserInfoResponse>(
+      axiosInstance.get(`/rooms/${roomId}/me/${userId}`),
+    );
+    console.log('getRoomUserInfo 성공:', data);
+    return data;
+  } catch (error) {
+    console.error('getRoomUserInfo 실패:', { roomId, userId, error });
+    throw error;
+  }
 };
 
 // 방 닉네임 수정
