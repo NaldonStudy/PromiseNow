@@ -8,12 +8,12 @@ interface Props {
   imgUrl?: string;
   name: string;
   progress: number;
-  eta: string;
+  distance: number;
   speed: number;
   online?: boolean;
 }
 
-const ArrivalRankingItem = ({ rank, imgUrl, name, progress, eta, speed, online }: Props) => {
+const ArrivalRankingItem = ({ rank, imgUrl, name, progress, distance, speed, online }: Props) => {
   const status =
     speed < 7
       ? 'walking'
@@ -33,7 +33,7 @@ const ArrivalRankingItem = ({ rank, imgUrl, name, progress, eta, speed, online }
           <Profile width="w-10" imgUrl={imgUrl} />
           <div>
             <span className="text-sm">{name}</span>
-            <ArrivalInfo eta={eta} speed={speed} />
+            <ArrivalInfo distance={distance} speed={speed} />
           </div>
         </div>
         <div className="flex items-center gap-2">
