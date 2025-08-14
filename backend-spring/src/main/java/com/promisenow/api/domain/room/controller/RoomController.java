@@ -193,8 +193,7 @@ public class RoomController {
     }
 
     // 방에서의 roomUserId, nickname, profileImage 조회
-    @GetMapping("/{roomId}/me")
-    @RequireRoomMember(roomIdParam = "roomId")
+    @GetMapping("/{roomId}/me/{userId}")
     @Operation(
             summary = "내 roomUserId, 닉네임, 프로필 이미지 조회",
             description = "특정 방(`roomId`)에서 현재 인증된 사용자의 참가 정보(roomUserId, nickname, profileImage)를 조회합니다.",
@@ -203,6 +202,12 @@ public class RoomController {
                             name = "roomId",
                             description = "조회할 방의 ID",
                             example = "101",
+                            required = true
+                    ),
+                    @Parameter(
+                            name = "userId",
+                            description = "참가한 방 목록을 조회할 사용자 ID",
+                            example = "1",
                             required = true
                     )
             },
@@ -233,8 +238,8 @@ public class RoomController {
                     @ApiResponse(responseCode = "404", description = "해당 방 또는 사용자를 찾을 수 없음")
             }
     )
-    public ResponseEntity<?> getMyRoomUserInfo(@PathVariable Long roomId, @AuthenticationPrincipal OAuth2UserDetails oAuth2UserDetails) {
-        RoomUserMyInfoResponseDto response = roomUserService.getMyRoomUserInfo(roomId, oAuth2UserDetails.getUserId());
+    public ResponseEntity<?> getMyRoomUserInfo(@PathVariable Long roomId, @PathVariable Long userId) {
+        RoomUserMyInfoResponseDto response = roomUserService.getMyRoomUserInfo(roomId, userId);
         return ApiUtils.success(response);
     }
 
