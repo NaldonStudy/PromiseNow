@@ -145,7 +145,6 @@ public class LeaderboardServiceImpl implements LeaderboardService {
             dto.setArrived(userInfo.getArrived() != null && Boolean.parseBoolean(userInfo.getArrived().toString()));
             dto.setOnline(isOnline);  // 실제 온라인 상태 설정
 
-
             positions.add(dto);
         }
 
