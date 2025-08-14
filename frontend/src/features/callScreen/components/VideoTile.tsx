@@ -1,7 +1,8 @@
 import { useMemo, useRef, useEffect } from 'react';
+import { useMeStore } from '../../../hooks/webrtc/stores/me';
+
 import Profile from '../../../components/ui/Profile';
 import Icon from '../../../components/ui/Icon';
-import { useMeStore } from '../../../hooks/webrtc/stores/me';
 
 interface Props {
   id: string;
@@ -24,10 +25,14 @@ const VideoTile = ({ id, name, isOnline, videoStream, onClick }: Props) => {
 
   // 미디어 스트림 연결
   useEffect(() => {
-    if (videoRef.current && videoStream) {
-      videoRef.current.srcObject = videoStream;
+    if (videoRef.current) {
+      if (videoStream && videoStream.active && videoStream.getVideoTracks().length > 0) {
+        videoRef.current.srcObject = videoStream;
+      } else {
+        videoRef.current.srcObject = null;
+      }
     }
-  }, [videoStream]);
+  }, [videoStream, videoMuted]);
 
   const handleClick = () => {
     if (onClick) {
