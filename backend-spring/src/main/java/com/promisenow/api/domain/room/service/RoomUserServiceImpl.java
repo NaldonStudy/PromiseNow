@@ -139,6 +139,22 @@ public class RoomUserServiceImpl implements RoomUserService {
                 .collect(Collectors.toList());
     }
 
+    // 방에 들어와있는 사람들의 상세 정보 확인 (roomUserId 포함)
+    @Override
+    public List<DetailedInfoResponse> getRoomUsersDetailed(Long roomId) {
+        findRoomOrThrow(roomId);
+
+        List<RoomUser> roomUsers = roomUserRepository.findByRoom_RoomId(roomId);
+
+        if (roomUsers.isEmpty()) {
+            throw new AppException(ErrorCode.ROOM_USER_NOT_FOUND);  // 예외 처리
+        }
+
+        return roomUsers.stream()
+                .map(ru -> new DetailedInfoResponse(ru.getRoomUserId(), ru.getNickname(), ru.getProfileImage()))
+                .collect(Collectors.toList());
+    }
+
     @Override
     public RoomUserMyInfoResponseDto getMyRoomUserInfo(Long roomId, Long userId) {
         RoomUser roomUser = findRoomUserOrThrow(roomId, userId);

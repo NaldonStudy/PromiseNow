@@ -541,6 +541,58 @@ public class RoomController {
         return ApiUtils.success(userList);
     }
 
+    // 방에 있는 사람들의 상세 정보 확인 (roomUserId 포함)
+    @GetMapping("/{roomId}/users/detailed")
+    @Operation(
+            summary = "방 참가자 상세 목록 조회",
+            description = "해당 방에 속한 모든 사용자의 roomUserId, 닉네임, 프로필 이미지를 반환합니다.",
+            parameters = {
+                    @Parameter(
+                            name = "roomId",
+                            description = "참가자 목록을 조회할 방의 ID",
+                            example = "123",
+                            required = true
+                    )
+            },
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "참가자 상세 목록 조회 성공",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    array = @ArraySchema(schema = @Schema(implementation = DetailedInfoResponse.class)),
+                                    examples = @ExampleObject(
+                                            name = "성공 응답 예시",
+                                            value = """
+                        {
+                            "success": true,
+                            "data": [
+                                {
+                                    "roomUserId": 61,
+                                    "nickname": "홍길동",
+                                    "profileImage": "https://example.com/profile.jpg"
+                                },
+                                {
+                                    "roomUserId": 62,
+                                    "nickname": "김싸피",
+                                    "profileImage": null
+                                }
+                            ],
+                            "message": null
+                        }
+                        """
+                                    )
+                            )
+                    ),
+                    @ApiResponse(responseCode = "400", description = "유효하지 않은 요청"),
+                    @ApiResponse(responseCode = "404", description = "방을 찾을 수 없음")
+            }
+    )
+    public ResponseEntity<?> getUsersInRoomDetailed(@PathVariable Long roomId) {
+        List<DetailedInfoResponse> userList = roomUserService.getRoomUsersDetailed(roomId);
+        return ApiUtils.success(userList);
+    }
+
 
     // 유저가 방을 나간다 ~
     @DeleteMapping("/{roomId}/users/{userId}")
