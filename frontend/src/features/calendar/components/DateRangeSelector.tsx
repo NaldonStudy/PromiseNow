@@ -1,65 +1,65 @@
 import { useState } from 'react';
+import type { DateRangeResponse, DateRangeUpdateRequest } from '../../../apis/room/room.types';
 import Card from '../../../components/ui/Card';
-import { useRoomStore } from '../../../stores/room.store';
-import { useCalendarStore } from '../calendar.store';
 import SquareBtn from '../../../components/ui/SquareBtn';
-import type { DateRangeUpdateRequest } from '../../../apis/room/room.types';
+import { useCalendarStore } from '../calendar.store';
 
 interface DateRangeSelectorProps {
+  dateRange?: DateRangeResponse;
   onDateRangeUpdate: (dateRangeData: DateRangeUpdateRequest) => void;
 }
 
-const DateRangeSelector = ({ onDateRangeUpdate }: DateRangeSelectorProps) => {
-  const { dateRange, setDateRange } = useRoomStore();
+const DateRangeSelector = ({ dateRange, onDateRangeUpdate }: DateRangeSelectorProps) => {
   const { setCurrentDate } = useCalendarStore();
 
-  // 임시 상태 관리
   const [isEditing, setIsEditing] = useState(false);
-  const [tempStartDate, setTempStartDate] = useState<string>('');
-  const [tempEndDate, setTempEndDate] = useState<string>('');
+  const [tempStartDate, setTempStartDate] = useState('');
+  const [tempEndDate, setTempEndDate] = useState('');
 
-  const startDate = dateRange?.start ? new Date(dateRange.start) : null;
-  const endDate = dateRange?.end ? new Date(dateRange.end) : null;
+  const today = new Date();
 
-  // 유효성 검사
-  const isValidDateRange = () => {
-    if (!tempStartDate || !tempEndDate) return false;
-    return new Date(tempStartDate) <= new Date(tempEndDate);
+  const isValidDateString = (dateStr?: string | null) => {
+    if (!dateStr) return false;
+    const d = new Date(dateStr);
+    return !isNaN(d.getTime());
   };
 
-  // 수정 모드 시작
+  const getDateOrToday = (dateStr?: string | null) => {
+    if (isValidDateString(dateStr)) {
+      return new Date(dateStr as string);
+    }
+    return today;
+  };
+
+  const startDate = getDateOrToday(dateRange?.startDate);
+  const endDate = getDateOrToday(dateRange?.endDate);
+
+  const formatDate = (date: Date) => date.toISOString().split('T')[0];
+
   const handleEdit = () => {
     setIsEditing(true);
-    setTempStartDate(startDate ? startDate.toISOString().split('T')[0] : '');
-    setTempEndDate(endDate ? endDate.toISOString().split('T')[0] : '');
+    setTempStartDate(formatDate(startDate));
+    setTempEndDate(formatDate(endDate));
   };
 
-  // 저장
   const handleConfirm = () => {
-    if (isValidDateRange()) {
-      const dateRangeData: DateRangeUpdateRequest = {
-        startDate: tempStartDate,
-        endDate: tempEndDate,
-      };
+    const todayStr = new Date().toISOString().split('T')[0];
 
-      console.log('새로운 시작일:', tempStartDate);
-      console.log('새로운 종료일:', tempEndDate);
+    const safeStartDate =
+      tempStartDate && tempStartDate !== '1970-01-01' ? tempStartDate : todayStr;
+    const safeEndDate = tempEndDate && tempEndDate !== '1970-01-01' ? tempEndDate : todayStr;
 
-      onDateRangeUpdate(dateRangeData);
+    const dateRangeData: DateRangeUpdateRequest = {
+      startDate: safeStartDate,
+      endDate: safeEndDate,
+    };
 
-      const newStartDate = new Date(tempStartDate);
-      const newEndDate = new Date(tempEndDate);
+    onDateRangeUpdate(dateRangeData);
 
-      setDateRange({
-        start: newStartDate,
-        end: newEndDate,
-      });
-      setCurrentDate(newStartDate);
-      setIsEditing(false);
-    }
+    setCurrentDate(new Date(safeStartDate));
+    setIsEditing(false);
   };
 
-  // 취소
   const handleCancel = () => {
     setIsEditing(false);
     setTempStartDate('');
@@ -73,34 +73,33 @@ const DateRangeSelector = ({ onDateRangeUpdate }: DateRangeSelectorProps) => {
       </div>
 
       {!isEditing ? (
-        // 보기 모드
         <div className="space-y-3">
           <div className="flex items-center gap-1 sm:gap-2">
             <div className="flex-1 px-3 py-2 text-xs bg-gray rounded-md text-center">
-              {startDate ? startDate.toISOString().split('T')[0] : '시작일 미설정'}
+              {formatDate(startDate)}
             </div>
             <span className="flex-shrink-0 text-xs">~</span>
             <div className="flex-1 px-3 py-2 text-xs bg-gray rounded-md text-center">
-              {endDate ? endDate.toISOString().split('T')[0] : '종료일 미설정'}
+              {formatDate(endDate)}
             </div>
           </div>
-          <SquareBtn
-            onClick={handleEdit}
-            text={'기간 수정하기'}
-            template={'outlined'}
-            width="w-full"
-          />
+          <SquareBtn onClick={handleEdit} text="기간 수정하기" template="outlined" width="w-full" />
         </div>
       ) : (
-        // 편집 모드
         <div className="space-y-3">
           <div className="flex items-center gap-1 sm:gap-2">
             <input
               className="border border-gray-dark rounded-md px-3 py-2 text-xs flex-1 min-w-0"
               type="date"
               value={tempStartDate}
-              onChange={(e) => setTempStartDate(e.target.value)}
-              max={tempEndDate}
+              onChange={(e) => {
+                const newStart = e.target.value;
+                setTempStartDate(newStart);
+                if (tempEndDate && newStart > tempEndDate) {
+                  setTempEndDate(newStart);
+                }
+              }}
+              min={formatDate(today)}
             />
             <span className="flex-shrink-0 text-xs">~</span>
             <input
@@ -108,12 +107,12 @@ const DateRangeSelector = ({ onDateRangeUpdate }: DateRangeSelectorProps) => {
               type="date"
               value={tempEndDate}
               onChange={(e) => setTempEndDate(e.target.value)}
-              min={tempStartDate}
+              min={tempStartDate || undefined}
             />
           </div>
           <div className="flex gap-2">
-            <SquareBtn onClick={handleCancel} text={'취소'} template={'outlined'} width="w-full" />
-            <SquareBtn onClick={handleConfirm} template={'filled'} width="w-full" text="저장" />
+            <SquareBtn onClick={handleCancel} text="취소" template="outlined" width="w-full" />
+            <SquareBtn onClick={handleConfirm} text="저장" template="filled" width="w-full" />
           </div>
         </div>
       )}

@@ -6,26 +6,24 @@ import ModalForm from '../../../components/ui/modal/ModalForm';
 
 import { useCreateRoom } from '../../../hooks/queries/room';
 import { useUserStore } from '../../../stores/user.store';
-import { useRoomStore } from './../../../stores/room.store';
 
 type ModalType = 'room' | 'name';
 
 const RoomMake = () => {
   const navigate = useNavigate();
-  const { userId } = useUserStore();
-  const { setNickname } = useRoomStore();
-  const createRoomMutation = useCreateRoom(userId!);
+  const { user } = useUserStore();
+  const createRoomMutation = useCreateRoom(user?.userId || 0);
 
   const [isOpen, setIsOpen] = useState(false);
   const [modalType, setModalType] = useState<ModalType>('room');
   const [roomTitle, setRoomTitle] = useState('');
 
   useEffect(() => {
-    if (userId === null) {
+    if (!user?.userId) {
       alert('로그인이 필요합니다.');
       navigate('/');
     }
-  }, [userId, navigate]);
+  }, [user?.userId, navigate]);
 
   const handleSubmit = (inputValue: string) => {
     if (modalType === 'room') {
@@ -35,13 +33,11 @@ const RoomMake = () => {
     }
 
     if (modalType === 'name') {
-      setNickname(inputValue);
-
       createRoomMutation.mutate(
         {
           roomTitle,
           nickname: inputValue,
-          userId: userId!,
+          userId: user?.userId || 0,
         },
         {
           onSuccess: (data) => {
@@ -70,8 +66,9 @@ const RoomMake = () => {
     },
   };
 
+  // RoomMake.tsx
   return (
-    <div>
+    <>
       <ModalForm
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
@@ -81,18 +78,22 @@ const RoomMake = () => {
         onSubmit={handleSubmit}
       />
 
-      <div className="absolute bottom-6 right-6 z-50">
-        <CircleBtn
-          iconType="plus"
-          color="primary"
-          iconSize={30}
-          onClick={() => {
-            setModalType('room');
-            setIsOpen(true);
-          }}
-        />
+      <div className="fixed inset-x-0 bottom-6 z-50 pointer-events-none">
+        <div className="relative mx-auto w-full max-w-mobile px-4 pointer-events-auto">
+          <div className="absolute bottom-5 right-10">
+            <CircleBtn
+              iconType="plus"
+              color="primary"
+              iconSize={30}
+              onClick={() => {
+                setModalType('room');
+                setIsOpen(true);
+              }}
+            />
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

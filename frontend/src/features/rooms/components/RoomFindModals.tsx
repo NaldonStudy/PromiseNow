@@ -7,7 +7,11 @@ import ModalForm from '../../../components/ui/modal/ModalForm';
 interface Props {
   code: string;
   triggerKey: number;
-  onJoinRoom: (inviteCode: string, nickname: string, onSuccess: (roomId: number) => void) => void;
+  onJoinRoom: (
+    inviteCode: string,
+    nickname: string,
+    onSuccess: (roomId: number, roomUserId: number) => void,
+  ) => void;
 }
 
 type ModalType = 'confirm' | 'nickname' | null;
@@ -25,7 +29,7 @@ const RoomFindModals = ({ code, triggerKey, onJoinRoom }: Props) => {
     }
 
     setModalType('confirm');
-  }, [triggerKey]);
+  }, [triggerKey, code]);
 
   const handleConfirm = () => {
     setModalType('nickname');

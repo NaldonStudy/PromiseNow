@@ -10,6 +10,8 @@ export const roomKeys = {
   dateRange: (roomId: number) => [...roomKeys.detail(roomId), 'date-range'] as const,
   titleCode: (roomId: number) => [...roomKeys.detail(roomId), 'title-code'] as const,
   users: (roomId: number) => [...roomKeys.detail(roomId), 'users'] as const,
+  myInfo: (roomId: number, userId: number) =>
+    [...roomKeys.detail(roomId), 'my-info', userId] as const,
 };
 
 export const useInvalidateRoomQueries = () => {
@@ -33,6 +35,11 @@ export const useInvalidateRoomQueries = () => {
 
     if (userId !== undefined) {
       queryClient.invalidateQueries({ queryKey: roomKeys.list(userId) });
+    }
+
+    if (roomId !== undefined && userId !== undefined) {
+      queryClient.invalidateQueries({ queryKey: roomKeys.myInfo(roomId, userId) });
+      console.log(`Invalidated queries for roomId: ${roomId}, userId: ${userId}`);
     }
   };
 

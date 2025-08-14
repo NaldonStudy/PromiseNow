@@ -31,8 +31,6 @@ const ModalForm = ({
     setValue('');
   }, [title, placeholder]);
 
-  if (!isOpen) return null;
-
   useEffect(() => {
     if (isOpen) {
       setValue('');
@@ -46,6 +44,7 @@ const ModalForm = ({
     }
     onSubmit(value.trim());
   };
+  if (!isOpen) return null;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>

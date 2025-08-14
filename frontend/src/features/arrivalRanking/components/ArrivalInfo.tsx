@@ -1,4 +1,4 @@
-import { FaRegClock, FaRunning } from 'react-icons/fa';
+import Icon from './../../../components/ui/Icon';
 
 interface Props {
   eta?: string;
@@ -10,10 +10,11 @@ const ArrivalInfo = ({ eta, speed }: Props) => {
     <>
       <div className="text-[0.7rem] text-text-dark flex gap-2">
         <div className="flex items-center gap-1">
-          <FaRegClock size={10} /> {eta} 도착
+          <Icon type="flag" size={10} color="text-text-dark" /> {eta} km 이내
         </div>
         <div className="flex items-center gap-1">
-          <FaRunning size={10} /> {speed} mph
+          <Icon type="speed" size={10} color="text-text-dark" />
+          {speed} km/h
         </div>
       </div>
     </>

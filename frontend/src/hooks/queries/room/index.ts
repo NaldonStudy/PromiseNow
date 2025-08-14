@@ -6,9 +6,9 @@ export {
   useAppointment,
   useJoinedRooms,
   useRoomDateRange,
-  useRoomStatus,
   useRoomTitleCode,
   useUsersInRoom,
+  useRoomUserInfo,
 } from './queries';
 
 // Mutation Hooks
@@ -19,7 +19,8 @@ export {
   useQuitRoom,
   useUpdateAlarmSetting,
   useUpdateAppointment,
+  useUpdateNickname,
+  useUpdateProfileImage,
   useUpdateRoomDateRange,
-  useUpdateRoomState,
   useUpdateRoomTitle,
 } from './mutations';

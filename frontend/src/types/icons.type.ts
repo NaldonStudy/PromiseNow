@@ -6,14 +6,17 @@ import {
   FiCamera,
   FiMapPin,
   FiPhoneCall,
+  FiPhoneOff,
   FiPlus,
   FiSettings,
   FiTarget,
 } from 'react-icons/fi';
 import { GoCopy, GoDependabot } from 'react-icons/go';
+import { GrPowerReset } from 'react-icons/gr';
 import { HiLocationMarker } from 'react-icons/hi';
-import { IoMdRepeat, IoMdTime } from 'react-icons/io';
+import { IoMdTime } from 'react-icons/io';
 import {
+  IoAirplane,
   IoCloseOutline,
   IoFlagSharp,
   IoLocationOutline,
@@ -32,6 +35,11 @@ import { RiKakaoTalkFill } from 'react-icons/ri';
 import { SlArrowDown, SlArrowLeft, SlArrowRight, SlArrowUp } from 'react-icons/sl';
 import { VscSend } from 'react-icons/vsc';
 
+import { BiCycling } from 'react-icons/bi';
+import { FaCar, FaRunning, FaWalking } from 'react-icons/fa';
+
+import { SiSpeedtest } from 'react-icons/si';
+
 export type IconType =
   | 'left'
   | 'right'
@@ -43,6 +51,7 @@ export type IconType =
   | 'mappin'
   | 'settings'
   | 'call'
+  | 'callOff'
   | 'chat'
   | 'time'
   | 'location'
@@ -64,7 +73,13 @@ export type IconType =
   | 'camera'
   | 'copy'
   | 'grid'
-  | 'bot';
+  | 'bot'
+  | 'walking'
+  | 'running'
+  | 'cycling'
+  | 'driving'
+  | 'flying'
+  | 'speed';
 
 const arrowIcons = {
   left: SlArrowLeft,
@@ -75,6 +90,7 @@ const arrowIcons = {
 
 const callIcons = {
   call: FiPhoneCall,
+  callOff: FiPhoneOff,
   mic: IoMic,
   micOff: IoMicOff,
   video: MdOutlineVideocam,
@@ -92,6 +108,15 @@ const mapIcons = {
   myLocation: MdMyLocation,
   flag: IoFlagSharp,
   marker: HiLocationMarker,
+  speed: SiSpeedtest,
+};
+
+const statusIcons = {
+  walking: FaWalking,
+  running: FaRunning,
+  cycling: BiCycling,
+  driving: FaCar,
+  flying: IoAirplane,
 };
 
 const generalIcons = {
@@ -103,7 +128,7 @@ const generalIcons = {
   chat: MdChatBubbleOutline,
   time: IoMdTime,
   location: IoLocationOutline,
-  repeat: IoMdRepeat,
+  repeat: GrPowerReset,
   ai: BsStars,
   plus: FiPlus,
   bell: BsBell,
@@ -120,4 +145,5 @@ export const iconMap: Record<IconType, ReactIconType> = {
   ...mapIcons,
   ...generalIcons,
   ...chatIcons,
+  ...statusIcons,
 };
