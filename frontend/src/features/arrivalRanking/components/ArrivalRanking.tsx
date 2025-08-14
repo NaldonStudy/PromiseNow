@@ -146,7 +146,7 @@ const ArrivalRanking = () => {
         roomUserId: position.roomUserId,
         name: user?.nickname || '알 수 없음',
         imgUrl: user?.profileImage || undefined,
-        progress: Math.round(position.progress * 100),
+        progress: Math.round(position.progress),
         distance: Number(position.distance.toFixed(1)),
         speed: Number(position.velocity.toFixed(1)),
         arrived: position.arrived,

@@ -40,6 +40,22 @@ public class RoomUserResponseDto {
         private String profileImage;
     }
 
+    // 방 참가자 상세 정보 응답 (roomUserId 포함)
+    @Schema(description = "참가자 상세 정보 응답 (roomUserId 포함)")
+    @Getter
+    @AllArgsConstructor
+    public static class DetailedInfoResponse {
+
+        @Schema(description = "방에서의 사용자 ID", example = "61")
+        private Long roomUserId;
+
+        @Schema(description = "사용자 닉네임", example = "홍길동")
+        private String nickname;
+
+        @Schema(description = "사용자 프로필 이미지 URL", example = "https://example.com/profile.jpg")
+        private String profileImage;
+    }
+
     // 방에서 내 roomUserId, nickname GET
     @Schema(description = "roomUserId, nickname, profileImage 응답")
     @Getter
