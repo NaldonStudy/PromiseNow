@@ -65,7 +65,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 // 토큰이 유효한 경우
                 try {
                     Long userId = jwtTokenProvider.getUserId(token);
-                    log.debug("유효한 Access Token으로 인증 성공: userId={}", userId);
                     
                     // 사용자 정보 조회
                     User user = userService.findByUserId(userId);
@@ -76,21 +75,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 } catch (Exception e) {
-                    // 토큰은 유효하지만 사용자 정보 조회 실패 시 로그 기록
                     log.warn("토큰은 유효하지만 사용자 정보 조회 실패: {}", e.getMessage());
                     SecurityContextHolder.clearContext();
                 }
             } else {
                 // Access Token이 만료된 경우, Refresh Token으로 자동 재발급 시도
-                log.info("Access Token 만료됨, Refresh Token으로 재발급 시도");
                 try {
                     String refreshToken = jwtTokenProvider.resolveTokenFromCookie(request, "refresh_token");
                     if (refreshToken != null) {
                         // Redis에서 저장된 Refresh Token과 비교하여 검증
                         Long userId = jwtTokenProvider.getUserId(refreshToken);
                         if (refreshTokenService.validateRefreshToken(userId, refreshToken)) {
-                            log.info("Redis 저장된 Refresh Token 유효, 새 Access Token 발급: userId={}", userId);
-                            
                             // 새 Access Token 생성
                             String newAccessToken = jwtTokenProvider.generateAccessToken(userId);
                             ResponseCookie accessCookie = jwtTokenProvider.createAccessTokenCookie(newAccessToken);
@@ -104,23 +99,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
                             SecurityContextHolder.getContext().setAuthentication(authentication);
-                            log.info("토큰 재발급 및 인증 성공: userId={}", userId);
-                        } else {
-                            log.warn("Redis 저장된 Refresh Token이 유효하지 않음: userId={}", userId);
                         }
-                    } else {
-                        log.warn("Refresh Token이 없음");
                     }
                 } catch (Exception e) {
-                    // Refresh Token도 만료된 경우, 인증 실패
-                    log.error("Refresh Token 재발급 실패: {}", e.getMessage());
                     SecurityContextHolder.clearContext();
                 }
             }
-        } else {
-            // API 요청에 대해서만 토큰 없음 로그 출력
-            if (requestURI.startsWith("/api/")) {
-                log.debug("토큰이 없음: {}", requestURI);
+        }
+
+        // API 요청이고 인증이 필요한 경우, 인증 상태 확인
+        if (requestURI.startsWith("/api/") && !isPublicEndpoint(requestURI)) {
+            if (SecurityContextHolder.getContext().getAuthentication() == null || 
+                !SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
+                
+                log.warn("인증되지 않은 API 요청: {}", requestURI);
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"error\":\"Unauthorized\",\"message\":\"인증이 필요합니다.\"}");
+                return; // 필터 체인 중단
             }
         }
 
@@ -137,5 +133,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                requestURI.equals("/swagger-ui/index.html") ||
                requestURI.contains("swagger-ui") ||
                requestURI.contains("api-docs");
+    }
+    
+    /**
+     * 공개 엔드포인트인지 확인
+     */
+    private boolean isPublicEndpoint(String requestURI) {
+        return requestURI.equals("/api/auth/refresh") || // 리프레시 토큰 재발급 (인증 불필요)
+               requestURI.startsWith("/api/upload/") || // 파일 업로드
+               requestURI.startsWith("/actuator/") || // 모니터링
+               requestURI.startsWith("/swagger-ui/") || // Swagger UI
+               requestURI.startsWith("/v3/api-docs"); // API 문서
     }
 }
