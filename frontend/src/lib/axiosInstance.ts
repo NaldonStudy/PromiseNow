@@ -15,9 +15,23 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // 네트워크 에러 또는 CORS 에러 시 즉시 홈으로 리다이렉트
+    if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+      if (!window.location.pathname.includes('/login') && window.location.pathname !== '/') {
+        window.location.href = '/';
+      }
+      return Promise.reject(error);
+    }
+
     // 401 에러이고 재시도하지 않은 요청인 경우
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
+
+      // 특정 API는 재시도하지 않음 (무한 루프 방지)
+      if (error.config?.url?.includes('/auth/refresh') || error.config?.url?.includes('/auth/logout')) {
+        window.location.href = '/';
+        return Promise.reject(error);
+      }
 
       try {
         // 토큰 재발급 요청
@@ -32,8 +46,7 @@ axiosInstance.interceptors.response.use(
           return axiosInstance(originalRequest);
         }
       } catch (refreshError) {
-        // 토큰 재발급 실패 시 로그인 페이지로 리다이렉트
-        console.error('토큰 재발급 실패:', refreshError);
+        // 토큰 재발급 실패 시 홈으로 리다이렉트
         window.location.href = '/';
         return Promise.reject(refreshError);
       }
