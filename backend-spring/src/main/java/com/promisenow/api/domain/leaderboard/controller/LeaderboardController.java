@@ -64,7 +64,6 @@ public class LeaderboardController {
                                                                 "distance": 0.8,
                                                                 "progress": 0.6,
                                                                 "arrived": false,
-                                                                "estimatedArrivalMinutes": 15
                                                             }
                                                         ],
                                                         "message": null
