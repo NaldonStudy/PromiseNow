@@ -172,12 +172,14 @@ public class JwtTokenProvider {
         ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from("access_token", "")
                 .httpOnly(true)
                 .path("/")
-                .maxAge(0);
+                .maxAge(0)
+                .domain(null); // 모든 도메인에서 삭제 가능하도록
         
         if (isProduction()) {
             builder.secure(true).sameSite("Lax");
         } else {
-            builder.secure(false).sameSite("None");
+            // 개발 환경에서는 Secure false와 호환되는 Lax 사용
+            builder.secure(false).sameSite("Lax");
         }
         
         return builder.build();
@@ -190,12 +192,14 @@ public class JwtTokenProvider {
         ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from("refresh_token", "")
                 .httpOnly(true)
                 .path("/")
-                .maxAge(0);
+                .maxAge(0)
+                .domain(null); // 모든 도메인에서 삭제 가능하도록
         
         if (isProduction()) {
             builder.secure(true).sameSite("Lax");
         } else {
-            builder.secure(false).sameSite("None");
+            // 개발 환경에서는 Secure false와 호환되는 Lax 사용
+            builder.secure(false).sameSite("Lax");
         }
         
         return builder.build();

@@ -23,7 +23,7 @@ const MapView = () => {
   const markerRef = useRef<any>(null);
   // 확정 장소(커스텀 오버레이로 동일하게)
   const targetMarkerRef = useRef<any>(null);
-  // 다른 유저들의 마커들을 저장하는 맵
+  // 다른 사용자들의 마커들을 관리
   const userMarkersRef = useRef<Map<number, any>>(new Map());
 
   const isInitializedRef = useRef<boolean>(false);
@@ -51,6 +51,8 @@ const MapView = () => {
 
   // 위치 전송 인터벌
   const positionIntervalRef = useRef<number | null>(null);
+
+
 
   // WebSocket 연결 및 위치 전송
   const { sendPosition } = useLeaderboardSocket(
@@ -82,7 +84,7 @@ const MapView = () => {
   // 커스텀 마커 생성 함수
   const createCustomMarker = useCallback((position: any, imgUrl?: string) => {
     // Kakao Maps API가 완전히 로드되었는지 확인
-    if (!window.kakao || !window.kakao.maps || !window.kakao.maps.CustomOverlay) {
+    if (!window.kakao || !window.kakao.maps || !window.kakao.maps.LatLng) {
       return null;
     }
 
@@ -448,7 +450,9 @@ const MapView = () => {
       }
       // 유저 마커들 정리
       userMarkersRef.current.forEach((marker) => {
-        marker.setMap(null);
+        if (marker) {
+          marker.setMap(null);
+        }
       });
       userMarkersRef.current.clear();
       setMoveToCurrentLocation(null);

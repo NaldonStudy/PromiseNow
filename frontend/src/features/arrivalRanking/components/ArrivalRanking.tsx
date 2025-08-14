@@ -63,10 +63,27 @@ const ArrivalRanking = () => {
         newPositions.map((p) => ({ roomUserId: p.roomUserId, online: p.online })),
       );
 
-      // 이전 데이터와 비교하여 변경사항 확인
+      // 이전 데이터와 비교하여 변경사항 확인 (성능 최적화)
       setPositions((prevPositions) => {
-        const hasChanges = JSON.stringify(prevPositions) !== JSON.stringify(newPositions);
+        // 실제 변경사항이 있는지 확인
+        const hasChanges = prevPositions.length !== newPositions.length ||
+          prevPositions.some((prev, index) => {
+            const current = newPositions[index];
+            return !current || 
+                   prev.lat !== current.lat ||
+                   prev.lng !== current.lng ||
+                   prev.online !== current.online ||
+                   prev.arrived !== current.arrived ||
+                   prev.progress !== current.progress;
+          });
+        
         console.log('🔄 데이터 변경사항:', hasChanges ? '있음' : '없음');
+        
+        // 변경사항이 없으면 이전 상태 유지
+        if (!hasChanges) {
+          return prevPositions;
+        }
+        
         return newPositions;
       });
 
