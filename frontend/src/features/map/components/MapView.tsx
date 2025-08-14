@@ -6,7 +6,10 @@ import useMapStore from '../map.store';
 import { useLeaderboardSocket } from '../../../hooks/socket/useLeaderboardSocket';
 import { useUserStore } from '../../../stores/user.store';
 import { useUsersInRoom, useAppointment, useRoomUserInfo } from '../../../hooks/queries/room';
-import type { PositionRequestDto } from '../../../apis/leaderboard/leaderboard.types';
+import { getUsersInRoomDetailed } from '../../../apis/room/roomuser.api';
+import type { DetailedInfoResponse } from '../../../apis/room/roomuser.types';
+import { useLeaderboard } from '../../../hooks/queries/leaderboard';
+import type { PositionRequestDto, PositionResponseDto } from '../../../apis/leaderboard/leaderboard.types';
 import UserMarker from './UserMaker';
 
 const MapView = () => {
@@ -20,20 +23,31 @@ const MapView = () => {
   const markerRef = useRef<any>(null);
   // 확정 장소(커스텀 오버레이로 동일하게)
   const targetMarkerRef = useRef<any>(null);
+  // 다른 유저들의 마커들을 저장하는 맵
+  const userMarkersRef = useRef<Map<number, any>>(new Map());
 
   const isInitializedRef = useRef<boolean>(false);
   const [isLoading, setIsLoading] = useState(true);
   const [loadingMessage, setLoadingMessage] = useState('지도 불러오는 중');
   const { rankingHeight, setMoveToCurrentLocation } = useMapStore();
 
+  // 실시간 위치 데이터 상태
+  const [userPositions, setUserPositions] = useState<PositionResponseDto[]>([]);
+
   // 사용자 정보
   const { user } = useUserStore();
   const roomUserId = useRoomUserInfo(parsedRoomId, user?.userId || 0).data?.roomUserId;
   const { data: users } = useUsersInRoom(parsedRoomId);
   const { data: myRoomUserInfo } = useRoomUserInfo(parsedRoomId, user?.userId || 0);
+  
+  // 상세 유저 정보 (roomUserId 포함)
+  const [detailedUsers, setDetailedUsers] = useState<DetailedInfoResponse[]>([]);
 
   // 약속 정보 조회
   const { data: appointmentData } = useAppointment(parsedRoomId);
+
+  // 리더보드 초기 데이터 조회
+  const { data: initialLeaderboard } = useLeaderboard(parsedRoomId);
 
   // 위치 전송 인터벌
   const positionIntervalRef = useRef<number | null>(null);
@@ -41,8 +55,10 @@ const MapView = () => {
   // WebSocket 연결 및 위치 전송
   const { sendPosition } = useLeaderboardSocket(
     parsedRoomId,
-    () => {
-      // 리더보드 업데이트는 ArrivalRanking에서 처리
+    (newPositions: PositionResponseDto[]) => {
+      console.log('📡 맵에서 실시간 위치 데이터 수신:', newPositions.length, '명');
+      console.log('📊 받은 위치 데이터:', newPositions);
+      setUserPositions(newPositions);
     },
     undefined,
     appointmentData,
@@ -84,6 +100,109 @@ const MapView = () => {
 
     return customOverlay;
   }, []);
+
+  // 유저 마커 생성 함수
+  const createUserMarker = useCallback((_roomUserId: number, position: any, imgUrl?: string) => {
+    if (!mapRef.current || !window.kakao || !window.kakao.maps) {
+      return null;
+    }
+
+    const kakao = window.kakao;
+    const markerContainer = document.createElement('div');
+    const root = createRoot(markerContainer);
+    root.render(<UserMarker imgUrl={imgUrl} color="text-blue-500" />);
+
+    const customOverlay = new kakao.maps.CustomOverlay({
+      position,
+      content: markerContainer,
+      yAnchor: 1,
+    });
+
+    customOverlay.setMap(mapRef.current);
+    return customOverlay;
+  }, []);
+
+  // 유저 마커 업데이트 함수
+  const updateUserMarkers = useCallback((positions: PositionResponseDto[]) => {
+    console.log('🗺️ updateUserMarkers 호출:', {
+      positionsLength: positions.length,
+      hasMap: !!mapRef.current,
+      hasKakao: !!window.kakao,
+      myRoomUserId: myRoomUserInfo?.roomUserId,
+      currentMarkersCount: userMarkersRef.current.size,
+      usersLength: users?.length
+    });
+
+    if (!mapRef.current || !window.kakao || !window.kakao.maps) {
+      console.log('⚠️ 맵 초기화되지 않음');
+      return;
+    }
+
+    const kakao = window.kakao;
+    const currentMarkers = userMarkersRef.current;
+
+    // 현재 위치 데이터에서 유저 정보 찾기
+    positions.forEach((position) => {
+      console.log('👤 유저 위치 처리:', {
+        roomUserId: position.roomUserId,
+        lat: position.lat,
+        lng: position.lng,
+        isMyPosition: position.roomUserId === myRoomUserInfo?.roomUserId
+      });
+
+      // 내 위치는 제외 (내 마커는 별도로 관리)
+      if (position.roomUserId === myRoomUserInfo?.roomUserId) {
+        console.log('🚫 내 위치 제외');
+        return;
+      }
+
+      // 유저 정보에서 프로필 이미지 찾기
+      let userImgUrl: string | undefined;
+      if (detailedUsers) {
+        const userInfo = detailedUsers.find(u => u.roomUserId === position.roomUserId);
+        if (userInfo) {
+          userImgUrl = userInfo.profileImage || undefined;
+          console.log('🔍 유저 정보 찾기 성공:', { 
+            roomUserId: position.roomUserId, 
+            nickname: userInfo.nickname,
+            hasImage: !!userInfo.profileImage 
+          });
+        } else {
+          console.log('🔍 유저 정보 찾기 실패:', { roomUserId: position.roomUserId });
+        }
+      }
+
+      const newPosition = new kakao.maps.LatLng(position.lat, position.lng);
+      
+      if (currentMarkers.has(position.roomUserId)) {
+        // 기존 마커가 있으면 위치만 업데이트
+        const existingMarker = currentMarkers.get(position.roomUserId);
+        if (existingMarker) {
+          existingMarker.setPosition(newPosition);
+          console.log('📍 기존 마커 위치 업데이트:', position.roomUserId);
+        }
+      } else {
+        // 새로운 마커 생성 (프로필 이미지 포함)
+        const newMarker = createUserMarker(position.roomUserId, newPosition, userImgUrl);
+        if (newMarker) {
+          currentMarkers.set(position.roomUserId, newMarker);
+          console.log('🆕 새 마커 생성:', position.roomUserId, '이미지:', userImgUrl);
+        }
+      }
+    });
+
+    // 더 이상 온라인이 아닌 유저들의 마커 제거
+    const onlineUserIds = new Set(positions.map(p => p.roomUserId));
+    currentMarkers.forEach((marker, userId) => {
+      if (!onlineUserIds.has(userId)) {
+        marker.setMap(null);
+        currentMarkers.delete(userId);
+        console.log('🗑️ 오프라인 마커 제거:', userId);
+      }
+    });
+
+    console.log('✅ 마커 업데이트 완료. 현재 마커 수:', currentMarkers.size);
+  }, [myRoomUserInfo?.roomUserId, createUserMarker, detailedUsers]);
 
   // 위치 전송 함수
   const sendCurrentPosition = useCallback(() => {
@@ -150,6 +269,42 @@ const MapView = () => {
       };
     }
   }, [appointmentData, user?.userId, myRoomUserInfo, sendCurrentPosition]);
+
+  // 상세 유저 정보 가져오기
+  useEffect(() => {
+    const fetchDetailedUsers = async () => {
+      try {
+        const users = await getUsersInRoomDetailed(parsedRoomId);
+        if (users) {
+          setDetailedUsers(users);
+          console.log('👥 상세 유저 정보 로드:', users.length, '명');
+        }
+      } catch (error) {
+        console.error('❌ 상세 유저 정보 로드 실패:', error);
+      }
+    };
+
+    if (parsedRoomId) {
+      fetchDetailedUsers();
+    }
+  }, [parsedRoomId]);
+
+  // 초기 리더보드 데이터로 유저 마커 설정
+  useEffect(() => {
+    if (initialLeaderboard && initialLeaderboard.length > 0 && isInitializedRef.current) {
+      console.log('🗺️ 초기 유저 마커 설정:', initialLeaderboard.length, '명');
+      setUserPositions(initialLeaderboard);
+      updateUserMarkers(initialLeaderboard);
+    }
+  }, [initialLeaderboard, updateUserMarkers]);
+
+  // 실시간 위치 데이터로 유저 마커 업데이트
+  useEffect(() => {
+    if (userPositions.length > 0 && isInitializedRef.current) {
+      console.log('🗺️ 실시간 유저 마커 업데이트:', userPositions.length, '명');
+      updateUserMarkers(userPositions);
+    }
+  }, [userPositions, updateUserMarkers]);
 
   // 현재 위치로 이동
   const moveToCurrentLocation = useCallback(() => {
@@ -291,6 +446,11 @@ const MapView = () => {
         targetMarkerRef.current.setMap(null);
         targetMarkerRef.current = null;
       }
+      // 유저 마커들 정리
+      userMarkersRef.current.forEach((marker) => {
+        marker.setMap(null);
+      });
+      userMarkersRef.current.clear();
       setMoveToCurrentLocation(null);
     };
   }, []); // 의존성 배열을 비워서 한 번만 실행

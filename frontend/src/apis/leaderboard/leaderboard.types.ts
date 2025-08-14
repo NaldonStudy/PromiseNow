@@ -29,7 +29,7 @@ export interface ArrivalRankingItem {
   name: string;
   imgUrl?: string;
   progress: number;
-  eta: string;
+  distance: number;
   speed: number;
   arrived: boolean;
   online: boolean;
