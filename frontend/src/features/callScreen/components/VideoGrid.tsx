@@ -1,5 +1,6 @@
-import VideoTile from './VideoTile';
 import { useCallScreenStore } from '../callScreen.store';
+
+import VideoTile from './VideoTile';
 
 interface Participant {
   id: string;

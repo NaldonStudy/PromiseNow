@@ -5,6 +5,7 @@ import type {
   AlarmUpdateRequest,
   DeleteRoomRequest,
   GetUsersInRoomResponse,
+  GetUsersInRoomDetailedResponse,
   JoinInfoResponse,
   JoinRequest,
   QuitRoomRequest,
@@ -27,10 +28,26 @@ export const getUsersInRoom = async (roomId: number) => {
   return data;
 };
 
-/// 방 사용자 정보 조회
-export const getRoomUserInfo = async (roomId: number) => {
-  const data = await handleApi<RoomUserInfoResponse>(axiosInstance.get(`/rooms/${roomId}/me`));
+// 방 참가자 상세 목록 조회 (roomUserId 포함)
+export const getUsersInRoomDetailed = async (roomId: number) => {
+  const data = await handleApi<GetUsersInRoomDetailedResponse>(axiosInstance.get(`/rooms/${roomId}/users/detailed`));
   return data;
+};
+
+/// 방 사용자 정보 조회
+export const getRoomUserInfo = async (roomId: number, userId: number) => {
+  console.log('getRoomUserInfo API 호출:', { roomId, userId });
+  
+  try {
+    const data = await handleApi<RoomUserInfoResponse>(
+      axiosInstance.get(`/rooms/${roomId}/me/${userId}`),
+    );
+    console.log('getRoomUserInfo 성공:', data);
+    return data;
+  } catch (error) {
+    console.error('getRoomUserInfo 실패:', { roomId, userId, error });
+    throw error;
+  }
 };
 
 // 방 닉네임 수정

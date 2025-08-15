@@ -63,10 +63,27 @@ const ArrivalRanking = () => {
         newPositions.map((p) => ({ roomUserId: p.roomUserId, online: p.online })),
       );
 
-      // 이전 데이터와 비교하여 변경사항 확인
+      // 이전 데이터와 비교하여 변경사항 확인 (성능 최적화)
       setPositions((prevPositions) => {
-        const hasChanges = JSON.stringify(prevPositions) !== JSON.stringify(newPositions);
+        // 실제 변경사항이 있는지 확인
+        const hasChanges = prevPositions.length !== newPositions.length ||
+          prevPositions.some((prev, index) => {
+            const current = newPositions[index];
+            return !current || 
+                   prev.lat !== current.lat ||
+                   prev.lng !== current.lng ||
+                   prev.online !== current.online ||
+                   prev.arrived !== current.arrived ||
+                   prev.progress !== current.progress;
+          });
+        
         console.log('🔄 데이터 변경사항:', hasChanges ? '있음' : '없음');
+        
+        // 변경사항이 없으면 이전 상태 유지
+        if (!hasChanges) {
+          return prevPositions;
+        }
+        
         return newPositions;
       });
 
@@ -141,33 +158,14 @@ const ArrivalRanking = () => {
       // 실제로는 users 배열에 roomUserId 정보가 포함되어야 함
       const user = users[index] || null;
 
-      // 개선된 ETA 계산
-      let eta: string;
-      if (position.arrived) {
-        eta = '도착';
-      } else if (
-        position.estimatedArrivalMinutes !== undefined &&
-        position.estimatedArrivalMinutes > 0
-      ) {
-        if (position.estimatedArrivalMinutes < 60) {
-          eta = `${position.estimatedArrivalMinutes}분`;
-        } else {
-          const hours = Math.floor(position.estimatedArrivalMinutes / 60);
-          const minutes = position.estimatedArrivalMinutes % 60;
-          eta = minutes > 0 ? `${hours}시간 ${minutes}분` : `${hours}시간`;
-        }
-      } else {
-        eta = `${Math.round(position.distance * 1000)}m`;
-      }
-
       return {
         rank: index + 1,
         roomUserId: position.roomUserId,
         name: user?.nickname || '알 수 없음',
         imgUrl: user?.profileImage || undefined,
-        progress: Math.round(position.progress * 100),
-        eta,
-        speed: Math.round(position.velocity),
+        progress: Math.round(position.progress),
+        distance: Number(position.distance.toFixed(1)),
+        speed: Number(position.velocity.toFixed(1)),
         arrived: position.arrived,
         online: position.online,
         estimatedArrivalMinutes: position.estimatedArrivalMinutes,
@@ -253,7 +251,7 @@ const ArrivalRanking = () => {
                   name={item.name}
                   imgUrl={item.imgUrl}
                   progress={item.progress}
-                  eta={item.eta}
+                  distance={item.distance}
                   speed={item.speed}
                   online={item.online}
                 />
