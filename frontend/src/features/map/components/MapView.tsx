@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { createRoot } from 'react-dom/client';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import type {
-  PositionRequestDto,
-  PositionResponseDto,
-} from '../../../apis/leaderboard/leaderboard.types';
+import { createRoot } from 'react-dom/client';
+
+import useMapStore from '../map.store';
+import { useLeaderboardSocket } from '../../../hooks/socket/useLeaderboardSocket';
+import { useUserStore } from '../../../stores/user.store';
+import { useUsersInRoom, useAppointment, useRoomUserInfo } from '../../../hooks/queries/room';
 import { getUsersInRoomDetailed } from '../../../apis/room/roomuser.api';
 import type { DetailedInfoResponse } from '../../../apis/room/roomuser.types';
 import { useLeaderboard } from '../../../hooks/queries/leaderboard';
@@ -14,16 +15,19 @@ import type {
   PositionResponseDto,
 } from '../../../apis/leaderboard/leaderboard.types';
 import UserMarker from './UserMaker';
+
+// ⬇️ 분리한 컴포넌트
+import TargetMarker from './mapView/TargetMarker';
 import UserMarkers from './mapView/UserMarkers';
 
 const MapView = () => {
   const { id } = useParams<{ id: string }>();
-  const roomId = Number.parseInt(id ?? '', 10);
+  const parsedRoomId = parseInt(id || '', 10);
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
 
-  // 내 마커(현재 위치)
+  // 내 위치(커스텀 오버레이)
   const myMarkerRef = useRef<any>(null);
 
   const isInitializedRef = useRef<boolean>(false);
@@ -31,262 +35,68 @@ const MapView = () => {
   const [loadingMessage, setLoadingMessage] = useState('지도 불러오는 중');
   const { rankingHeight, setMoveToCurrentLocation } = useMapStore();
 
-  // 실시간 위치
+  // 실시간 위치 데이터 상태
   const [userPositions, setUserPositions] = useState<PositionResponseDto[]>([]);
 
-  // 로그인/룸유저
+  // 사용자 정보
   const { user } = useUserStore();
-  const roomUserId = useRoomUserInfo(parsedRoomId, user?.userId || 0).data?.roomUserId;
   const { data: users } = useUsersInRoom(parsedRoomId);
   const { data: myRoomUserInfo } = useRoomUserInfo(parsedRoomId, user?.userId || 0);
 
   // 상세 유저 정보 (roomUserId 포함)
   const [detailedUsers, setDetailedUsers] = useState<DetailedInfoResponse[]>([]);
 
-  // 약속(도착지)
-  const { data: appointmentData } = useAppointment(roomId);
+  // 약속 정보 조회
+  const { data: appointmentData } = useAppointment(parsedRoomId);
 
-  // 초기 리더보드
-  const { data: initialLeaderboard } = useLeaderboard(roomId);
+  // 리더보드 초기 데이터 조회
+  const { data: initialLeaderboard } = useLeaderboard(parsedRoomId);
 
-  // 위치 전송
+  // 위치 전송 인터벌
   const positionIntervalRef = useRef<number | null>(null);
 
-  // WebSocket 연결 및 위치 전송
+  // WebSocket 연결 및 위치 수신
   const { sendPosition } = useLeaderboardSocket(
-    roomId,
-    (positions: PositionResponseDto[]) => {
-      setUserPositions(positions);
+    parsedRoomId,
+    (newPositions: PositionResponseDto[]) => {
+      setUserPositions(newPositions);
     },
     undefined,
     appointmentData,
     false,
   );
 
-  // Kakao 로드 대기
-  const waitForKakao = useCallback(
-    () =>
-      new Promise<void>((resolve) => {
-        const chk = () => {
-          if (window.kakao?.maps?.LatLng) resolve();
-          else setTimeout(chk, 100);
-        };
-        chk();
-      }),
-    [],
-  );
+  // Kakao Maps API 로드 대기
+  const waitForKakaoMaps = useCallback(() => {
+    return new Promise<void>((resolve) => {
+      const checkKakao = () => {
+        if (window.kakao && window.kakao.maps && window.kakao.maps.LatLng) {
+          resolve();
+        } else {
+          setTimeout(checkKakao, 100);
+        }
+      };
+      checkKakao();
+    });
+  }, []);
 
   // 내 마커 생성
-  const createMyMarker = useCallback((pos: any) => {
+  const createMyMarker = useCallback((position: any) => {
     if (!window.kakao || !window.kakao.maps?.LatLng) return null;
     const kakao = window.kakao;
 
-    const div = document.createElement('div');
-    const root = createRoot(div);
+    const markerContainer = document.createElement('div');
+    const root = createRoot(markerContainer);
     root.render(<UserMarker />);
 
     const overlay = new kakao.maps.CustomOverlay({
-      position: pos,
-      content: div,
-      yAnchor: 1,
-      zIndex: 80,
-    });
-    return overlay;
-  }, []);
-
-  // 유저 마커 생성 함수
-  const createUserMarker = useCallback((_roomUserId: number, position: any, imgUrl?: string) => {
-    if (!mapRef.current || !window.kakao || !window.kakao.maps) {
-      return null;
-    }
-
-    const kakao = window.kakao;
-    const markerContainer = document.createElement('div');
-    const root = createRoot(markerContainer);
-    root.render(<UserMarker imgUrl={imgUrl} color="text-blue-500" />);
-
-    const customOverlay = new kakao.maps.CustomOverlay({
       position,
       content: markerContainer,
       yAnchor: 1,
     });
 
-    customOverlay.setMap(mapRef.current);
-    return customOverlay;
+    return overlay;
   }, []);
-
-  // 유저 마커 업데이트 함수
-  const updateUserMarkers = useCallback(
-    (positions: PositionResponseDto[]) => {
-      console.log('🗺️ updateUserMarkers 호출:', {
-        positionsLength: positions.length,
-        hasMap: !!mapRef.current,
-        hasKakao: !!window.kakao,
-        myRoomUserId: myRoomUserInfo?.roomUserId,
-        currentMarkersCount: userMarkersRef.current.size,
-        usersLength: users?.length,
-      });
-
-      if (!mapRef.current || !window.kakao || !window.kakao.maps) {
-        console.log('⚠️ 맵 초기화되지 않음');
-        return;
-      }
-
-      const kakao = window.kakao;
-      const currentMarkers = userMarkersRef.current;
-
-      // 현재 위치 데이터에서 유저 정보 찾기
-      positions.forEach((position) => {
-        console.log('👤 유저 위치 처리:', {
-          roomUserId: position.roomUserId,
-          lat: position.lat,
-          lng: position.lng,
-          isMyPosition: position.roomUserId === myRoomUserInfo?.roomUserId,
-        });
-
-        // 내 위치는 제외 (내 마커는 별도로 관리)
-        if (position.roomUserId === myRoomUserInfo?.roomUserId) {
-          console.log('🚫 내 위치 제외');
-          return;
-        }
-
-        // 유저 정보에서 프로필 이미지 찾기
-        let userImgUrl: string | undefined;
-        if (detailedUsers) {
-          const userInfo = detailedUsers.find((u) => u.roomUserId === position.roomUserId);
-          if (userInfo) {
-            userImgUrl = userInfo.profileImage || undefined;
-            console.log('🔍 유저 정보 찾기 성공:', {
-              roomUserId: position.roomUserId,
-              nickname: userInfo.nickname,
-              hasImage: !!userInfo.profileImage,
-            });
-          } else {
-            console.log('🔍 유저 정보 찾기 실패:', { roomUserId: position.roomUserId });
-          }
-        }
-
-        const newPosition = new kakao.maps.LatLng(position.lat, position.lng);
-
-        if (currentMarkers.has(position.roomUserId)) {
-          // 기존 마커가 있으면 위치만 업데이트
-          const existingMarker = currentMarkers.get(position.roomUserId);
-          if (existingMarker) {
-            existingMarker.setPosition(newPosition);
-            console.log('📍 기존 마커 위치 업데이트:', position.roomUserId);
-          }
-        } else {
-          // 새로운 마커 생성 (프로필 이미지 포함)
-          const newMarker = createUserMarker(position.roomUserId, newPosition, userImgUrl);
-          if (newMarker) {
-            currentMarkers.set(position.roomUserId, newMarker);
-            console.log('🆕 새 마커 생성:', position.roomUserId, '이미지:', userImgUrl);
-          }
-        }
-      });
-
-      // 더 이상 온라인이 아닌 유저들의 마커 제거
-      const onlineUserIds = new Set(positions.map((p) => p.roomUserId));
-      currentMarkers.forEach((marker, userId) => {
-        if (!onlineUserIds.has(userId)) {
-          marker.setMap(null);
-          currentMarkers.delete(userId);
-          console.log('🗑️ 오프라인 마커 제거:', userId);
-        }
-      });
-
-      console.log('✅ 마커 업데이트 완료. 현재 마커 수:', currentMarkers.size);
-    },
-    [myRoomUserInfo?.roomUserId, createUserMarker, detailedUsers],
-  );
-
-  // 위치 전송 함수
-  const sendCurrentPosition = useCallback(() => {
-    if (!appointmentData?.locationLat || !appointmentData?.locationLng) return;
-    if (!user?.userId || !myRoomUserId) return;
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (geo) => {
-          const req: PositionRequestDto = {
-            roomId,
-            roomUserId: myRoomUserId,
-            lat: geo.coords.latitude,
-            lng: geo.coords.longitude,
-            online: true,
-          };
-          sendPosition(req);
-        },
-        (e) => console.error('위치 실패', e),
-      );
-    }
-  }, [
-    parsedRoomId,
-    user?.userId,
-    users,
-    sendPosition,
-    appointmentData,
-    roomUserId,
-    myRoomUserInfo,
-  ]);
-
-  // 실시간 위치 전송 시작/중지
-  useEffect(() => {
-    if (
-      appointmentData?.locationLat &&
-      appointmentData?.locationLng &&
-      user?.userId &&
-      myRoomUserInfo
-    ) {
-      // 5초마다 위치 전송
-      const interval = setInterval(() => {
-        sendCurrentPosition();
-      }, 5000);
-
-      console.log('📍 실시간 위치 전송 시작 (roomUserId:', myRoomUserInfo.roomUserId, ')');
-
-      return () => {
-        clearInterval(interval);
-        console.log('📍 실시간 위치 전송 중지');
-      };
-    }
-  }, [appointmentData, user?.userId, myRoomUserInfo, sendCurrentPosition]);
-
-  // 상세 유저 정보 가져오기
-  useEffect(() => {
-    const fetchDetailedUsers = async () => {
-      try {
-        const users = await getUsersInRoomDetailed(parsedRoomId);
-        if (users) {
-          setDetailedUsers(users);
-          console.log('👥 상세 유저 정보 로드:', users.length, '명');
-        }
-      } catch (error) {
-        console.error('❌ 상세 유저 정보 로드 실패:', error);
-      }
-    };
-
-    if (parsedRoomId) {
-      fetchDetailedUsers();
-    }
-  }, [parsedRoomId]);
-
-  // 초기 리더보드 데이터로 유저 마커 설정
-  useEffect(() => {
-    if (initialLeaderboard && initialLeaderboard.length > 0 && isInitializedRef.current) {
-      console.log('🗺️ 초기 유저 마커 설정:', initialLeaderboard.length, '명');
-      setUserPositions(initialLeaderboard);
-      updateUserMarkers(initialLeaderboard);
-    }
-  }, [initialLeaderboard, updateUserMarkers]);
-
-  // 실시간 위치 데이터로 유저 마커 업데이트
-  useEffect(() => {
-    if (userPositions.length > 0 && isInitializedRef.current) {
-      console.log('🗺️ 실시간 유저 마커 업데이트:', userPositions.length, '명');
-      updateUserMarkers(userPositions);
-    }
-  }, [userPositions, updateUserMarkers]);
 
   // 현재 위치로 이동
   const moveToCurrentLocation = useCallback(() => {
@@ -301,10 +111,7 @@ const MapView = () => {
           const newCenter = new kakao.maps.LatLng(lat, lng);
 
           mapRef.current.setCenter(newCenter);
-
-          if (markerRef.current) {
-            markerRef.current.setPosition(newCenter);
-          }
+          if (myMarkerRef.current) myMarkerRef.current.setPosition(newCenter);
         },
         (error) => {
           console.error('위치 정보를 가져올 수 없습니다:', error);
@@ -319,97 +126,168 @@ const MapView = () => {
   // 지도 초기화
   const initMap = useCallback(
     (lat: number, lng: number) => {
-      if (isInitializedRef.current || !mapContainerRef.current) return;
-      if (!window.kakao || !window.kakao.maps?.LatLng) {
+      if (isInitializedRef.current) return;
+      if (!mapContainerRef.current) return;
+
+      if (!window.kakao || !window.kakao.maps || !window.kakao.maps.LatLng) {
         setIsLoading(false);
         return;
       }
-      const kakao = window.kakao;
-      const center = new kakao.maps.LatLng(lat, lng);
-      mapRef.current = new kakao.maps.Map(mapContainerRef.current, { center, level: 3 });
 
-      // 내 마커
-      myMarkerRef.current = createMyMarker(center);
-      myMarkerRef.current?.setMap(mapRef.current);
+      try {
+        const kakao = window.kakao;
+        const center = new kakao.maps.LatLng(lat, lng);
 
-      isInitializedRef.current = true;
-      setIsLoading(false);
+        mapRef.current = new kakao.maps.Map(mapContainerRef.current, {
+          center,
+          level: 3,
+        });
+
+        // 내 마커 생성 및 표시
+        myMarkerRef.current = createMyMarker(center);
+        if (myMarkerRef.current) myMarkerRef.current.setMap(mapRef.current);
+
+        isInitializedRef.current = true;
+        setIsLoading(false);
+      } catch {
+        setIsLoading(false);
+      }
     },
     [createMyMarker],
   );
 
-  // 컨테이너 리사이즈(높이)
+  // rankingHeight 변경 시 지도 크기 재조정
   useEffect(() => {
     if (mapRef.current && isInitializedRef.current) {
-      setTimeout(() => mapRef.current.relayout(), 0);
+      setTimeout(() => {
+        mapRef.current.relayout();
+      }, 0);
     }
   }, [rankingHeight]);
 
-  // 최초 로딩
+  // 지도 초기화 (한 번만 실행)
   useEffect(() => {
     if (isInitializedRef.current) return;
-    (async () => {
+
+    const setupMap = async () => {
       try {
         setLoadingMessage('Kakao Maps 로딩 중...');
-        await waitForKakao();
+        await waitForKakaoMaps();
 
-        setLoadingMessage('위치 조회 중...');
+        setLoadingMessage('지도 컨테이너 준비 중...');
+        await new Promise<void>((resolve) => {
+          const checkContainer = () => {
+            if (mapContainerRef.current) resolve();
+            else setTimeout(checkContainer, 50);
+          };
+          checkContainer();
+        });
+
+        setLoadingMessage('위치 정보 가져오는 중...');
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
-            (geo) => initMap(geo.coords.latitude, geo.coords.longitude),
-            () => initMap(37.5665, 126.978), // 실패시 서울
+            (position) => {
+              const lat = position.coords.latitude;
+              const lng = position.coords.longitude;
+              setLoadingMessage('지도 초기화 중...');
+              initMap(lat, lng);
+            },
+            () => {
+              setLoadingMessage('기본 위치로 초기화 중...');
+              initMap(37.5665, 126.978);
+            },
             { timeout: 10000, enableHighAccuracy: false, maximumAge: 300000 },
           );
         } else {
+          setLoadingMessage('기본 위치로 초기화 중...');
           initMap(37.5665, 126.978);
         }
-      } finally {
-        // no-op
+      } catch {
+        setLoadingMessage('지도 로딩 실패');
+        setIsLoading(false);
       }
-    })();
+    };
+
+    setupMap();
 
     return () => {
-      myMarkerRef.current?.setMap?.(null);
-      myMarkerRef.current = null;
+      if (myMarkerRef.current) {
+        myMarkerRef.current.setMap(null);
+        myMarkerRef.current = null;
+      }
+      setMoveToCurrentLocation(null);
     };
-  }, [waitForKakao, initMap]);
+  }, [initMap, setMoveToCurrentLocation, waitForKakaoMaps]);
 
-  // 현재 위치로 이동 기능(store)
-  const moveToCurrentLocation = useCallback(() => {
-    if (!mapRef.current || !isInitializedRef.current) return;
-    if (!window.kakao || !window.kakao.maps?.LatLng) return;
-
-    navigator.geolocation?.getCurrentPosition(
-      (geo) => {
-        const kakao = window.kakao;
-        const pos = new kakao.maps.LatLng(geo.coords.latitude, geo.coords.longitude);
-        mapRef.current.setCenter(pos);
-        myMarkerRef.current?.setPosition?.(pos);
-      },
-      (e) => {
-        console.error(e);
-        alert('위치 서비스를 활성화해주세요.');
-      },
-    );
-  }, []);
+  // store에 현재 위치 이동 함수 등록
   useEffect(() => {
     setMoveToCurrentLocation(moveToCurrentLocation);
-    return () => setMoveToCurrentLocation(null);
+    return () => {
+      setMoveToCurrentLocation(null);
+    };
   }, [moveToCurrentLocation, setMoveToCurrentLocation]);
 
-  // 초기 리더보드 -> 마커 반영
+  // 상세 유저 정보 가져오기
   useEffect(() => {
-    if (initialLeaderboard?.length && isInitializedRef.current) {
+    const fetchDetailedUsers = async () => {
+      try {
+        const list = await getUsersInRoomDetailed(parsedRoomId);
+        if (list) setDetailedUsers(list);
+      } catch (error) {
+        console.error('❌ 상세 유저 정보 로드 실패:', error);
+      }
+    };
+
+    if (parsedRoomId) fetchDetailedUsers();
+  }, [parsedRoomId]);
+
+  // 초기 리더보드 데이터로 초기 위치 상태 반영
+  useEffect(() => {
+    if (initialLeaderboard && initialLeaderboard.length > 0 && isInitializedRef.current) {
       setUserPositions(initialLeaderboard);
     }
   }, [initialLeaderboard]);
 
-  // 주기 전송
+  // 현재 위치 서버로 전송
+  const sendCurrentPosition = useCallback(() => {
+    if (!appointmentData?.locationLat || !appointmentData?.locationLng) return;
+    if (!users || !user?.userId) return;
+
+    const myRoomUserId = myRoomUserInfo?.roomUserId;
+    if (!myRoomUserId) return;
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+
+          const positionRequest: PositionRequestDto = {
+            roomId: parsedRoomId,
+            roomUserId: myRoomUserId,
+            lat,
+            lng,
+            online: true,
+          };
+
+          sendPosition(positionRequest);
+        },
+        (error) => {
+          console.error('위치 정보를 가져올 수 없습니다:', error);
+        },
+      );
+    }
+  }, [appointmentData, users, user?.userId, myRoomUserInfo?.roomUserId, parsedRoomId, sendPosition]);
+
+  // 위치 전송 시작/중지 (지도와 독립적으로)
   useEffect(() => {
-    if (!user?.userId || !myRoomUserId) return;
+    if (!user?.userId) return;
     if (!appointmentData?.locationLat || !appointmentData?.locationLng) return;
 
-    positionIntervalRef.current = window.setInterval(sendCurrentPosition, 10000);
+    positionIntervalRef.current = window.setInterval(() => {
+      sendCurrentPosition();
+    }, 10000);
+
     sendCurrentPosition();
 
     return () => {
@@ -418,25 +296,9 @@ const MapView = () => {
         positionIntervalRef.current = null;
       }
     };
-  }, [
-    user?.userId,
-    myRoomUserId,
-    appointmentData?.locationLat,
-    appointmentData?.locationLng,
-    sendCurrentPosition,
-  ]);
+  }, [sendCurrentPosition, user?.userId, appointmentData]);
 
-  // 상세 유저 정보
-  useEffect(() => {
-    (async () => {
-      try {
-        const list = await getUsersInRoomDetailed(roomId);
-        setDetailedUsers(list ?? []);
-      } catch (e) {
-        console.error('상세 유저 로드 실패', e);
-      }
-    })();
-  }, [roomId]);
+  const ready = isInitializedRef.current;
 
   return (
     <div className="h-full relative bg-gray">
@@ -446,28 +308,22 @@ const MapView = () => {
         </div>
       )}
 
-      {/* 핵심: 높이는 padding이 아니라 height로 주세요. */}
       <div
         ref={mapContainerRef}
         className="w-full"
-        style={{ height: `calc(100vh - ${rankingHeight}px)` }}
+        style={{ paddingBottom: `calc(100vh - ${rankingHeight}px)` }}
       />
 
-      {/* 도착지 마커 */}
-      <TargetMarker
-        map={mapRef.current}
-        ready={isInitializedRef.current}
-        appointment={appointmentData}
-        centerOnCreate
-      />
+      {/* ✅ 도착지(확정 장소) 마커 */}
+      <TargetMarker map={mapRef.current} ready={ready} appointment={appointmentData} />
 
-      {/* 타 사용자 마커 */}
+      {/* ✅ 다른 사용자 마커들 */}
       <UserMarkers
         map={mapRef.current}
-        ready={isInitializedRef.current}
-        myRoomUserId={myRoomUserId}
+        ready={ready}
         positions={userPositions}
         detailedUsers={detailedUsers}
+        myRoomUserId={myRoomUserInfo?.roomUserId}
       />
     </div>
   );

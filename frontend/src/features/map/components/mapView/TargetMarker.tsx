@@ -5,33 +5,22 @@ import { createRoot, type Root } from 'react-dom/client';
 import type { AppointmentResponse } from '../../../../apis/room/room.types';
 import Icon from '../../../../components/ui/Icon';
 
-type Props = {
-  map: any | null;
-  ready: boolean;
-  appointment: AppointmentResponse | null | undefined;
-  centerOnCreate?: boolean;
-};
-
-// 내부에 렌더링할 작은 컴포넌트 (아이콘 클릭 → 말풍선 토글)
-const FlagMarkerContent = ({ label, size = 35 }: { label?: string; size?: number }) => {
+/** 깃발 + 클릭 시 라벨 팝업 */
+function FlagWithTooltip({ label }: { label: string }) {
   const [open, setOpen] = useState(false);
 
   return (
     <div
-      onClick={(e) => {
-        e.stopPropagation();
-        setOpen((v) => !v);
-      }}
       style={{
         display: 'inline-flex',
         flexDirection: 'column',
-        alignItems: 'flex-start',
+        alignItems: 'flex-start', // 왼쪽 정렬
         lineHeight: 0,
-        pointerEvents: 'auto', // 클릭 가능
-        cursor: 'pointer',
+        pointerEvents: 'auto',
       }}
     >
-      {open && label && (
+      {/* 라벨 팝업 */}
+      {open && (
         <div
           style={{
             marginBottom: 6,
@@ -42,22 +31,48 @@ const FlagMarkerContent = ({ label, size = 35 }: { label?: string; size?: number
             fontSize: 12,
             fontWeight: 600,
             boxShadow: '0 6px 16px rgba(0,0,0,.15)',
-            border: ' 1px solid #eb793c',
+            border: '1px solid #eb793c',
+            maxWidth: 220,
+            wordBreak: 'break-word',
           }}
         >
           {label}
         </div>
       )}
-      <Icon type="flag" size={size} />
+
+      {/* 깃발 아이콘 (토글 버튼) */}
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen((v) => !v);
+        }}
+        style={{
+          all: 'unset',
+          cursor: 'pointer',
+          display: 'inline-flex',
+        }}
+        aria-label="도착지"
+        title="도착지"
+      >
+        <Icon type="flag" size={35} />
+      </button>
     </div>
   );
+}
+
+type Props = {
+  map: any | null;
+  ready: boolean;
+  appointment: AppointmentResponse | null | undefined;
+  centerOnCreate?: boolean;
 };
 
 const TargetMarker = ({ map, ready, appointment, centerOnCreate = true }: Props) => {
   const overlayRef = useRef<any>(null);
   const rootRef = useRef<Root | null>(null);
 
-  const destroyOverlay = () => {
+  const destroy = () => {
     if (overlayRef.current) {
       overlayRef.current.setMap(null);
       overlayRef.current = null;
@@ -71,8 +86,9 @@ const TargetMarker = ({ map, ready, appointment, centerOnCreate = true }: Props)
   useEffect(() => {
     if (!ready || !map) return;
 
+    // 좌표 없으면 제거
     if (!appointment?.locationLat || !appointment?.locationLng) {
-      destroyOverlay();
+      destroy();
       return;
     }
 
@@ -81,32 +97,32 @@ const TargetMarker = ({ map, ready, appointment, centerOnCreate = true }: Props)
     const pos = new kakao.maps.LatLng(appointment.locationLat, appointment.locationLng);
 
     // 재생성
-    destroyOverlay();
+    destroy();
 
     const container = document.createElement('div');
-    // 클릭 먹히도록 auto
-    container.style.pointerEvents = 'auto';
-    container.style.display = 'inline-flex';
 
     const root = createRoot(container);
     rootRef.current = root;
-    root.render(<FlagMarkerContent label={appointment.locationName} size={35} />);
+
+    const safeLabel = (appointment.locationName ?? '도착지')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    // 깃발과 팝업을 리액트로 렌더링
+    root.render(<FlagWithTooltip label={safeLabel} />);
 
     overlayRef.current = new kakao.maps.CustomOverlay({
       position: pos,
       content: container,
-      xAnchor: 0, // 좌
-      yAnchor: 1, // 하
+      xAnchor: 0, // 왼쪽 기준
+      yAnchor: 1, // 하단 기준
       zIndex: 100,
-      clickable: true, // (옵션) 오버레이 클릭 이벤트 허용
     });
     overlayRef.current.setMap(map);
 
     if (centerOnCreate) map.setCenter(pos);
 
-    return () => {
-      destroyOverlay();
-    };
+    return () => destroy();
   }, [
     ready,
     map,
