@@ -11,5 +11,5 @@ export const useCallActionStore = create<{
   triggerJoin: () => set({ requestJoin: true }),
   requestLeave: false,
   triggerLeave: () => set({ requestLeave: true }),
-  reset: () => set({ requestLeave: false }),
+  reset: () => set({ requestJoin: false, requestLeave: false }),
 }));
