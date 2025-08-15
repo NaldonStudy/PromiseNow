@@ -1,8 +1,6 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useMediasoupClient } from '../../../hooks/webrtc/useMediasoupClient';
-import { useCallActionStore } from '../callAction';
-import { useUserStore } from '../../../stores/user.store';
+import { useCallSession } from '../../../hooks/webrtc/useCallSession';
 
 import CallControlPanel from './CallControlPanel';
 import VideoGrid from './VideoGrid';
@@ -17,12 +15,6 @@ interface Participant {
 }
 
 const CallScreen = () => {
-  const navigate = useNavigate();
-  const { id } = useParams();
-  const { user } = useUserStore();
-  const userId = user?.userId;
-  const hasConnected = useRef(false);
-
   const {
     isConnected,
     isConnecting,
@@ -31,50 +23,20 @@ const CallScreen = () => {
     peerStreams,
     micProducer,
     webcamProducer,
-    connect,
-    disconnect,
     enableMic,
     enableWebcam,
     muteMic,
     unmuteMic,
     muteWebcam,
     unmuteWebcam,
-  } = useMediasoupClient({
-    roomId: id || '1',
-    userId: userId !== undefined ? String(userId) : 'unknown',
-    displayName: 'Anonymous',
-    produce: true,
-    consume: true,
-    mic: false,
-    webcam: false,
-  });
+  } = useCallSession();
 
-  const requestLeave = useCallActionStore((s) => s.requestLeave);
-  const resetLeave = useCallActionStore((s) => s.reset);
-
-  useEffect(() => {
-    if (id && !hasConnected.current) {
-      hasConnected.current = true;
-      connect();
-    }
-  }, [id, connect]);
-
-  useEffect(() => {
-    if (requestLeave) {
-      handleLeaveCall();
-      resetLeave();
-    }
-  }, [requestLeave, resetLeave]);
+  const navigate = useNavigate();
+  const { id } = useParams();
 
   const handleChatClick = () => {
     if (!id) return;
     navigate(`/${id}/chat`);
-  };
-
-  const handleLeaveCall = () => {
-    hasConnected.current = false;
-    disconnect();
-    navigate(`/${id}/schedule`);
   };
 
   const handleToggleMic = async () => {
@@ -136,6 +98,7 @@ const CallScreen = () => {
     });
 
     return list;
+    // ⬇️ 핵심: paused 값이 바뀌어도 재계산되도록 의존성에 포함
   }, [
     peers,
     peerStreams,
@@ -150,15 +113,6 @@ const CallScreen = () => {
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
           <p className="text-red-500 mb-4">연결 오류: {error}</p>
-          <button
-            onClick={() => {
-              hasConnected.current = false;
-              connect();
-            }}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            재연결
-          </button>
         </div>
       </div>
     );
