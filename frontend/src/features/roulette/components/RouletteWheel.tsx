@@ -1,17 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import { FaMapMarker } from 'react-icons/fa';
 import { useParams } from 'react-router-dom';
-
 import { useRouletteList } from '../../../hooks/queries/roulette/queries';
-import { useRouletteSpinStore } from '../../../stores/roulette.store'; // mustStartSpinning, prizeNumber, stopSpinning
+import { useRouletteSpinStore } from '../../../stores/roulette.store';
 
 // 색상 팔레트 추가
 const PALETTE = [
   { backgroundColor: '#fdf2eb', textColor: '#bb4f15' }, // 연오렌지 / 진갈색
   { backgroundColor: '#f28145', textColor: '#ffffff' }, // 오렌지
   { backgroundColor: '#bb4f15', textColor: '#ffffff' }, // 진갈색
-  { backgroundColor: 'var(--color-point)', textColor: '#ffffff' }, // 포인트(보라)
-  { backgroundColor: 'var(--color-gray-input)', textColor: '#000000' }, // 연회색
+  { backgroundColor: '#ef9c6f', textColor: '#ffffff' }, // 연갈색
 ];
 
 const RouletteWheel = () => {
@@ -44,7 +42,9 @@ const RouletteWheel = () => {
       setIsSpinning(true);
 
       const segmentAngle = 360 / options.length;
-      const targetAngle = 360 - prizeNumber * segmentAngle - segmentAngle / 2;
+      const pointerAngle = 270;
+      const offset = (Math.random() - 0.5) * segmentAngle * 0.5;
+      const targetAngle = pointerAngle - (prizeNumber + 0.5) * segmentAngle + offset;
       const spins = 5;
       const finalRotation = rotation + 360 * spins + targetAngle;
 
