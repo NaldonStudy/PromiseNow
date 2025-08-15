@@ -55,7 +55,7 @@ public class UserController {
                     )
             }
     )
-    @PostMapping("/me")
+    @GetMapping("/me")
     public ResponseEntity<ApiUtils.ApiResponse<User>> getMyInfo(@AuthenticationPrincipal OAuth2UserDetails userDetails) {
         User user = userService.findByUserId(userDetails.getUserId());
         return ApiUtils.success(user);

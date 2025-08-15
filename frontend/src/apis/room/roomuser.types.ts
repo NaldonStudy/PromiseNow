@@ -54,8 +54,18 @@ export interface SimpleInfoResponse {
   profileImage: string | null;
 }
 
+// 참가자 상세 정보 (roomUserId 포함)
+export interface DetailedInfoResponse {
+  roomUserId: number;
+  nickname: string;
+  profileImage: string | null;
+}
+
 // 방 참가자 목록 응답
 export type GetUsersInRoomResponse = SimpleInfoResponse[];
+
+// 방 참가자 상세 목록 응답
+export type GetUsersInRoomDetailedResponse = DetailedInfoResponse[];
 
 // 알림 설정 응답
 export interface AlarmSettingResponse {
