@@ -1,20 +1,28 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { useKakaoLoader } from './hooks/kakao/useKakaoLoader';
+import { useUserStore } from './stores/user.store';
+import { useEffect } from 'react';
 
 import CallPage from './pages/CallPage';
 import ChatPage from './pages/ChatPage';
 import HomePage from './pages/HomePage';
-import LocationPage from './pages/LocationPage';
 import LandingPage from './pages/LandingPage';
 import RoulettePage from './pages/RoulettePage';
 import SchedulePage from './pages/SchedulePage';
 import SettingsPage from './pages/SettingsPage';
 import NotFoundPage from './pages/NotFoundPage';
 import CallLayout from './features/callScreen/CallLayout';
+import LocationPage from './pages/LocationPage';
 
 function App() {
   useKakaoLoader();
+  const { syncAuthState } = useUserStore();
+
+  // 앱 시작 시 쿠키와 store 상태 동기화
+  useEffect(() => {
+    syncAuthState();
+  }, [syncAuthState]);
 
   return (
     <div className="flex justify-center bg-gray-100">

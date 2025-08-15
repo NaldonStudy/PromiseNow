@@ -11,8 +11,10 @@ import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Claims;
 import java.security.Key;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -93,6 +95,34 @@ public class JwtTokenProvider {
             return false;
         }
     }
+
+    /**
+     * 토큰 만료 시간 추출
+     */
+    public Date getExpirationDate(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+            return claims.getExpiration();
+        } catch (JwtException | IllegalArgumentException e) {
+            log.warn("토큰 만료 시간 추출 실패: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * 토큰이 만료되었는지 확인
+     */
+    public boolean isTokenExpired(String token) {
+        Date expiration = getExpirationDate(token);
+        if (expiration == null) {
+            return true;
+        }
+        return expiration.before(new Date());
+    }
     
     /**
      * 토큰 타입 검증
@@ -172,12 +202,14 @@ public class JwtTokenProvider {
         ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from("access_token", "")
                 .httpOnly(true)
                 .path("/")
-                .maxAge(0);
+                .maxAge(0)
+                .domain(null); // 모든 도메인에서 삭제 가능하도록
         
         if (isProduction()) {
             builder.secure(true).sameSite("Lax");
         } else {
-            builder.secure(false).sameSite("None");
+            // 개발 환경에서는 Secure false와 호환되는 Lax 사용
+            builder.secure(false).sameSite("Lax");
         }
         
         return builder.build();
@@ -190,15 +222,71 @@ public class JwtTokenProvider {
         ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from("refresh_token", "")
                 .httpOnly(true)
                 .path("/")
-                .maxAge(0);
+                .maxAge(0)
+                .domain(null); // 모든 도메인에서 삭제 가능하도록
         
         if (isProduction()) {
             builder.secure(true).sameSite("Lax");
         } else {
-            builder.secure(false).sameSite("None");
+            // 개발 환경에서는 Secure false와 호환되는 Lax 사용
+            builder.secure(false).sameSite("Lax");
         }
         
         return builder.build();
+    }
+
+    /**
+     * 모든 가능한 도메인에서 쿠키를 삭제하는 ResponseCookie 생성
+     */
+    public List<ResponseCookie> expireAllCookies() {
+        List<ResponseCookie> cookies = new ArrayList<>();
+        
+        // 기본 쿠키 삭제 (도메인 없이)
+        cookies.add(expireAccessTokenCookie());
+        cookies.add(expireRefreshTokenCookie());
+        
+        // 개발 환경에서 localhost 도메인에서도 삭제
+        if (!isProduction()) {
+            // localhost 도메인
+            ResponseCookie.ResponseCookieBuilder localhostAccessBuilder = ResponseCookie.from("access_token", "")
+                    .httpOnly(true)
+                    .path("/")
+                    .maxAge(0)
+                    .domain("localhost");
+            
+            ResponseCookie.ResponseCookieBuilder localhostRefreshBuilder = ResponseCookie.from("refresh_token", "")
+                    .httpOnly(true)
+                    .path("/")
+                    .maxAge(0)
+                    .domain("localhost");
+            
+            localhostAccessBuilder.secure(false).sameSite("Lax");
+            localhostRefreshBuilder.secure(false).sameSite("Lax");
+            
+            cookies.add(localhostAccessBuilder.build());
+            cookies.add(localhostRefreshBuilder.build());
+            
+            // .localhost 도메인 (서브도메인 포함)
+            ResponseCookie.ResponseCookieBuilder dotLocalhostAccessBuilder = ResponseCookie.from("access_token", "")
+                    .httpOnly(true)
+                    .path("/")
+                    .maxAge(0)
+                    .domain(".localhost");
+            
+            ResponseCookie.ResponseCookieBuilder dotLocalhostRefreshBuilder = ResponseCookie.from("refresh_token", "")
+                    .httpOnly(true)
+                    .path("/")
+                    .maxAge(0)
+                    .domain(".localhost");
+            
+            dotLocalhostAccessBuilder.secure(false).sameSite("Lax");
+            dotLocalhostRefreshBuilder.secure(false).sameSite("Lax");
+            
+            cookies.add(dotLocalhostAccessBuilder.build());
+            cookies.add(dotLocalhostRefreshBuilder.build());
+        }
+        
+        return cookies;
     }
     
     /**

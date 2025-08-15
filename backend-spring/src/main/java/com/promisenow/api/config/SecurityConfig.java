@@ -54,6 +54,15 @@ public class SecurityConfig {
             // 헤더 설정 (h2-console용)
             .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
             
+            // 인증 실패 시 401 응답 (리다이렉트 방지)
+            .exceptionHandling(exceptionHandling -> exceptionHandling
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"error\":\"Unauthorized\",\"message\":\"인증이 필요합니다.\"}");
+                })
+            )
+            
             // 요청 인증 설정
             .authorizeHttpRequests(authz -> authz
                 // 공개 엔드포인트
@@ -65,6 +74,9 @@ public class SecurityConfig {
                 // OAuth2 관련 엔드포인트
                 .requestMatchers("/oauth2/**").permitAll()
                 .requestMatchers("/login/oauth2/code/**").permitAll()
+                
+                // 리프레시 토큰 재발급 (인증 불필요)
+                .requestMatchers("/api/auth/refresh").permitAll()
                 
                 // 웹소켓
                 .requestMatchers("/ws-chat/**").permitAll()

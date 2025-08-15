@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useJoinedRooms, useJoinRoomByInviteCode } from '../hooks/queries/room';
 import { useTitle } from '../hooks/common/useTitle';
@@ -11,7 +10,6 @@ import HomeTemplate from './templates/HomeTemplate';
 
 const HomePage = () => {
   useTitle('내 약속 목록 - PromiseNow');
-  const navigate = useNavigate();
   const { user, isAuthenticated, setUser } = useUserStore();
   const { setView, setMode } = useCalendarStore();
 
@@ -24,28 +22,41 @@ const HomePage = () => {
     setMode('view');
   };
 
-  // 사용자 정보 가져오기
+  // 인증되지 않았거나 사용자 정보가 없으면 처리
   useEffect(() => {
-    const fetchUserInfo = async () => {
-      try {
-        const userInfo = await getMyInfo();
-        if (userInfo) {
-          setUser(userInfo);
-        } else {
-          console.error('사용자 정보가 null입니다.');
-          navigate('/');
-        }
-      } catch (error) {
-        console.error('사용자 정보 조회 실패:', error);
-        navigate('/');
-      }
-    };
-
-    // 인증되지 않았거나 사용자 정보가 없으면 사용자 정보 가져오기 시도
     if (!isAuthenticated || !user) {
+      // 사용자 정보 가져오기 시도 (최대 3번)
+      const fetchUserInfo = async (retryCount = 0) => {
+        // 쿠키가 설정될 때까지 잠시 대기 (재시도할수록 더 오래)
+        await new Promise(resolve => setTimeout(resolve, 100 + retryCount * 200));
+        
+        try {
+          const userInfo = await getMyInfo();
+          
+          if (userInfo) {
+            setUser(userInfo);
+          } else {
+            // 재시도 가능한 경우 재시도
+            if (retryCount < 2) {
+              setTimeout(() => fetchUserInfo(retryCount + 1), 500);
+            } else {
+              window.location.href = '/';
+            }
+          }
+        } catch {
+          // 재시도 가능한 경우 재시도
+          if (retryCount < 2) {
+            setTimeout(() => fetchUserInfo(retryCount + 1), 500);
+          } else {
+            window.location.href = '/';
+          }
+        }
+      };
+      
       fetchUserInfo();
+      return;
     }
-  }, [isAuthenticated, user, setUser, navigate]);
+  }, [isAuthenticated, user, setUser]);
 
   // 참여코드로 참여할 때
   const handleJoinRoom = (
