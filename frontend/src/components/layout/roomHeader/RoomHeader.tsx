@@ -29,7 +29,7 @@ const RoomHeader = ({ title, inviteCode, users }: Props) => {
 
       <div className="flex gap-5 items-center ml-5 text-text-dark text-sm">
         <PopIcon iconType="bell">
-          <ParticipantList users={undefined} />
+          <span>알림이 없습니다</span>
         </PopIcon>
 
         <PopIcon iconType="person">
