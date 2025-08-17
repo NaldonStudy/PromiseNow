@@ -18,7 +18,7 @@ export interface ChatMessageResponse {
   content: string;
   roomUserId: number;
   nickname: string;
-  sentDate: string;
+  sentDate: string; // 백엔드에서 문자열로 전송
   type: MessageType;
   imageUrl: string | null;
 }
