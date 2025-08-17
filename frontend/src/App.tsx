@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { useKakaoLoader } from './hooks/kakao/useKakaoLoader';
 import { useUserStore } from './stores/user.store';
 import { useEffect } from 'react';
+import { GTMPageTracker } from './components/GTMPageTracker';
 
 import CallPage from './pages/CallPage';
 import ChatPage from './pages/ChatPage';
@@ -29,6 +30,7 @@ function App() {
       <div className="w-full max-w-mobile min-h-screen bg-white shadow-lg">
         <QueryClientProvider client={new QueryClient()}>
           <BrowserRouter>
+            <GTMPageTracker />
             <Routes>
               <Route path="/" element={<LandingPage />} />
               <Route path="/home" element={<HomePage />} />
