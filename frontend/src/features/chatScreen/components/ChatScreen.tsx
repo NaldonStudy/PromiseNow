@@ -1,6 +1,6 @@
 // src/features/chat/components/ChatScreen.tsx
 import { useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 
 import type { ChatMessageResponse } from '../../../apis/chat/chat.types';
@@ -25,22 +25,46 @@ const ChatScreen = () => {
   const { data: roomUserInfo } = useRoomUserInfo(roomId, userId ?? 0);
 
   const { data: messages = [], isLoading, isError } = useChatMessages(roomId);
+  
+
 
   const qc = useQueryClient();
   const handleIncoming = useCallback(
     (raw: unknown) => {
       const msg = raw as ChatMessageResponse;
-      qc.setQueryData<ChatMessageResponse[]>(chatKeys.messages(roomId), (old = []) => [...old, msg]);
+
+      
+      qc.setQueryData<ChatMessageResponse[]>(chatKeys.messages(roomId), (old = []) => {
+        const newMessages = [...old, msg];
+        // 시간순으로 정렬 (sentDate 기준, 시간대 고려)
+        const sortedMessages = newMessages.sort((a, b) => {
+          try {
+                         const getDateFromSentDate = (sentDate: string) => {
+               return new Date(sentDate).getTime();
+             };
+            
+            const dateA = getDateFromSentDate(a.sentDate);
+            const dateB = getDateFromSentDate(b.sentDate);
+            return dateA - dateB; // 오름차순 (최근 메시지가 아래로)
+          } catch (error) {
+            console.error('메시지 정렬 에러:', error, 'a:', a.sentDate, 'b:', b.sentDate);
+            return 0;
+          }
+        });
+        
+
+        return sortedMessages;
+      });
     },
     [qc, roomId],
   );
 
-  const wsBase = useMemo(() => 'https://api.promisenow.store/ws-chat', []);
   const subscribeDest = useCallback((rid: number) => `/topic/chat/${rid}`, []);
   const { isConnected, sendMessage } = useChatSocket(roomId, handleIncoming, {
-    wsBase,
     subscribeDest,
   });
+
+
 
   const scrollerRef = useRef<HTMLDivElement>(null);
 
@@ -78,7 +102,7 @@ const ChatScreen = () => {
 
   return (
     <div className="flex h-full flex-col pb-3">
-      <div ref={scrollerRef} className="flex-1 overflow-y-auto px-4 pt-2">
+      <div ref={scrollerRef} className="flex-1 overflow-y-auto px-4 pt-2 flex flex-col">
         {isLoading && <p className="text-center text-sm text-gray-500">로딩 중...</p>}
         {isError && <p className="text-center text-sm text-red-500">메시지 로드 실패</p>}
         {!isLoading && !isError && <MessageList messages={messages} onMediaLoad={handleMediaLoad} />}
