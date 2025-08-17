@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 @Getter
 @Builder
@@ -21,6 +22,7 @@ public class RecommendationTimeResponseDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class RecommendationData {
+        @JsonFormat(pattern = "yyyy-MM-dd")
         private LocalDate date;
         private String timeStart;
         private String timeEnd;

@@ -133,14 +133,21 @@ public class SecurityConfig {
             "Accept",
             "Origin",
             "Access-Control-Request-Method",
-            "Access-Control-Request-Headers"
+            "Access-Control-Request-Headers",
+            "Upgrade",
+            "Connection",
+            "Sec-WebSocket-Key",
+            "Sec-WebSocket-Version",
+            "Sec-WebSocket-Protocol"
         ));
         
         // 노출할 헤더
         configuration.setExposedHeaders(Arrays.asList(
             "Access-Control-Allow-Origin",
             "Access-Control-Allow-Credentials",
-            "Set-Cookie"
+            "Set-Cookie",
+            "Upgrade",
+            "Connection"
         ));
         
         // 쿠키 허용 (HttpOnly 쿠키 지원을 위해 필수)

@@ -1,10 +1,15 @@
 package com.promisenow.api.config;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.web.socket.config.annotation.WebSocketTransportRegistration;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.MediaType;
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSocketMessageBroker
@@ -30,5 +35,26 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.setApplicationDestinationPrefixes("/app");
         //브로커가 받기전에 스프링이 먼저 받는 주소
         registry.enableSimpleBroker("/topic");
+    }
+
+    @Override
+    public void configureWebSocketTransport(WebSocketTransportRegistration registration) {
+        registration.setMessageSizeLimit(64 * 1024) // 64KB
+                   .setSendBufferSizeLimit(512 * 1024) // 512KB
+                   .setSendTimeLimit(20000); // 20초
+    }
+
+    @Bean
+    public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter() {
+        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
+        converter.setSupportedMediaTypes(Arrays.asList(
+            MediaType.APPLICATION_JSON,
+            MediaType.TEXT_EVENT_STREAM,
+            MediaType.TEXT_PLAIN,
+            MediaType.valueOf("application/javascript"),
+            MediaType.valueOf("text/html"),
+            MediaType.valueOf("application/x-www-form-urlencoded")
+        ));
+        return converter;
     }
 }

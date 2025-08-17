@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @Setter
 public class MessageResponseDto {
     private String content;
+    private Long roomUserId;
     private Long userId;
     private String nickname;
     private LocalDateTime sentDate;
