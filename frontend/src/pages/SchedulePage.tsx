@@ -51,10 +51,39 @@ const SchedulePage = () => {
   // userSelections 조회
   const convertMyAvailabilityToUserSelections = (myAvailabilityData: MyAvailabilityResponse) => {
     const userSelections: Record<string, boolean[]> = {};
+    console.log('=== DEBUG: convertMyAvailabilityToUserSelections ===');
+    console.log('myAvailabilityData:', myAvailabilityData);
+    
+    // 날짜 형식을 yyyy-MM-dd로 통일하는 함수
+    const normalizeDate = (dateStr: string) => {
+      try {
+        // 이미 yyyy-MM-dd 형식인지 확인
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+          return dateStr;
+        }
+        
+        // 다른 형식들을 yyyy-MM-dd로 변환
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) {
+          console.warn('Invalid date format:', dateStr);
+          return dateStr;
+        }
+        return date.toISOString().split('T')[0];
+      } catch (error) {
+        console.warn('Error normalizing date:', dateStr, error);
+        return dateStr;
+      }
+    };
+    
     myAvailabilityData.availabilities.forEach((availability) => {
       const { date, timeData } = availability;
-      userSelections[date] = timeData.split('').map((bit) => bit === '1');
+      console.log('date from backend:', date, 'type:', typeof date);
+      const normalizedDate = normalizeDate(date);
+      console.log('normalized date:', normalizedDate);
+      userSelections[normalizedDate] = timeData.split('').map((bit) => bit === '1');
     });
+    console.log('converted userSelections keys:', Object.keys(userSelections));
+    console.log('================================================');
     return userSelections;
   };
 
@@ -90,14 +119,41 @@ const SchedulePage = () => {
   const handleUserSelectionsUpdate = (userSelections: Record<string, boolean[]>) => {
     if (roomUserId === undefined) return;
 
+    // 날짜 형식을 yyyy-MM-dd로 통일하는 함수
+    const normalizeDate = (dateStr: string) => {
+      try {
+        // 이미 yyyy-MM-dd 형식인지 확인
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+          return dateStr;
+        }
+        
+        // 다른 형식들을 yyyy-MM-dd로 변환
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) {
+          console.warn('Invalid date format:', dateStr);
+          return dateStr;
+        }
+        return date.toISOString().split('T')[0];
+      } catch (error) {
+        console.warn('Error normalizing date:', dateStr, error);
+        return dateStr;
+      }
+    };
+
     const updatedDataList = Object.entries(userSelections).map(([date, timeArray]) => ({
-      date,
+      date: normalizeDate(date),
       timeData: timeArray.map((selected) => (selected ? '1' : '0')).join(''),
     }));
     const updateData = {
       roomUserId: roomUserId,
       updatedDataList,
     };
+    
+    console.log('=== DEBUG: handleUserSelectionsUpdate ===');
+    console.log('Original userSelections keys:', Object.keys(userSelections));
+    console.log('Normalized updatedDataList:', updatedDataList);
+    console.log('========================================');
+    
     updateUserSelectionsMutation.mutate(updateData, {
       onSuccess: () => {
         console.log('사용자 선택 업데이트', updateData);
