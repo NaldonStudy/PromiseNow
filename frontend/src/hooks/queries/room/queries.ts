@@ -88,7 +88,7 @@ export const useRoomUserInfo = (roomId: number, userId: number) => {
   return useQuery<RoomUserInfoResponse>({
     queryKey: roomKeys.myInfo(roomId, userId),
     queryFn: async () => {
-      console.log('useRoomUserInfo 호출:', { roomId, userId });
+
       const result = await getRoomUserInfo(roomId, userId);
       if (result === null) throw new Error('방 사용자 정보 조회 실패');
       return result;

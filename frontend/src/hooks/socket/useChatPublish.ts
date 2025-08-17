@@ -1,5 +1,5 @@
 // src/hooks/chat/useChatPublish.ts
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { useUserStore } from '../../stores/user.store';
 import { useUploadChatImage } from '../chat';
 import { useRoomUserInfo } from '../queries/room';
@@ -11,9 +11,8 @@ export const useChatPublish = (roomId: number) => {
 
   const roomUserId = useRoomUserInfo(roomId, userId!).data?.roomUserId;
 
-  const wsBase = useMemo(() => 'https://api.promisenow.store/ws-chat', []);
   const subscribeDest = useCallback((rid: number) => `/topic/chat/${rid}`, []);
-  const { isConnected, sendMessage } = useChatSocket(roomId, () => {}, { wsBase, subscribeDest });
+  const { isConnected, sendMessage } = useChatSocket(roomId, () => {}, { subscribeDest });
 
   const { mutateAsync: uploadImage } = useUploadChatImage();
 
