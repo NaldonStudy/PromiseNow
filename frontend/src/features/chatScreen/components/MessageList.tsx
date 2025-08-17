@@ -23,7 +23,7 @@ const MessageList = ({ messages, onMediaLoad }: Props) => {
     !m ? null : m.type === 'PINO' ? 'PINO' : m.roomUserId;
 
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1 flex-1 justify-end">
       {messages.map((msg, idx) => {
         const prev = messages[idx - 1];
 

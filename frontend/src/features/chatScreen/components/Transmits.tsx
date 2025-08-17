@@ -1,5 +1,5 @@
 // src/features/chat/components/Transmits.tsx
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 import CameraPopCard from '../../../components/ui/CameraPopCard';
 import CircleBtn from '../../../components/ui/CircleBtn';
@@ -19,6 +19,8 @@ const Transmits = ({ roomId, isConnected, sendMessage }: Props) => {
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [openPicker, setOpenPicker] = useState(false);
+  const [isComposing, setIsComposing] = useState(false); // 한글 입력 상태
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const { user } = useUserStore();
   const roomUserId = useRoomUserInfo(roomId, user?.userId || 0).data?.roomUserId;
@@ -26,6 +28,23 @@ const Transmits = ({ roomId, isConnected, sendMessage }: Props) => {
   const { mutateAsync: uploadImage } = useUploadChatImage();
 
   const disabledByContext = roomId == null || roomUserId == null || !user?.userId;
+
+  // 컴포넌트 마운트 시 입력창에 자동 포커스
+  useEffect(() => {
+    if (!disabledByContext && isConnected) {
+      inputRef.current?.focus();
+    }
+  }, [disabledByContext, isConnected]);
+
+  // 메시지 전송 후 포커스 유지
+  useEffect(() => {
+    if (message === '' && !sending && !disabledByContext && isConnected) {
+      // 다음 프레임에서 포커스 설정 (리렌더링 완료 후)
+      requestAnimationFrame(() => {
+        inputRef.current?.focus();
+      });
+    }
+  }, [message, sending, disabledByContext, isConnected]);
 
   const handlePickFile = () => setOpenPicker((v) => !v);
 
@@ -83,7 +102,11 @@ const Transmits = ({ roomId, isConnected, sendMessage }: Props) => {
   };
 
   const handleSendText = () => {
-    if (!message.trim() || disabledByContext) return;
+    if (!message.trim() || disabledByContext || sending) return;
+    
+    const messageToSend = message.trim();
+    setSending(true);
+    
     const sentDate = new Date().toISOString();
 
     if (isConnected) {
@@ -92,14 +115,17 @@ const Transmits = ({ roomId, isConnected, sendMessage }: Props) => {
         roomUserId,
         userId: user?.userId || 0,
         type: 'TEXT',
-        content: message.trim(),
+        content: messageToSend,
         imageUrl: null,
         lat: null,
         lng: null,
         sentDate,
       });
-      setMessage('');
     }
+    
+    // 메시지 전송 후 입력창 초기화
+    setMessage('');
+    setSending(false);
   };
 
   return (
@@ -122,6 +148,7 @@ const Transmits = ({ roomId, isConnected, sendMessage }: Props) => {
       </div>
 
       <Input
+        ref={inputRef}
         placeholder={disabledByContext ? '방/사용자 정보가 없어요' : '메시지를 입력하세요'}
         value={message}
         onChange={(e) => setMessage(e.target.value)}
@@ -129,8 +156,13 @@ const Transmits = ({ roomId, isConnected, sendMessage }: Props) => {
         textSize="text-sm"
         disabled={disabledByContext || sending || !isConnected}
         onKeyDown={(e) => {
-          if (e.key === 'Enter') handleSendText();
+          if (e.key === 'Enter' && !isComposing) {
+            e.preventDefault(); // 기본 동작 방지 (포커스 이동 등)
+            handleSendText();
+          }
         }}
+        onCompositionStart={() => setIsComposing(true)}
+        onCompositionEnd={() => setIsComposing(false)}
       />
 
       <CircleBtn

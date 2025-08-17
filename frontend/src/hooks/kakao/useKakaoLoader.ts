@@ -20,8 +20,6 @@ export const useKakaoLoader = () => {
     script.onload = () => {
       window.kakao.maps.load(() => {
         isKakaoLoaded = true;
-        console.log('✅ Kakao Map SDK loaded with services library');
-        console.log('📍 Services available:', !!window.kakao?.maps?.services);
       });
     };
 

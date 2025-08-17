@@ -87,7 +87,7 @@ const MapView = () => {
 
     const markerContainer = document.createElement('div');
     const root = createRoot(markerContainer);
-    root.render(<UserMarker />);
+    root.render(<UserMarker imgUrl={myRoomUserInfo?.profileImage} />);
 
     const overlay = new kakao.maps.CustomOverlay({
       position,
@@ -277,7 +277,14 @@ const MapView = () => {
         },
       );
     }
-  }, [appointmentData, users, user?.userId, myRoomUserInfo?.roomUserId, parsedRoomId, sendPosition]);
+  }, [
+    appointmentData,
+    users,
+    user?.userId,
+    myRoomUserInfo?.roomUserId,
+    parsedRoomId,
+    sendPosition,
+  ]);
 
   // 위치 전송 시작/중지 (지도와 독립적으로)
   useEffect(() => {

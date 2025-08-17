@@ -31,11 +31,4 @@ const getEnvironmentConfig = (): EnvironmentConfig => {
 
 export const config = getEnvironmentConfig();
 
-// 디버깅을 위한 로그 추가
-console.log('🔧 Environment Config:', {
-  apiBaseUrl: config.apiBaseUrl,
-  wsBaseUrl: config.wsBaseUrl,
-  oauthRedirectUrl: config.oauthRedirectUrl,
-  isDevelopment: import.meta.env.DEV,
-  useDeployedBackend: import.meta.env.VITE_USE_DEPLOYED_BACKEND
-});
+
