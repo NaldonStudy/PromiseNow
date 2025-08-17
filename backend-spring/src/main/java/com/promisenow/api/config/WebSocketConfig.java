@@ -19,12 +19,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         //클라이언트가 /ws-chat 경로로 웹소켓 연결을 시도
         registry.addEndpoint("/ws-chat") // 서버와 웹소켓 연결을 위한 엔드포인트
                 .setAllowedOriginPatterns("*")  // 또는 정확한 프론트 주소로 제한 가능
-                .withSockJS()
-                .setHeartbeatTime(25000)
-                .setDisconnectDelay(5000)
-                .setHttpMessageCacheSize(1000)
-                .setWebSocketEnabled(true)
-                .setSessionCookieNeeded(false); // SockJS 지원
+                .withSockJS(); // SockJS 지원
         //리더보드용 웹소켓 설정
         registry.addEndpoint("/ws-leaderboard")
                 .setAllowedOriginPatterns("*")
@@ -55,7 +50,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         converter.setSupportedMediaTypes(Arrays.asList(
             MediaType.APPLICATION_JSON,
             MediaType.TEXT_EVENT_STREAM,
-            MediaType.TEXT_PLAIN
+            MediaType.TEXT_PLAIN,
+            MediaType.valueOf("application/javascript"),
+            MediaType.valueOf("text/html"),
+            MediaType.valueOf("application/x-www-form-urlencoded")
         ));
         return converter;
     }
