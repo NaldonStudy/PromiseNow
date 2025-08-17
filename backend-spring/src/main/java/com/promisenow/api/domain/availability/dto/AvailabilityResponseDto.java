@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 public class AvailabilityResponseDto {
     
@@ -28,6 +29,7 @@ public class AvailabilityResponseDto {
         @AllArgsConstructor
         public static class DateAvailability {
             @Schema(description = "날짜", example = "2025-01-15")
+            @JsonFormat(pattern = "yyyy-MM-dd")
             private LocalDate date;
             
             @Schema(description = "시간대 데이터 (30자리, 0=불가능, 1=가능)", example = "111100001111000011110000111100")
@@ -52,6 +54,7 @@ public class AvailabilityResponseDto {
         @AllArgsConstructor
         public static class DateTotalData {
             @Schema(description = "날짜", example = "2025-01-15")
+            @JsonFormat(pattern = "yyyy-MM-dd")
             private LocalDate date;
             
             @Schema(description = "누적된 시간대 데이터 (각 숫자는 해당 시간대를 선택한 사용자 수)", example = "222211112222111122221111222211")
