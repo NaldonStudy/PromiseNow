@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 public class AvailabilityRequestDto {
     
@@ -43,6 +44,7 @@ public class AvailabilityRequestDto {
     public static class DateAvailabilityData {
         @Schema(description = "날짜", example = "2025-01-15", required = true)
         @NotNull(message = "date는 필수입니다.")
+        @JsonFormat(pattern = "yyyy-MM-dd")
         private LocalDate date;
         
         @Schema(description = "시간대 데이터 (30자리, 0=불가능, 1=가능)", example = "111100001111000011110000111100", required = true)

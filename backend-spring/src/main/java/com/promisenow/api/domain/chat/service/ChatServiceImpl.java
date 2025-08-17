@@ -49,6 +49,7 @@ public class ChatServiceImpl implements ChatService {
                     .build());
             result.add(new MessageResponseDto(
                     userChat.getContent(),
+                    roomUser.getRoomUserId(),
                     roomUser.getUser().getUserId(),
                     roomUser.getNickname(),
                     userChat.getSentDate(),
@@ -90,6 +91,7 @@ public class ChatServiceImpl implements ChatService {
                     .build());
             result.add(new MessageResponseDto(
                     gptReply,
+                    pinoUser.getRoomUserId(),
                     pinoUser.getUser().getUserId(),
                     pinoUser.getNickname(),
                     aiChat.getSentDate(),
@@ -124,6 +126,7 @@ public class ChatServiceImpl implements ChatService {
         }
         result.add(new MessageResponseDto(
                 chat.getContent(),
+                roomUser.getRoomUserId(),
                 roomUser.getUser().getUserId(),
                 roomUser.getNickname(),
                 chat.getSentDate(),
@@ -148,6 +151,7 @@ public class ChatServiceImpl implements ChatService {
                     }
                     return new MessageResponseDto(
                             chat.getContent(),
+                            chat.getRoomUser().getRoomUserId(),
                             chat.getRoomUser().getUser().getUserId(),
                             chat.getRoomUser().getNickname(),
                             chat.getSentDate(),
