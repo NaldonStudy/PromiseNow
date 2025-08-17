@@ -27,6 +27,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         
         registry.addEndpoint("/ws-leaderboard-native")
                 .setAllowedOriginPatterns("*");
+        
+        //채팅용 순수 WebSocket 엔드포인트 추가
+        registry.addEndpoint("/ws-chat-native")
+                .setAllowedOriginPatterns("*");
     }
 
     @Override

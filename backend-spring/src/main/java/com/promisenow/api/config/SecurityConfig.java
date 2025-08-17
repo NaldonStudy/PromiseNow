@@ -80,6 +80,7 @@ public class SecurityConfig {
                 
                 // 웹소켓
                 .requestMatchers("/ws-chat/**").permitAll()
+                .requestMatchers("/ws-chat-native/**").permitAll()
                 
                 // 파일 업로드
                 .requestMatchers("/api/upload/**").permitAll()
