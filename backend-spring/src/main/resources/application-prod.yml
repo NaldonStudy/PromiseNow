@@ -1,0 +1,88 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: false
+        connection:
+          characterEncoding: utf8
+          useUnicode: true
+  data:
+    redis:
+      host: ${SPRING_REDIS_HOST}
+      port: ${SPRING_REDIS_PORT:6379}
+      password: ${SPRING_REDIS_PASSWORD:}
+      database: 0
+      timeout: 2s
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 16
+          min-idle: 4
+          max-wait: 1000ms
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: ${SPRING_KAKAO_CLIENT_ID}
+            client-secret: ${SPRING_KAKAO_CLIENT_SECRET}
+            redirect-uri: ${SPRING_KAKAO_REDIRECT_URI}
+            authorization-grant-type: authorization_code
+            client-authentication-method: client_secret_post
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+
+logging:
+  level:
+    root: WARN
+    com.promisenow.api: WARN
+    org.springframework.ai: WARN
+    org.hibernate.SQL: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/application.log
+    max-size: 100MB
+    max-history: 30
+
+# Actuator 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+
+jwt:
+  secret: ${SPRING_JWT_TOKEN}
+  access-expiration: 1800000    # 30분 (보안 강화)
+  refresh-expiration: 1209600000 # 14일
+
+auth:
+  front-login-uri: ${SPRING_FRONT_REDIRECT_URI:https://promisenow.store}
+
+# 웹훅 설정
+webhook:
+  slack:
+    url: ${SLACK_WEBHOOK_URL}
+  enable:
+    handled-exceptions: true   # 임시로 핸들링된 예외 웹훅 활성화 (테스트용)
+    unhandled-exceptions: true # 핸들링되지 않은 예외만 웹훅 전송

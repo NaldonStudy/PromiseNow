@@ -1,0 +1,86 @@
+spring:
+  profiles:
+    active: dev
+  application:
+    name: promisenow
+  mvc:
+    view:
+      prefix: /WEB-INF/views/
+      suffix: .jsp
+
+  main:
+    allow-bean-definition-overriding: true  # 또는 삭제
+
+
+server:
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+      enabled: true
+  forward-headers-strategy: framework
+  tomcat:
+    remote-ip-header: X-Forwarded-For
+    protocol-header: X-Forwarded-Proto
+    protocol-header-https-value: https
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 86400
+
+# Redis Key Patterns
+redis:
+  keys:
+    user-location: "user:location:{userId}"
+    user-online: "user:online:{userId}"
+    room-participants: "room:participants:{roomId}"
+    room-locations: "room:locations:{roomId}"
+    room-leaderboard: "room:leaderboard:{roomId}"
+    session-info: "session:info:{roomId}"
+
+  # TTL 설정 (초 단위)
+  ttl:
+    user-online: 300 # 5분
+    user-location: 60 # 1분
+    session-info: 3600 # 1시간
+    room-participants: 7200 # 2시간
+
+# Actuator 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+      show-components: always
+
+#Swagger 설정
+springdoc:
+  swagger-ui:
+    urls:
+      - name: API
+        url: /v3/api-docs
+    try-it-out-enabled: true
+    display-request-duration: true
+    validator-url: ""
+    # HttpOnly 쿠키 지원을 위한 설정
+    with-credentials: true
+  default-produces-media-type: application/json
+  default-consumes-media-type: application/json
+  api-docs:
+    enabled: true
+  server: https://api.promisenow.store
+
+gms:
+  key: ${GMS_KEY}
+
+# 웹훅 설정
+webhook:
+  slack:
+    url: ${SLACK_WEBHOOK_URL}
+  enable:
+    handled-exceptions: false  # 핸들링된 예외 웹훅 (기본값: 비활성화)
+    unhandled-exceptions: true # 핸들링되지 않은 예외 웹훅 (기본값: 활성화)

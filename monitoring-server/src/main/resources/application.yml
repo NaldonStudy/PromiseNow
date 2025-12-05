@@ -1,0 +1,60 @@
+spring:
+  application:
+    name: promisenow-monitoring
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: 0
+      timeout: 2s
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
+
+server:
+  port: 8085  # 메인 서버와 다른 포트
+
+# 모니터링 대상 서버 설정
+monitoring:
+  target:
+    api-server: ${API_SERVER_URL:http://localhost:8080}
+    webrtc-server: ${WEBRTC_SERVER_URL:http://localhost:3000}
+  
+  # 모니터링 간격 (초)
+  intervals:
+    redis-check: 30
+    api-health-check: 60
+    performance-collection: 300  # 5분
+    
+  # 알림 설정
+  alerts:
+    redis-error-rate-threshold: 0.01  # 1%
+    redis-latency-threshold: 50       # 50ms
+    api-response-time-threshold: 1000 # 1초
+
+# Actuator 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+logging:
+  level:
+    com.promisenow.monitoring: DEBUG
+    org.springframework.web: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
