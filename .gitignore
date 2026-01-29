@@ -4,3 +4,8 @@ nginx/
 
 backend.log
 backend.pid
+# Env files
+.env
+.env.local
+backend-spring/.env
+backend-webrtc/.env
